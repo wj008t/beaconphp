@@ -137,7 +137,7 @@ namespace core {
             if ($args !== null && !is_array($args)) {
                 $args = [$args];
             }
-            if (preg_match('@\?@', $sql) && preg_match('@:(\w+)@', $sql)) {
+            if ($args !== null && preg_match('@\?@', $sql) && preg_match('@:(\w+)@', $sql)) {
                 $index = 0;
                 $sql = preg_replace_callback('@\?@', function ($match) use (&$args, &$index) {
                     $key = ':beacon_temp_index_' . $index;
@@ -230,7 +230,9 @@ namespace core {
             $sql = "select max(`{$field}`) from {$tbname}";
             if ($where !== null) {
                 $where = trim($where);
-                $args = is_array($args) ? $args : [];
+                if ($args != null) {
+                    $args = is_array($args) ? $args : [$args];
+                }
                 if (is_int($where) || is_numeric($where)) {
                     $args = [intval($where)];
                     $where = 'id=?';
@@ -249,7 +251,9 @@ namespace core {
             $sql = "select min(`{$field}`) from {$tbname}";
             if ($where !== null) {
                 $where = trim($where);
-                $args = is_array($args) ? $args : [];
+                if ($args != null) {
+                    $args = is_array($args) ? $args : [$args];
+                }
                 if (is_int($where) || is_numeric($where)) {
                     $args = [intval($where)];
                     $where = 'id=?';
