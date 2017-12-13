@@ -63,6 +63,7 @@ abstract class Controller
             if (empty($jump)) {
                 $jump = '#';
             }
+            $out['jump'] = $jump;
             $this->assign('info', $out);
             $this->display('@fail.tpl');
             exit;
