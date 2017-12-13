@@ -222,6 +222,7 @@ namespace core {
             if (is_string($field) && !empty($field)) {
                 return isset($row[$field]) ? $row[$field] : null;
             }
+            return current($row);
         }
 
         public function getMax(string $tbname, string $field, $where = null, $args = null)
