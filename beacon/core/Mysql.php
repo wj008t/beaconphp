@@ -159,13 +159,12 @@ namespace core {
         }
 
         /**
-         * 获得多行内容
          * @param string $sql
          * @param null $args
          * @param null $fetch_style
          * @param null $fetch_argument
-         * @param array $ctor_args
-         * @return mixed
+         * @param array|null $ctor_args
+         * @return array
          */
         public function getList(string $sql, $args = null, $fetch_style = null, $fetch_argument = null, array $ctor_args = null)
         {
@@ -186,14 +185,13 @@ namespace core {
             return $rows;
         }
 
-        /***
-         * 获得一行内容
+        /**
          * @param string $sql
          * @param null $args
          * @param null $fetch_style
-         * @param null $fetch_argument
-         * @param array $ctor_args
-         * @return mixed
+         * @param null $cursor_orientation
+         * @param int $cursor_offset
+         * @return mixed|null
          */
         public function getRow(string $sql, $args = null, $fetch_style = null, $cursor_orientation = null, $cursor_offset = 0)
         {
@@ -211,7 +209,7 @@ namespace core {
          * @param string $sql
          * @param null $args
          * @param null $field
-         * @return
+         * @return mixed|null
          */
         public function getOne(string $sql, $args = null, $field = null)
         {
