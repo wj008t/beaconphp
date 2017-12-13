@@ -1,0 +1,14 @@
+{
+  "autoload": {
+    "psr-4": {
+      "libs\\": "libs/",
+      "app\\": "app/",
+      "core\\": "beacon/core/",
+      "sdopx\\": "beacon/sdopx/"
+    }
+  },
+  "require": {
+    "catfan/Medoo": "^1.5",
+    "ccampbell/chromephp": "^4.1"
+  }
+}
