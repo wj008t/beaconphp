@@ -44,7 +44,7 @@ class Utils
         $name = preg_replace_callback('@[A-Z]@', function ($m) {
             return '_' . strtolower($m[0]);
         }, $name);
-        $name = preg_replace('@^_+@', '', $name);
+        $name = ltrim($name, '_');
         return $name;
     }
 
@@ -54,10 +54,7 @@ class Utils
         $name = preg_replace_callback('@_[a-z]@', function ($m) {
             return substr(strtoupper($m[0]), 1);
         }, $name);
-        $name = preg_replace_callback('@^[a-z]@', function ($m) {
-            return strtoupper($m[0]);
-        }, $name);
-
+        $name = ucfirst($name);
         return $name;
     }
 
