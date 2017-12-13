@@ -11,6 +11,7 @@ class Index extends Controller
     public function indexAction(Request $request, string $name = 'wj008')
     {
         // $row = DB::getList('select 1 as temp;');
+        \ChromePhp::log(gettype(DB::engine()));
         $v = DB::beginTransaction();
         //$row = DB::getMedoo()->update('building', ['name' => '荣昌大厦2wqw23'], ['id' => 1]);
         try {
