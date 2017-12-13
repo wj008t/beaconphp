@@ -32,7 +32,7 @@ namespace sdopx\libs {
                 }
             }
             $path = implode(DIRECTORY_SEPARATOR, $absolutes);
-            if (DIRECTORY_SEPARATOR == '\\' && !empty($protocol)) {
+            if (DIRECTORY_SEPARATOR == '\\' && isset($protocol[4])) {
                 $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
             }
             return $protocol . $path;

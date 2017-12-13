@@ -76,13 +76,12 @@ class DB
         return self::engine()->getList($sql, $args, $fetch_style, $fetch_argument, $ctor_args);
     }
 
-    /***
-     * 获得一行内容
+    /**
      * @param string $sql
      * @param null $args
      * @param null $fetch_style
-     * @param null $fetch_argument
-     * @param array $ctor_args
+     * @param null $cursor_orientation
+     * @param int $cursor_offset
      * @return mixed
      */
     public static function getRow(string $sql, $args = null, $fetch_style = null, $cursor_orientation = null, $cursor_offset = 0)

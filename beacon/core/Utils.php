@@ -19,11 +19,9 @@ class Utils
             $protocol = $m[1];
             $path = $m[2];
         }
-
         $path = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $path);
         $parts = array_filter(explode(DIRECTORY_SEPARATOR, $path), 'strlen');
         $absolutes = [];
-
         foreach ($parts as $part) {
             if ('.' == $part) {
                 continue;
@@ -35,7 +33,7 @@ class Utils
             }
         }
         $path = implode(DIRECTORY_SEPARATOR, $absolutes);
-        if (DIRECTORY_SEPARATOR == '\\' && !empty($protocol)) {
+        if (DIRECTORY_SEPARATOR == '\\' && isset($protocol[4])) {
             $path = str_replace(DIRECTORY_SEPARATOR, '/', $path);
         }
         return $protocol . $path;
