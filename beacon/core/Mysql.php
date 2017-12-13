@@ -290,6 +290,7 @@ namespace core {
                 case 'string':
                     break;
                 case 'array':
+                case 'object':
                     $value = json_encode($value, JSON_UNESCAPED_UNICODE);
                     break;
                 default :
