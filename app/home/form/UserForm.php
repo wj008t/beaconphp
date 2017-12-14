@@ -13,7 +13,7 @@ use core\Form;
 
 class UserForm extends Form
 {
-    public function load()
+    protected function load()
     {
         return [
             'name' => [
