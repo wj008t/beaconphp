@@ -4,7 +4,11 @@
       "libs\\": "libs/",
       "app\\": "app/",
       "core\\": "beacon/core/",
-      "sdopx\\": "beacon/sdopx/"
+      "sdopx\\": "beacon/sdopx/",
+      "widget\\": [
+        "beacon/plugin/",
+        "libs/plugin"
+      ]
     }
   },
   "require": {

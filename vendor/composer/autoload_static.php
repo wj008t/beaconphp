@@ -7,6 +7,10 @@ namespace Composer\Autoload;
 class ComposerStaticInitd346d652929886a78c6c04452a6b6134
 {
     public static $prefixLengthsPsr4 = array (
+        'w' => 
+        array (
+            'widget\\' => 7,
+        ),
         's' => 
         array (
             'sdopx\\' => 6,
@@ -30,6 +34,11 @@ class ComposerStaticInitd346d652929886a78c6c04452a6b6134
     );
 
     public static $prefixDirsPsr4 = array (
+        'widget\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/beacon/plugin',
+            1 => __DIR__ . '/../..' . '/libs/plugin',
+        ),
         'sdopx\\' => 
         array (
             0 => __DIR__ . '/../..' . '/beacon/sdopx',
