@@ -1,4 +1,5 @@
 <?php
+//路由配置
 return [
     'path' => 'app/home',
     'namespace' => 'app\\home',
