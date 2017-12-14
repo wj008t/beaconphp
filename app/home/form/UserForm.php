@@ -8,6 +8,7 @@
 
 namespace app\home\form;
 
+use core\DB;
 use core\Form;
 
 class UserForm extends Form
@@ -17,7 +18,9 @@ class UserForm extends Form
         return [
             'name' => [
                 'label' => '标题',
-
+                'default' => function () {
+                    return DB::getMax('@pf_advertisement', 'name');
+                }
             ],
             'sex' => [
                 'label' => '性别',
