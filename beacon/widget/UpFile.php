@@ -11,11 +11,12 @@ namespace widget;
 
 use beacon\Field;
 
-class Text extends Hidden
+class UpFile extends Hidden
 {
 
     public function code(Field $field, $args)
     {
+        $args['yee-module'] = 'upfile';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr);
         return '<input ' . join(' ', $attr) . ' />';

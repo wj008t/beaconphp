@@ -210,13 +210,22 @@ class Field
         return $data;
     }
 
-    public function explodeAttr(&$base = [], &$merge_args = [], $filter = null)
+    public function explodeAttr(&$base = [], &$args = [], $filter = null)
     {
         if ($base == null) {
             $base = [];
         }
-        $merge_args = array_merge($this->getBoxAttribute(), $merge_args);
-        foreach ($merge_args as $name => $val) {
+        $attrs = $this->getBoxAttribute();
+        foreach ($args as $key => $val) {
+            if (substr($key, 0, 1) == '@') {
+                continue;
+            }
+            $attrs[$key] = $val;
+        }
+        if (!isset($attrs['type'])) {
+            $attrs['type'] = 'text';
+        }
+        foreach ($attrs as $name => $val) {
             if ($filter != null && is_callable($filter)) {
                 if (!call_user_func($filter, $name, $val)) {
                     continue;
@@ -226,7 +235,11 @@ class Field
                     continue;
                 }
             }
-            array_push($base, $name . '="' . htmlspecialchars($val) . '"');
+            if (is_array($val)) {
+                array_push($base, $name . '="' . htmlspecialchars(json_encode($val, JSON_UNESCAPED_UNICODE)) . '"');
+            } else {
+                array_push($base, $name . '="' . htmlspecialchars($val) . '"');
+            }
         }
     }
 
@@ -256,7 +269,7 @@ class Field
 
     public function box($args = null)
     {
-        if ($args == null) {
+        if ($args === null || !is_array($args)) {
             $args = [];
         }
         $box = Form::getBoxInstance($this->type);

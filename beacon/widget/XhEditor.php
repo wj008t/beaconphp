@@ -11,14 +11,20 @@ namespace widget;
 
 use beacon\Field;
 
-class Text extends Hidden
+class Xheditor extends Hidden
 {
 
     public function code(Field $field, $args)
     {
+        $args['yee-module'] = 'xheditor';
+        if (isset($args['value'])) {
+            $field->value = $args['value'];
+        }
+        $args['type'] = '';
+        $args['value'] = '';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr);
-        return '<input ' . join(' ', $attr) . ' />';
+        return '<textarea ' . join(' ', $attr) . '>' . htmlspecialchars($field->value) . '</textarea>';
     }
 
     public function assign(Field $field, string $method = '')

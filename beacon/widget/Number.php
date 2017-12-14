@@ -2,20 +2,21 @@
 /**
  * Created by PhpStorm.
  * User: wj008
- * Date: 2017/12/14
- * Time: 18:02
+ * Date: 2017/12/15
+ * Time: 4:01
  */
 
 namespace widget;
 
 
 use beacon\Field;
+use beacon\Validate;
 
-class Text extends Hidden
+class Number extends Hidden
 {
-
     public function code(Field $field, $args)
     {
+        $args['yee-module'] = 'number';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr);
         return '<input ' . join(' ', $attr) . ' />';
@@ -23,7 +24,8 @@ class Text extends Hidden
 
     public function assign(Field $field, string $method = '')
     {
-        $field->varType = 'string';
+        $field->varType = 'float';
         return parent::assign($field, $method);
     }
+
 }

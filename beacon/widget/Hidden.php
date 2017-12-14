@@ -9,6 +9,7 @@
 namespace widget;
 
 use beacon\Field;
+use beacon\Request;
 
 class Hidden implements BoxInterface
 {
@@ -24,9 +25,9 @@ class Hidden implements BoxInterface
     {
         $boxName = $field->boxName;
         $request = Request::instance();
-        if ($method == 'GET') {
+        if ($method == 'get') {
             $func = new \ReflectionMethod($request, 'get');
-        } elseif ($method == 'POST') {
+        } elseif ($method == 'post') {
             $func = new \ReflectionMethod($request, 'post');
         } else {
             $func = new \ReflectionMethod($request, 'param');
@@ -59,6 +60,7 @@ class Hidden implements BoxInterface
                 $field->value = $func->invoke($request, $boxName, $field->default);
                 break;
         }
+        return $field->value;
     }
 
     public function fill(Field $field, array &$values)

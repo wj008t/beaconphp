@@ -11,14 +11,19 @@ namespace widget;
 
 use beacon\Field;
 
-class Text extends Hidden
+class Textarea extends Hidden
 {
 
     public function code(Field $field, $args)
     {
+        $args['type'] = '';
+        if (isset($args['value'])) {
+            $field->value = $args['value'];
+        }
+        $args['value'] = '';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr);
-        return '<input ' . join(' ', $attr) . ' />';
+        return '<textarea ' . join(' ', $attr) . '>' . htmlspecialchars($field->value) . '</textarea>';
     }
 
     public function assign(Field $field, string $method = '')

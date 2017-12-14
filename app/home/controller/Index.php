@@ -27,4 +27,11 @@ class Index extends Controller
         $this->assign('form', $form);
         return $this->fetch('index.tpl');
     }
+
+    public function saveAction()
+    {
+        $form = new UserForm('add');
+        $vals = $form->autoComplete();
+        return $vals;
+    }
 }

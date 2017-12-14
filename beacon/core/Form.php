@@ -272,6 +272,7 @@ class Form
                 $values[$name] = $field->value;
             }
         }
+        return $values;
     }
 
     public function initValues(array $values = null, bool $force = false)
@@ -279,10 +280,11 @@ class Form
         if ($values == null) {
             return;
         }
-        if (method_exists($this, 'beforeInitValues')) {
-            $values = $this->beforeInitValues($values);
-        }
         $fields = $this->getCurrentFields();
+        if (method_exists($this, 'beforeInitValues')) {
+            $this->beforeInitValues($fields, $values);
+        }
+
         foreach ($fields as $name => $field) {
             if ($field->close) {
                 continue;
@@ -297,14 +299,15 @@ class Form
                 $field->value = isset($values[$name]) ? $values[$name] : null;
             }
         }
+
         if (method_exists($this, 'afterInitValues')) {
-            $values = $this->afterInitValues($values);
+            $this->afterInitValues($fields, $values);
         }
     }
 
-    public function autoComplete($method = '')
+    public function autoComplete($method = 'post')
     {
-        $method = strtoupper($method);
+        $method = strtolower($method);
         $fields = $this->getCurrentFields();
         foreach ($fields as $name => $field) {
             if ($field->close || ($field->offEdit && $this->type = 'edit')) {
@@ -320,9 +323,9 @@ class Form
             } else {
                 $boxName = $field->boxName;
                 $request = Request::instance();
-                if ($method == 'GET') {
+                if ($method == 'post') {
                     $func = new \ReflectionMethod($request, 'get');
-                } elseif ($method == 'POST') {
+                } elseif ($method == 'post') {
                     $func = new \ReflectionMethod($request, 'post');
                 } else {
                     $func = new \ReflectionMethod($request, 'param');
@@ -643,10 +646,14 @@ class Form
         return $temp;
     }
 
-    public function box($name, array $args = null)
+    public function box($name, $type = null, array $args = null)
     {
         if ($name === null) {
             throw new \Exception('必须指定名称，或者字段');
+        }
+        if ($args === null && is_array($type)) {
+            $args = $type;
+            $type = null;
         }
         if (is_string($name)) {
             $field = $this->getField($name);
@@ -655,7 +662,7 @@ class Form
         } else {
             throw new \Exception('错误的参数');
         }
-        if ($args == null) {
+        if ($args === null && !is_array($args)) {
             $args = [];
         }
         if ($field == null) {
@@ -666,8 +673,8 @@ class Form
                 $field->boxId = $name;
             }
         }
-        if (isset($args['type'])) {
-            $field->type = $args['type'];
+        if ($type !== null) {
+            $field->type = $type;
         }
         return $field->box($args);
     }
