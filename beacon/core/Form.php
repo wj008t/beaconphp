@@ -18,7 +18,7 @@ class Form
     /**
      * @var $boxInstance \widget\BoxInterface[]
      */
-    private $boxInstance = [];
+    private static $boxInstance = [];
     //基本属性
     public $title = '';
     public $caption = '';
@@ -37,6 +37,31 @@ class Form
 
     private $cacheUsingFields = [];
     protected $hideBox = [];
+
+    /**
+     * @param string $type
+     * @return \widget\BoxInterface
+     * @throws \Exception
+     */
+    public static function getBoxInstance(string $type)
+    {
+        if (empty($type)) {
+            return null;
+        }
+        if (isset(self::$boxInstance[$type])) {
+            return self::$boxInstance[$type];
+        }
+        $class = '\\widget\\' . Utils::toCamel($type);
+        if (!class_exists($class)) {
+            return null;
+        }
+        $reflect = new \ReflectionClass($class);
+        if (!$reflect->implementsInterface('\\widget\\BoxInterface')) {
+            return null;
+        }
+        self::$boxInstance[$type] = new $class();
+        return self::$boxInstance[$type];
+    }
 
     public function __construct($type = '')
     {
@@ -98,7 +123,7 @@ class Form
             }
             $this->fields = $temps;
         } else {
-            $temps[$name] = $field;
+            $this->fields[$name] = $field;
         }
         return $this;
 
@@ -222,31 +247,6 @@ class Form
 
     }
 
-    /**
-     * @param string $type
-     * @return \widget\BoxInterface
-     * @throws \Exception
-     */
-    public function getBoxInstance(string $type)
-    {
-        if (empty($type)) {
-            return null;
-        }
-        if (isset($this->boxInstance[$type])) {
-            return $this->boxInstance[$type];
-        }
-        $class = '\\widget\\' . Utils::toCamel($type);
-        if (!class_exists($class)) {
-            return null;
-        }
-        $reflect = new \ReflectionClass($class);
-        if (!$reflect->implementsInterface('\\widget\\BoxInterface')) {
-            return null;
-        }
-        $this->boxInstance[$type] = new $class();
-        return $this->boxInstance[$type];
-    }
-
     public function getValues(array $allow = null)
     {
         $values = [];
@@ -260,7 +260,7 @@ class Form
             if ($field->close || ($field->offEdit && $this->type = 'edit')) {
                 continue;
             }
-            $box = $this->getBoxInstance($field->type);
+            $box = self::getBoxInstance($field->type);
             if ($box != null) {
                 $box->fill($field, $values);
             } else {
@@ -285,7 +285,7 @@ class Form
             if (!$force && $field->value !== null) {
                 continue;
             }
-            $box = $this->getBoxInstance($field->type);
+            $box = self::getBoxInstance($field->type);
             if ($box != null) {
                 $box->init($field, $values);
             } else {
@@ -309,7 +309,7 @@ class Form
                 $field->value = $field->default;
                 continue;
             }
-            $box = $this->getBoxInstance($field->type);
+            $box = self::getBoxInstance($field->type);
             if ($box != null) {
                 $box->assign($field, $method);
             } else {
@@ -595,7 +595,7 @@ class Form
                 }
             }
             //隐藏字段
-            if ($field->type = 'hide') {
+            if ($field->type == 'hide') {
                 $field->viewClose = true;
                 $this->addHideBox($field->boxName, $field->value);
             }
@@ -638,5 +638,32 @@ class Form
         return $temp;
     }
 
-
+    public function box($name, array $args = null)
+    {
+        if ($name === null) {
+            throw new \Exception('必须指定名称，或者字段');
+        }
+        if (is_string($name)) {
+            $field = $this->getField($name);
+        } elseif ($name instanceof Field) {
+            $field = $name;
+        } else {
+            throw new \Exception('错误的参数');
+        }
+        if ($args == null) {
+            $args = [];
+        }
+        if ($field == null) {
+            $field = new Field($this);
+            if (is_string($name)) {
+                $field->name = $name;
+                $field->boxName = $name;
+                $field->boxId = $name;
+            }
+        }
+        if (isset($args['type'])) {
+            $field->type = $args['type'];
+        }
+        return $field->box($args);
+    }
 }

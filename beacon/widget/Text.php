@@ -11,26 +11,15 @@ namespace widget;
 
 use core\Field;
 
-class Text implements BoxInterface
+class Text extends Hidden
 {
 
     public function code(Field $field, $args)
     {
-        // TODO: Implement code() method.
+        $args['type'] = 'text';
+        $field->explodeAttr($attr, $args);
+        $field->explodeData($attr);
+        return '<input ' . join(' ', $attr) . ' />';
     }
 
-    public function assign(Field $field, string $method = '')
-    {
-        // TODO: Implement assign() method.
-    }
-
-    public function fill(Field $field, array &$values)
-    {
-        // TODO: Implement fill() method.
-    }
-
-    public function init(Field $field, array $values)
-    {
-        // TODO: Implement init() method.
-    }
 }

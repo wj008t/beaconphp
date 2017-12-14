@@ -16,6 +16,8 @@ class Field
     //扩展属性
     private $extends = [];
 
+    private $refClass = null;
+
     //基本属性
     public $label = '';
     public $name = '';
@@ -28,10 +30,10 @@ class Field
     public $varType = 'string';
     public $remoteFunc = null;
     public $dynamic = null;
-
     //控件属性
     public $boxName = '';
     public $boxId = '';
+    public $boxClass = null;
     //视图属性
     public $viewTabIndex = '';
     public $viewTabShared = false;
@@ -44,21 +46,60 @@ class Field
 
     public function __construct(Form $form, array $field = [])
     {
-        $refClass = new \ReflectionClass(get_class($this));
+        if ($field == null) {
+            $field = [];
+        }
+        $this->refClass = new \ReflectionClass(get_class($this));
         foreach ($field as $key => $value) {
-            $key = Utils::attrToCamel($key);//小驼峰
-            if ($refClass->hasProperty($key)) {
-                $prop = $refClass->getProperty($key);
-                if ($prop->isPublic()) {
-                    $prop->setValue(get_class($this), $value);
-                }
-            } else {
-                $this->extends[$key] = $value;
-            }
+            $this->setValue($key, $value);
         }
         $this->boxName = empty($this->boxName) ? $this->name : $this->boxName;
         $this->boxId = empty($this->boxId) ? $this->boxName : $this->boxId;
+        //设置默认值
+        $config = Config::get('form.field_default');
+        foreach ($config as $key => $value) {
+            $key = Utils::attrToCamel($key);
+            if ($key == 'remoteFunc') {
+                continue;
+            }
+            $cur_value = $this->getValue($key);
+            if (!($cur_value === null || (is_string($cur_value) && $cur_value === ''))) {
+                continue;
+            }
+            if ($value instanceof \Closure) {
+                $value = call_user_func($value, $this);
+            }
+            $this->setValue($key, $value);
+        }
         $this->form = $form;
+    }
+
+    private function setValue($name, $value)
+    {
+        $name = Utils::attrToCamel($name);
+        if ($this->refClass->hasProperty($name)) {
+            $prop = $this->refClass->getProperty($name);
+            if ($prop->isPublic()) {
+                $prop->setValue($this, $value);
+            }
+        } else {
+            $this->extends[$name] = $value;
+        }
+    }
+
+    private function getValue($name)
+    {
+        $name = Utils::attrToCamel($name);
+        $value = null;
+        if ($this->refClass->hasProperty($name)) {
+            $prop = $this->refClass->getProperty($name);
+            if ($prop->isPublic()) {
+                $value = $prop->getValue($this);
+            }
+        } else {
+            $value = isset($this->extends[$name]) ? $this->extends[$name] : null;
+        }
+        return $value;
     }
 
     public function __set($name, $value)
@@ -142,7 +183,13 @@ class Field
             }
         }
         if ($this->value !== null && $this->value !== '') {
-            $data['value'] = $this->value;
+            if (is_array($this->value)) {
+                $data['value'] = json_encode($this->value, JSON_UNESCAPED_UNICODE);
+            } elseif (is_bool($this->value)) {
+                $data['value'] = $this->value ? 1 : 0;
+            } else {
+                $data['value'] = $this->value;
+            }
         }
         if ($this->form != null && $this->form->type = 'edit') {
             if ($this->offEdit) {
@@ -157,6 +204,61 @@ class Field
         return $data;
     }
 
+    public function explodeAttr(&$base = [], &$merge_args = [], $filter = null)
+    {
+        if ($base == null) {
+            $base = [];
+        }
+        $merge_args = array_merge($this->getBoxAttribute(), $merge_args);
+        foreach ($merge_args as $name => $val) {
+            if ($filter != null && is_callable($filter)) {
+                if (!call_user_func($filter, $name, $val)) {
+                    continue;
+                }
+            } else {
+                if ($val === null || $val === '') {
+                    continue;
+                }
+            }
+            array_push($base, $name . '="' . htmlspecialchars($val) . '"');
+        }
+    }
+
+    public function explodeData(&$base = [], $filter = null)
+    {
+        if ($base == null) {
+            $base = [];
+        }
+        $data = $this->getBoxData();
+        foreach ($data as $name => $val) {
+            if ($filter != null && is_callable($filter)) {
+                if (!call_user_func($filter, $name, $val)) {
+                    continue;
+                }
+            } else {
+                if ($val === null || (is_string($val) && $val === '')) {
+                    continue;
+                }
+            }
+            if (is_array($val)) {
+                array_push($base, 'data-' . $name . '="' . htmlspecialchars(json_encode($val, JSON_UNESCAPED_UNICODE)) . '"');
+            } else {
+                array_push($base, 'data-' . $name . '="' . htmlspecialchars($val) . '"');
+            }
+        }
+    }
+
+    public function box($args = null)
+    {
+        if ($args == null) {
+            $args = [];
+        }
+        $box = Form::getBoxInstance($this->type);
+        if ($box === null) {
+            throw new \Exception('Unsupported input box type:' . $this->type);
+        }
+        return $box->code($this, $args);
+    }
 
 }
 

@@ -36,8 +36,8 @@ class ComposerStaticInitd346d652929886a78c6c04452a6b6134
     public static $prefixDirsPsr4 = array (
         'widget\\' => 
         array (
-            0 => __DIR__ . '/../..' . '/beacon/plugin',
-            1 => __DIR__ . '/../..' . '/libs/plugin',
+            0 => __DIR__ . '/../..' . '/beacon/widget',
+            1 => __DIR__ . '/../..' . '/libs/widget',
         ),
         'sdopx\\' => 
         array (

@@ -5,12 +5,12 @@ if (!defined('ROOT_DIR')) {
 require(ROOT_DIR . '/vendor/autoload.php');
 
 use \core\Route;
-use \core\Field;
+
+$a = function () {
+};
+var_export($a instanceof Closure);
 
 Route::register('home');
 
 Route::run();
 
-$form = new \core\Form();
-
-$form->getBoxInstance('hidden');

@@ -6,8 +6,8 @@
       "core\\": "beacon/core/",
       "sdopx\\": "beacon/sdopx/",
       "widget\\": [
-        "beacon/plugin/",
-        "libs/plugin"
+        "beacon/widget/",
+        "libs/widget/"
       ]
     }
   },

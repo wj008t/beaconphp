@@ -6,7 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    'widget\\' => array($baseDir . '/beacon/plugin', $baseDir . '/libs/plugin'),
+    'widget\\' => array($baseDir . '/beacon/widget', $baseDir . '/libs/widget'),
     'sdopx\\' => array($baseDir . '/beacon/sdopx'),
     'libs\\' => array($baseDir . '/libs'),
     'core\\' => array($baseDir . '/beacon/core'),

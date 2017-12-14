@@ -2,6 +2,7 @@
 
 namespace app\home\controller;
 
+use app\home\form\UserForm;
 use core\Controller;
 use core\DB;
 use core\Request;
@@ -11,7 +12,6 @@ class Index extends Controller
     public function indexAction(Request $request, string $name = 'wj008')
     {
         // $row = DB::getList('select 1 as temp;');
-        \ChromePhp::log(gettype(DB::engine()));
         $v = DB::beginTransaction();
         //$row = DB::getMedoo()->update('building', ['name' => '荣昌大厦2wqw23'], ['id' => 1]);
         try {
@@ -21,7 +21,11 @@ class Index extends Controller
         }
         $v = DB::rollBack();
         $row = DB::getList('select * from sl_building');
+
+        $form = new UserForm('add');
+        // $box = \core\Form::getBoxInstance('text');
         $this->assign('data', '1');
+        $this->assign('form', $form);
         return $this->fetch('index.tpl');
     }
 }
