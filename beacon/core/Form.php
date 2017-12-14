@@ -66,9 +66,6 @@ class Form
     public function __construct($type = '')
     {
         $this->type = $type;
-        if ($this->type == 'add' || $this->type = 'edit') {
-            $this->initialize();
-        }
     }
 
     public function initialize()
@@ -88,7 +85,7 @@ class Form
         }
     }
 
-    public function load()
+    protected function load()
     {
         return [];
     }
@@ -105,6 +102,7 @@ class Form
 
     public function addField(string $name, $field, string $before = null)
     {
+        $this->initialize();
         if ($field instanceof Field) {
             $field->name = $name;
         } else if (is_array($field)) {
@@ -131,11 +129,13 @@ class Form
 
     public function getField(string $name)
     {
+        $this->initialize();
         return isset($this->fields[$name]) ? $this->fields[$name] : null;
     }
 
     public function removeField(string $name)
     {
+        $this->initialize();
         $field = isset($this->fields[$name]) ? $this->fields[$name] : null;
         if ($field !== null) {
             unset($this->fields[$name]);
@@ -145,11 +145,13 @@ class Form
 
     public function getError(string $name)
     {
+        $this->initialize();
         return isset($this->fields[$name]) ? $this->fields[$name]->error : '';
     }
 
     public function setError($name, $error)
     {
+        $this->initialize();
         if (isset($this->fields[$name])) {
             $this->fields[$name]->error = $error;
         }
@@ -157,6 +159,7 @@ class Form
 
     public function removeError($name)
     {
+        $this->initialize();
         if (isset($this->fields[$name])) {
             $this->fields[$name]->error = null;
         }
@@ -197,6 +200,7 @@ class Form
 
     public function emptyFieldsValue()
     {
+        $this->initialize();
         $fields = $this->fields;
         foreach ($fields as $name => $field) {
             $field->value = null;
@@ -220,6 +224,7 @@ class Form
 
     public function getCurrentFields()
     {
+        $this->initialize();
         if ($this->viewUseTab && $this->viewTabSplit) {
             if (!empty($this->viewCurrentTabIndex)) {
                 $this->viewCurrentTabIndex = Request::instance()->get('tabIndex:s');
