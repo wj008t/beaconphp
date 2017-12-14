@@ -51,6 +51,14 @@ class Field
         }
         $this->refClass = new \ReflectionClass(get_class($this));
         foreach ($field as $key => $value) {
+            $key = Utils::attrToCamel($key);
+            if (preg_match('@Func$@', $key)) {
+                $this->setValue($key, $value);
+                continue;
+            }
+            if ($value instanceof \Closure) {
+                $value = call_user_func($value, $this);
+            }
             $this->setValue($key, $value);
         }
         $this->boxName = empty($this->boxName) ? $this->name : $this->boxName;
@@ -59,7 +67,7 @@ class Field
         $config = Config::get('form.field_default');
         foreach ($config as $key => $value) {
             $key = Utils::attrToCamel($key);
-            if ($key == 'remoteFunc') {
+            if (preg_match('@Func$@', $key)) {
                 continue;
             }
             $cur_value = $this->getValue($key);
@@ -76,7 +84,6 @@ class Field
 
     private function setValue($name, $value)
     {
-        $name = Utils::attrToCamel($name);
         if ($this->refClass->hasProperty($name)) {
             $prop = $this->refClass->getProperty($name);
             if ($prop->isPublic()) {
@@ -89,7 +96,6 @@ class Field
 
     private function getValue($name)
     {
-        $name = Utils::attrToCamel($name);
         $value = null;
         if ($this->refClass->hasProperty($name)) {
             $prop = $this->refClass->getProperty($name);
