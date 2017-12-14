@@ -6,7 +6,7 @@
  * Time: 15:50
  */
 
-namespace core;
+namespace beacon;
 
 
 class View

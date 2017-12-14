@@ -6,7 +6,7 @@
  * Time: 0:26
  */
 
-namespace core;
+namespace beacon;
 
 
 class Validate

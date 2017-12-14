@@ -6,7 +6,7 @@
  * Time: 14:03
  */
 
-namespace core {
+namespace beacon {
 
     use \PDO as PDO;
     use \PDOException as PDOException;

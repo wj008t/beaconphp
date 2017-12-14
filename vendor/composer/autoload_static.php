@@ -19,9 +19,9 @@ class ComposerStaticInitd346d652929886a78c6c04452a6b6134
         array (
             'libs\\' => 5,
         ),
-        'c' => 
+        'b' => 
         array (
-            'core\\' => 5,
+            'beacon\\' => 7,
         ),
         'a' => 
         array (
@@ -47,7 +47,7 @@ class ComposerStaticInitd346d652929886a78c6c04452a6b6134
         array (
             0 => __DIR__ . '/../..' . '/libs',
         ),
-        'core\\' => 
+        'beacon\\' => 
         array (
             0 => __DIR__ . '/../..' . '/beacon/core',
         ),

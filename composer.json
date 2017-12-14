@@ -3,7 +3,7 @@
     "psr-4": {
       "libs\\": "libs/",
       "app\\": "app/",
-      "core\\": "beacon/core/",
+      "beacon\\": "beacon/core/",
       "sdopx\\": "beacon/sdopx/",
       "widget\\": [
         "beacon/widget/",

@@ -8,7 +8,7 @@
 
 namespace widget;
 
-use core\Field;
+use beacon\Field;
 
 interface BoxInterface
 {

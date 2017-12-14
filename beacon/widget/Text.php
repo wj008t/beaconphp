@@ -9,7 +9,7 @@
 namespace widget;
 
 
-use core\Field;
+use beacon\Field;
 
 class Text extends Hidden
 {

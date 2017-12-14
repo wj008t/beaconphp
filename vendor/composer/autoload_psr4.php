@@ -9,7 +9,7 @@ return array(
     'widget\\' => array($baseDir . '/beacon/widget', $baseDir . '/libs/widget'),
     'sdopx\\' => array($baseDir . '/beacon/sdopx'),
     'libs\\' => array($baseDir . '/libs'),
-    'core\\' => array($baseDir . '/beacon/core'),
+    'beacon\\' => array($baseDir . '/beacon/core'),
     'app\\' => array($baseDir . '/app'),
     'Medoo\\' => array($vendorDir . '/catfan/medoo/src'),
 );

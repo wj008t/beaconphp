@@ -6,7 +6,7 @@
  * Time: 15:56
  */
 
-namespace core;
+namespace beacon;
 
 
 class Config

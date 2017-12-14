@@ -6,7 +6,7 @@
  * Time: 1:43
  */
 
-namespace core;
+namespace beacon;
 
 
 class Route
@@ -364,8 +364,8 @@ class Route
                                 case 'array':
                                     $args[] = $request->param($name . ':a', $def);
                                     break;
-                                case '\core\Request':
-                                case 'core\Request':
+                                case '\beacon\Request':
+                                case 'beacon\Request':
                                     $args[] = $request;
                                     break;
                                 default :

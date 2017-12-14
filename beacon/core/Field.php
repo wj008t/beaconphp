@@ -6,7 +6,7 @@
  * Time: 14:05
  */
 
-namespace core;
+namespace beacon;
 
 
 class Field

@@ -6,7 +6,7 @@
  * Time: 15:41
  */
 
-namespace core;
+namespace beacon;
 
 
 class Form

@@ -6,7 +6,7 @@
  * Time: 2:02
  */
 
-namespace core;
+namespace beacon;
 
 
 class Utils

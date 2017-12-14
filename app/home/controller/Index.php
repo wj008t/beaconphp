@@ -3,9 +3,9 @@
 namespace app\home\controller;
 
 use app\home\form\UserForm;
-use core\Controller;
-use core\DB;
-use core\Request;
+use beacon\Controller;
+use beacon\DB;
+use beacon\Request;
 
 class Index extends Controller
 {
@@ -22,7 +22,7 @@ class Index extends Controller
         $v = DB::rollBack();
         $row = DB::getList('select * from sl_building');
         $form = new UserForm('add');
-        // $box = \core\Form::getBoxInstance('text');
+        // $box = \beacon\Form::getBoxInstance('text');
         $this->assign('data', '1');
         $this->assign('form', $form);
         return $this->fetch('index.tpl');

@@ -6,7 +6,7 @@
  * Time: 16:51
  */
 
-namespace core;
+namespace beacon;
 
 use \PDO as PDO;
 

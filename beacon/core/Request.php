@@ -6,7 +6,7 @@
  * Time: 20:44
  */
 
-namespace core;
+namespace beacon;
 
 
 class Request

@@ -6,7 +6,7 @@
  * Time: 20:40
  */
 
-namespace core;
+namespace beacon;
 
 
 abstract class Controller

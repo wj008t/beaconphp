@@ -8,8 +8,8 @@
 
 namespace app\home\form;
 
-use core\DB;
-use core\Form;
+use beacon\DB;
+use beacon\Form;
 
 class UserForm extends Form
 {

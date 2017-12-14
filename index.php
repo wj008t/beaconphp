@@ -4,11 +4,7 @@ if (!defined('ROOT_DIR')) {
 }
 require(ROOT_DIR . '/vendor/autoload.php');
 
-use \core\Route;
-
-$a = function () {
-};
-var_export($a instanceof Closure);
+use \beacon\Route;
 
 Route::register('home');
 
