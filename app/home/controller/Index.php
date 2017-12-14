@@ -21,7 +21,6 @@ class Index extends Controller
         }
         $v = DB::rollBack();
         $row = DB::getList('select * from sl_building');
-
         $form = new UserForm('add');
         // $box = \core\Form::getBoxInstance('text');
         $this->assign('data', '1');
