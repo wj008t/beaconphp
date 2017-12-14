@@ -39,7 +39,7 @@ abstract class Controller
         exit;
     }
 
-    protected function error($error, $jump = null, $code = null)
+    public function error($error, $jump = null, $code = null)
     {
         $out = [];
         $out['status'] = false;
@@ -70,7 +70,7 @@ abstract class Controller
         }
     }
 
-    protected function success($message, $jump = null, $data = null)
+    public function success($message, $jump = null, $data = null)
     {
         $out = [];
         $out['status'] = true;

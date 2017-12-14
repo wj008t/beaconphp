@@ -290,7 +290,7 @@ class Validate
         }
     }
 
-    public function checkField($field)
+    public function checkField(Field $field)
     {
         $name = $field->name;
         if (!empty($field->error)) {

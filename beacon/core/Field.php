@@ -19,7 +19,7 @@ class Field
     //基本属性
     public $label = '';
     public $name = '';
-    public $error = '';
+    public $error = null;
     public $close = false;
     public $offEdit = false;
     public $value = null;
@@ -27,21 +27,22 @@ class Field
     public $type = 'text';
     public $varType = 'string';
     public $remoteFunc = null;
+    public $dynamic = null;
+
     //控件属性
-    public $inputName = '';
-    public $inputId = '';
+    public $boxName = '';
+    public $boxId = '';
     //视图属性
-    public $viewTabName = '';
+    public $viewTabIndex = '';
     public $viewTabShared = false;
     public $viewClose = false;
     public $viewMerge = 0;
-    public $viewDynamic = null;
     //数据属性
     public $dataValOff = null;
     public $dataVal = null;
     public $dataValMsg = null;
 
-    public function __construct($form, array $field = [])
+    public function __construct(Form $form, array $field = [])
     {
         $refClass = new \ReflectionClass(get_class($this));
         foreach ($field as $key => $value) {
@@ -55,8 +56,8 @@ class Field
                 $this->extends[$key] = $value;
             }
         }
-        $this->inputName = empty($this->inputName) ? $this->name : $this->inputName;
-        $this->inputId = empty($this->boxId) ? $this->inputName : $this->inputId;
+        $this->boxName = empty($this->boxName) ? $this->name : $this->boxName;
+        $this->boxId = empty($this->boxId) ? $this->boxName : $this->boxId;
         $this->form = $form;
     }
 
@@ -88,7 +89,7 @@ class Field
         return $this->form;
     }
 
-    public function getInputData()
+    public function getBoxData()
     {
         $data = [];
         $refClass = new \ReflectionClass(get_class($this));
@@ -117,7 +118,7 @@ class Field
         return $data;
     }
 
-    public function getInputAttribute()
+    public function getBoxAttribute()
     {
         $data = [];
         $refClass = new \ReflectionClass(get_class($this));
@@ -126,7 +127,7 @@ class Field
             $value = $prop->getValue($this);
             if ($value !== null && $value !== '') {
                 $name = $prop->getName();
-                if (preg_match('@^input([A-Z].*)$@', $name, $m)) {
+                if (preg_match('@^box([A-Z].*)$@', $name, $m)) {
                     $name = Utils::camelToAttr($m[1]);
                     $data[$name] = $value;
                 }
@@ -134,7 +135,7 @@ class Field
         }
         foreach ($this->extends as $name => $value) {
             if ($value !== null && $value !== '') {
-                if (preg_match('@^input([A-Z].*)$@', $name, $m)) {
+                if (preg_match('@^box([A-Z].*)$@', $name, $m)) {
                     $name = Utils::camelToAttr($m[1]);
                     $data[$name] = $value;
                 }
