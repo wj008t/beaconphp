@@ -37,11 +37,35 @@ class Form
 
     private $cacheUsingFields = [];
     protected $hideBox = [];
-    protected $load = [];
 
     public function __construct($type = '')
     {
         $this->type = $type;
+        if ($this->type == 'add' || $this->type = 'edit') {
+            $this->initialize();
+        }
+    }
+
+    public function initialize()
+    {
+        if ($this->inited) {
+            return;
+        }
+        $this->inited = true;
+        $load = $this->load();
+        if (is_array($load)) {
+            foreach ($load as $name => $field) {
+                if (!is_array($field)) {
+                    continue;
+                }
+                $this->addField($name, $field);
+            }
+        }
+    }
+
+    public function load()
+    {
+        return [];
     }
 
     public function isAdd()
@@ -289,6 +313,7 @@ class Form
             if ($box != null) {
                 $box->assign($field, $method);
             } else {
+                $boxName = $field->boxName;
                 $request = Request::instance();
                 if ($method == 'GET') {
                     $func = new \ReflectionMethod($request, 'get');
@@ -300,29 +325,29 @@ class Form
                 switch ($field->varType) {
                     case 'bool':
                     case 'boolean':
-                        $args[] = $func->invoke($request, $name . ':b', $field->default);
+                        $field->value = $func->invoke($request, $boxName . ':b', $field->default);
                         break;
                     case 'int':
                     case 'integer':
-                        $val = $func->invoke($request, $name . ':s', $field->default);
+                        $val = $func->invoke($request, $boxName . ':s', $field->default);
                         if (preg_match('@[+-]?\d*\.\d+@', $field->default)) {
-                            $args[] = $func->invoke($request, $name . ':f', $field->default);
+                            $field->value = $func->invoke($request, $boxName . ':f', $field->default);
                         } else {
-                            $args[] = $func->invoke($request, $name . ':i', $field->default);
+                            $field->value = $func->invoke($request, $boxName . ':i', $field->default);
                         }
                         break;
                     case 'double':
                     case 'float':
-                        $args[] = $func->invoke($request, $name . ':f', $field->default);
+                        $field->value = $func->invoke($request, $boxName . ':f', $field->default);
                         break;
                     case 'string':
-                        $args[] = $func->invoke($request, $name . ':s', $field->default);
+                        $field->value = $func->invoke($request, $boxName . ':s', $field->default);
                         break;
                     case 'array':
-                        $args[] = $func->invoke($request, $name . ':a', $field->default);
+                        $field->value = $func->invoke($request, $boxName . ':a', $field->default);
                         break;
                     default :
-                        $args[] = $func->invoke($request, $name, $field->default);
+                        $field->value = $func->invoke($request, $boxName, $field->default);
                         break;
                 }
             }
