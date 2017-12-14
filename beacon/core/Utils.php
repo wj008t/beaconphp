@@ -58,6 +58,24 @@ class Utils
         return $name;
     }
 
+    public static function attrToCamel($name)
+    {
+        $name = preg_replace_callback('@-[a-z]@', function ($m) {
+            return substr(strtoupper($m[0]), 1);
+        }, trim($name, '-'));
+        $name = lcfirst($name);
+        return $name;
+    }
+
+    public static function camelToAttr($name)
+    {
+        $name = preg_replace_callback('@[A-Z]@', function ($m) {
+            return '-' . strtolower($m[0]);
+        }, $name);
+        $name = ltrim($name, '-');
+        return $name;
+    }
+
     public static function randWord($len = 4)
     {
         $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
