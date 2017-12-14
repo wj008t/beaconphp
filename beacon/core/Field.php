@@ -13,6 +13,7 @@ class Field
 {
 
     private $form = null;
+    //扩展属性
     private $extends = [];
 
     //基本属性
