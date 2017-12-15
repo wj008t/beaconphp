@@ -71,6 +71,19 @@ class UserForm extends Form
                 ]
             ],
 
+
+            'radio_group' => [
+                'label' => '单选框',
+                'type' => 'radio_group',
+                'data-val' => ['r' => true],
+                'default'=>3,
+                'options' => [
+                    ['value' => 1, 'text' => '选项1'],
+                    ['value' => 2, 'text' => '选项2'],
+                    ['value' => 3, 'text' => '选项3'],
+                ]
+            ],
+
             'pwd' => [
                 'label' => '密码框',
                 'type' => 'password',
