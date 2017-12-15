@@ -19,11 +19,15 @@ class Select extends Hidden
         if (isset($args['value'])) {
             $field->value = $args['value'];
         }
+
+        $options = isset($args['@options']) ? $args['@options'] : $field->options;
+        $options = $options == null ? [] : $options;
+
         $args['value'] = '';
         $args['type'] = '';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr);
-        $options = $field->options == null ? [] : $field->options;
+
         $out = [];
         $out[] = '<select ' . join(' ', $attr) . '>' . "\n";
         if ($field->header !== null) {
