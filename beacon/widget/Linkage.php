@@ -41,16 +41,16 @@ class Linkage implements BoxInterface
         return '<input ' . join(' ', $attr) . ' />';
     }
 
-    private function fillType($values, $type)
+    private function convertType($values, $type)
     {
-        if ($values == null) {
+        if ($values === null) {
             return null;
         }
         foreach ($values as &$value) {
             switch ($type) {
                 case 'bool':
                 case 'boolean':
-                    $value = strval($value) == '1' || strval($value) == 'on' || strval($value) == 'yes' || strval($value) == 'true';
+                    $value = strval($value) === '1' || strval($value) === 'on' || strval($value) === 'yes' || strval($value) === 'true';
                     break;
                 case 'int':
                 case 'integer':
@@ -77,20 +77,20 @@ class Linkage implements BoxInterface
                 $def = isset($default[$idx]) ? $default[$idx] : null;
                 $values[] = $request->req($method, $name . ':s', $def);
             }
-            return $field->value = $this->fillType($values, $field->varType);
+            return $field->value = $this->convertType($values, $field->varType);
         }
         $boxName = $field->boxName;
         $values = $request->req($method, $boxName, null);
         if (is_array($values)) {
-            return $field->value = $this->fillType($values, $field->varType);
+            return $field->value = $this->convertType($values, $field->varType);
         }
-        if (is_string($values) && Utils::isJson($values)) {
+        if (Utils::isJsonString($values)) {
             $values = json_decode($values);
             if (is_array($values)) {
-                return $field->value = $this->fillType($values, $field->varType);
+                return $field->value = $this->convertType($values, $field->varType);
             }
         }
-        return $field->value = $this->fillType($field->default, $field->varType);
+        return $field->value = $this->convertType($field->default, $field->varType);
 
     }
 
@@ -118,16 +118,16 @@ class Linkage implements BoxInterface
             foreach ($field->names as $idx => $name) {
                 $temps[] = isset($values[$name]) ? '' : $values[$name];
             }
-            return $field->value = $this->fillType($temps, $field->varType);
+            return $field->value = $this->convertType($temps, $field->varType);
         }
         $temps = isset($values[$field->name]) ? '' : $values[$field->name];
         if (is_array($temps)) {
-            return $field->value = $this->fillType($temps, $field->varType);
+            return $field->value = $this->convertType($temps, $field->varType);
         }
-        if (is_string($temps) && Utils::isJson($temps)) {
+        if (Utils::isJsonString($temps)) {
             $temps = json_decode($temps);
             if (is_array($temps)) {
-                return $field->value = $this->fillType($temps, $field->varType);
+                return $field->value = $this->convertType($temps, $field->varType);
             }
         }
         return $field->value = null;

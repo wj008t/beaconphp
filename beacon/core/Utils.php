@@ -96,7 +96,7 @@ class Utils
         return $word;
     }
 
-    public static function isJson($str)
+    public static function isJsonString($str)
     {
         return is_string($str) && !empty($str) && preg_match('@^[\[\{].*[\]\}]$@', $str);
     }

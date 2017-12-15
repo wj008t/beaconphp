@@ -85,6 +85,21 @@ class UserForm extends Form
                 ]
             ],
 
+
+            'check_group' => [
+                'label' => '多选框',
+                'type' => 'check_group',
+                'data-val' => ['r' => true],
+                'default' => 3,
+                'options' => [
+                    ['value' => 1, 'text' => '选项1'],
+                    ['value' => 2, 'text' => '选项2'],
+                    ['value' => 3, 'text' => '选项3'],
+                ],
+                'names' => ['check_name1', 'check_name2', 'check_name3'],
+            ],
+
+
             'pwd' => [
                 'label' => '密码框',
                 'type' => 'password',
