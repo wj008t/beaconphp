@@ -110,6 +110,13 @@ class UserForm extends Form
                 'label' => '文本编辑器',
                 'type' => 'xh_editor',
             ],
+            'linkage' => [
+                'label' => '文本编辑器',
+                'type' => 'linkage',
+                'names' => ['name1', 'name2', 'name3'],
+                'varType' => 'int'
+            ],
+
         ];
     }
 }

@@ -218,6 +218,18 @@ class Request
         }
     }
 
+    public function req(string $method, string $name, $def = null)
+    {
+        $method = strtolower($method);
+        if ($method == 'get') {
+            return $this->get($name, $def);
+        } else if ($method == 'post') {
+            return $this->post($name, $def);
+        } else {
+            return $this->param($name, $def);
+        }
+    }
+
     public function file(string $name = null)
     {
         if (empty($name)) {

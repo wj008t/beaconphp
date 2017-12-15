@@ -25,39 +25,32 @@ class Hidden implements BoxInterface
     {
         $boxName = $field->boxName;
         $request = Request::instance();
-        if ($method == 'get') {
-            $func = new \ReflectionMethod($request, 'get');
-        } elseif ($method == 'post') {
-            $func = new \ReflectionMethod($request, 'post');
-        } else {
-            $func = new \ReflectionMethod($request, 'param');
-        }
         switch ($field->varType) {
             case 'bool':
             case 'boolean':
-                $field->value = $func->invoke($request, $boxName . ':b', $field->default);
+                $field->value = $request->req($method, $boxName . ':b', $field->default);
                 break;
             case 'int':
             case 'integer':
-                $val = $func->invoke($request, $boxName . ':s', $field->default);
+                $val = $request->req($method, $boxName . ':s', $field->default);
                 if (preg_match('@[+-]?\d*\.\d+@', $field->default)) {
-                    $field->value = $func->invoke($request, $boxName . ':f', $field->default);
+                    $field->value = $request->req($method, $boxName . ':f', $field->default);
                 } else {
-                    $field->value = $func->invoke($request, $boxName . ':i', $field->default);
+                    $field->value = $request->req($method, $boxName . ':i', $field->default);
                 }
                 break;
             case 'double':
             case 'float':
-                $field->value = $func->invoke($request, $boxName . ':f', $field->default);
+                $field->value = $request->req($method, $boxName . ':f', $field->default);
                 break;
             case 'string':
-                $field->value = $func->invoke($request, $boxName . ':s', $field->default);
+                $field->value = $request->req($method, $boxName . ':s', $field->default);
                 break;
             case 'array':
-                $field->value = $func->invoke($request, $boxName . ':a', $field->default);
+                $field->value = $request->req($method, $boxName . ':a', $field->default);
                 break;
             default :
-                $field->value = $func->invoke($request, $boxName, $field->default);
+                $field->value = $request->req($method, $boxName, $field->default);
                 break;
         }
         return $field->value;
