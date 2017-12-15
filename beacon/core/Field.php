@@ -215,17 +215,21 @@ class Field
         if ($base == null) {
             $base = [];
         }
-        $attrs = $this->getBoxAttribute();
-        foreach ($args as $key => $val) {
-            if (substr($key, 0, 1) == '@') {
-                continue;
+        $attributes = $this->getBoxAttribute();
+        if (is_array($args)) {
+            foreach ($args as $key => $val) {
+                $key = Utils::camelToAttr($key);
+                //排除隐藏的类型和数据绑定类型
+                if (preg_match('/^(@|data-)/', $key)) {
+                    continue;
+                }
+                $attributes[$key] = $val;
             }
-            $attrs[$key] = $val;
         }
-        if (!isset($attrs['type'])) {
-            $attrs['type'] = 'text';
+        if (!isset($attributes['type'])) {
+            $attributes['type'] = 'text';
         }
-        foreach ($attrs as $name => $val) {
+        foreach ($attributes as $name => $val) {
             if ($filter != null && is_callable($filter)) {
                 if (!call_user_func($filter, $name, $val)) {
                     continue;
@@ -243,12 +247,23 @@ class Field
         }
     }
 
-    public function explodeData(&$base = [], $filter = null)
+    public function explodeData(&$base = [], &$args = [], $filter = null)
     {
         if ($base == null) {
             $base = [];
         }
         $data = $this->getBoxData();
+        if (is_array($args)) {
+            foreach ($args as $key => $val) {
+                $key = Utils::camelToAttr($key);
+                //排除隐藏的类型和数据绑定类型
+                if (!preg_match('/^data-/', $key)) {
+                    continue;
+                }
+                $data[$key] = $val;
+            }
+        }
+
         foreach ($data as $name => $val) {
             if ($filter != null && is_callable($filter)) {
                 if (!call_user_func($filter, $name, $val)) {

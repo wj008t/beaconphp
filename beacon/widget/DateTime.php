@@ -18,7 +18,7 @@ class DateTime extends Hidden
     {
         $args['yee-module'] = 'datetime';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

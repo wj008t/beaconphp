@@ -18,7 +18,7 @@ class Number extends Hidden
     {
         $args['yee-module'] = 'number';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

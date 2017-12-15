@@ -23,7 +23,7 @@ class Xheditor extends Hidden
         $args['type'] = '';
         $args['value'] = '';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<textarea ' . join(' ', $attr) . '>' . htmlspecialchars($field->value) . '</textarea>';
     }
 

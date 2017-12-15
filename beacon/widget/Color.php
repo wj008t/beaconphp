@@ -2,21 +2,21 @@
 /**
  * Created by PhpStorm.
  * User: wj008
- * Date: 2017/12/15
- * Time: 4:01
+ * Date: 2017/12/16
+ * Time: 2:01
  */
 
 namespace widget;
 
 
 use beacon\Field;
-use beacon\Validate;
 
-class Date extends Hidden
+class Color extends Hidden
 {
     public function code(Field $field, $args)
     {
-        $args['yee-module'] = 'date';
+        $args['yee-module'] = 'color';
+        $args['type'] = 'hidden';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
@@ -25,10 +25,6 @@ class Date extends Hidden
     public function assign(Field $field, string $method = '')
     {
         $field->varType = 'string';
-        parent::assign($field, $method);
-        if (!Validate::test_date($field->value)) {
-            $field->value = null;
-        }
+        return parent::assign($field, $method);
     }
-
 }

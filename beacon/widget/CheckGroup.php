@@ -39,7 +39,7 @@ class CheckGroup implements BoxInterface
         $args['name'] = '';
         $args['id'] = '';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
 
         $out = [];
         if ($field->useUlList) {

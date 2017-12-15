@@ -18,7 +18,7 @@ class UpFile extends Hidden
     {
         $args['yee-module'] = 'upfile';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

@@ -17,7 +17,7 @@ class Text extends Hidden
     public function code(Field $field, $args)
     {
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

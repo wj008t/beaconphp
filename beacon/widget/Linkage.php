@@ -37,7 +37,7 @@ class Linkage implements BoxInterface
         }
         $args['yee-module'] = 'linkage';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

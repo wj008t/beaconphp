@@ -25,7 +25,7 @@ class UpImg extends Hidden
         $field->dataShowMaxheight = $field->dataShowMaxheight == null ? 120 : $field->dataShowMaxheight;
 
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

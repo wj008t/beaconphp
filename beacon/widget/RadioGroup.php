@@ -34,7 +34,7 @@ class RadioGroup extends Hidden
         $args['name'] = '';
         $args['id'] = '';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
 
         $out = [];
         if ($field->useUlList) {

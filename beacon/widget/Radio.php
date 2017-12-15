@@ -20,7 +20,7 @@ class Radio extends Hidden
         $args['type'] = 'checkbox';
         $args['value'] = 1;
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';
     }
 

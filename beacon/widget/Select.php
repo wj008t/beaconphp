@@ -26,7 +26,7 @@ class Select extends Hidden
         $args['value'] = '';
         $args['type'] = '';
         $field->explodeAttr($attr, $args);
-        $field->explodeData($attr);
+        $field->explodeData($attr, $args);
 
         $out = [];
         $out[] = '<select ' . join(' ', $attr) . '>' . "\n";

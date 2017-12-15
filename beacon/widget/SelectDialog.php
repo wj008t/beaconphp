@@ -26,6 +26,7 @@ class SelectDialog extends Hidden
         $args['data-width'] = '';
         $args['data-height'] = '';
         $args['data-btn-css'] = '';
+
         $args['readonly'] = 'readonly';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
