@@ -19,7 +19,8 @@ class UserForm extends Form
             'name' => [
                 'label' => '标题',
                 'default' => function () {
-                    return DB::getMax('@pf_advertisement', 'name');
+                    //  return DB::getMax('@pf_advertisement', 'name');
+                    return 'test';
                 }
             ],
             'integer' => [
@@ -76,7 +77,7 @@ class UserForm extends Form
                 'label' => '单选框',
                 'type' => 'radio_group',
                 'data-val' => ['r' => true],
-                'default'=>3,
+                'default' => 3,
                 'options' => [
                     ['value' => 1, 'text' => '选项1'],
                     ['value' => 2, 'text' => '选项2'],
