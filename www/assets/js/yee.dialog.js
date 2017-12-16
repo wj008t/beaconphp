@@ -20,7 +20,6 @@
             type: 2,
             title: title,
             area: [options.width + 'px', options.height + 'px'],
-            fixed: false, //不固定
             maxmin: true,
             content: url,
             end: function () {
