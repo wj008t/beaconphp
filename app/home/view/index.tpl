@@ -4,7 +4,7 @@
     <link type="text/css" rel="stylesheet" href="/assets/css/yeeui.css"/>
     <link type="text/css" rel="stylesheet" href="/assets/icofont/css/icofont.css"/>
     <script src="/assets/js/jquery-1.12.3.min.js"></script>
-    <script src="/assets/js/yee.js"></script>
+    <script src="/assets/js/yee.min.js"></script>
     <title>测试网页窗口打开</title>
 </head>
 
