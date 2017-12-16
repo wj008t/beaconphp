@@ -1,0 +1,42 @@
+Yee.config = {
+
+    paths: {
+        'jquery-json': 'jquery.json.js',
+        'jquery-cookie': 'jquery.cookie.js',
+        'jquery-ui': '../jquery-ui/jquery-ui.min.js',
+        'yee-validate': 'yee.validate-2.0.1.js',
+        'layer': '../layer/layer.js',
+        'yee-layer': 'yee.layer.js',
+        'yee-confirm': 'yee.confirm.js',
+        'yee-ajaxlink': 'yee.ajaxlink.js',
+        'yee-ajaxform': 'yee.ajaxform.js',
+        'yee-editbox': 'yee.editbox.js',
+        'yee-xheditor': 'yee.xheditor.js',
+        'yee-date': 'yee.date.js',
+        'yee-upfile': 'yee.upfile-1.1.0.js',
+        'yee-imgshower': 'yee.imgshower.js',
+        'yee-tabs': 'yee.tabs.js',
+        'yee-dynamic': 'yee.dynamic.js',
+        'yee-list': 'yee.list.js',
+        'yee-pagebar': 'yee.pagebar.js',
+        'yee-dialog': 'yee.dialog.js',
+        'yee-searchform': 'yee.searchform.js',
+        'yee-linkage': 'yee.linkage-1.2.0.js',
+        'yee-check_group': 'yee.check_group.js',
+        'yee-upimggroup': 'yee.upimggroup.js',
+    },
+    depends: {
+        'jquery-ui': ['css!../jquery-ui/custom.css'],
+        'yee-layer': ['layer'],
+        'yee-upfile': ['yee-layer'],
+        'yee-confirm': ['yee-layer'],
+        'yee-ajaxlink': ['yee-layer'],
+        'yee-ajaxform': ['yee-layer'],
+        'yee-editbox': ['yee-layer'],
+        'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js'],
+        'yee-date': ['jquery-ui', 'jquery-ui-timepicker-addon.js'],
+        'yee-list': ['yee-layer'],
+        'yee-searchform': ['yee-layer'],
+        'yee-dialog': ['jquery-ui']
+    }
+};
