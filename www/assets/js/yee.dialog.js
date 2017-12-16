@@ -15,6 +15,7 @@
         var winH = $(window).height() - 20;
         options.width = options.width > winW ? winW : options.width;
         options.height = options.height > winH ? winH : options.height;
+        var iframe = null;
         var layIndex = layer.open({
             type: 2,
             title: title,
@@ -30,10 +31,14 @@
                         callwin.jQuery(callwin).triggerHandler('closeYDialog', options);
                     }
                 }
+                if (iframe != null) {
+                    iframe.remove();
+                    iframe = null;
+                }
             },
             success: function (layero, index) {
                 var dialogWindow = null;
-                var iframe = layero.find('iframe');
+                iframe = layero.find('iframe');
                 if (iframe.length > 0) {
                     var winName = iframe[0].name;
                     dialogWindow = window[winName];
