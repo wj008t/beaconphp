@@ -42,6 +42,7 @@ Yee.config = {
         'yee-date': ['../laydate/laydate.js'],
         'yee-dialog': ['yee-layer'],
         'yee-linkage': ['json'],
+        'yee-dynamic': ['json'],
         'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js', '../xheditor/xheditor_lang/zh-cn.js']
     }
 };
