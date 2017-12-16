@@ -68,13 +68,13 @@ namespace beacon {
         public static function instance()
         {
             if (self::$instance == null) {
-                $host = Config::get('db.DB_HOST', '127.0.0.1');
-                $port = Config::get('db.DB_PORT', 3306);
-                $name = Config::get('db.DB_NAME', '');
-                $user = Config::get('db.DB_USER', '');
-                $pass = Config::get('db.DB_PWD', '');
-                $prefix = Config::get('db.DB_PREFIX', 'sl_');
-                if (Config::get('db.USE_MEDOO', false)) {
+                $host = Config::get('db.db_host', '127.0.0.1');
+                $port = Config::get('db.db_port', 3306);
+                $name = Config::get('db.db_name', '');
+                $user = Config::get('db.db_user', '');
+                $pass = Config::get('db.db_pwd', '');
+                $prefix = Config::get('db.db_prefix', 'sl_');
+                if (Config::get('db.use_medoo', false)) {
                     $medoo = new \Medoo\Medoo([
                         'database_type' => 'mysql',
                         'database_name' => $name,

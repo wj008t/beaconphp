@@ -20,7 +20,7 @@ class DB
         if (self::$engine !== null) {
             return self::$engine;
         }
-        $driver = Config::get('db.DB_DRIVER', 'Mysql');
+        $driver = Config::get('db.db_driver', 'Mysql');
         if ($driver == 'Mysql') {
             self::$engine = Mysql::instance();
             return self::$engine;
