@@ -1,10 +1,9 @@
 (function ($, Yee, layer) {
-    var dialogIndex = 0;
     window.openYeeDialog = function (url, title, options, callwin) {
         callwin = callwin || window;
         if (window.top != window) {
-            if (window.top.closeYDialog) {
-                window.top.closeYDialog(url, title, options, callwin);
+            if (window.top.openYeeDialog) {
+                window.top.openYeeDialog(url, title, options, callwin);
             }
             return;
         }
