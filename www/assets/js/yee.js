@@ -212,8 +212,7 @@
             return;
         }
         Yee.loader('yee-dialog', function () {
-            //  document.getElementsByName('html').style.display = '';
-            $('html').css('display', '');
+            $('html').show();
             Yee.rendered = true;
             Yee.update();
             if (readyCallback.length > 0) {
@@ -289,7 +288,7 @@
         return $(this).triggerHandler(event, args);
     }
     var isIE = navigator.userAgent.match(/MSIE\s*(\d+)/i);
-    $('html').css('display', 'none');
+    $('html').hide();
     isIE = isIE ? (isIE[1] < 9) : false;
     if (isIE) {
         var itv = setInterval(function () {
