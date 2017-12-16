@@ -1,4 +1,3 @@
-//Yee插件
 (function ($) {
     var readyCallback = [];
     var scriptLoader = function (url, callback) {

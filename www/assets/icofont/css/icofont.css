@@ -1,5 +1,5 @@
 /**
- * @package IcoFont by ShapeBootstrap - https://shapebootstrap.net
+ * @package IcoFont by ThemeHunt - https://themehunt.com
  * @version 1.0.0 Beta
  * @author IcoFont http://icofont.com
  * @copyright Copyright (c) 2017 IcoFont
@@ -30,6 +30,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
+
 .icofont-angry-monster:before {
 	content: "\e901";
 }
@@ -6400,6 +6401,7 @@
 
 /*Animation*/
 .icofont-rotate {
+    display: inline-block;
     -webkit-animation: icofont-rotate 2s infinite linear;
     animation: icofont-rotate 2s infinite linear
 }
