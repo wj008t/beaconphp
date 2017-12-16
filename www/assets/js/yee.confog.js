@@ -1,8 +1,10 @@
 Yee.config = {
-    version: "0.0.1",
+    version: (function () {
+        return new Date().getTime();
+    }()),
     paths: {
-        'jquery-json': (function () {
-            return (!!window.JSON) ? '' : 'jquery.json.js'
+        'json': (function () {
+            return (!!window.JSON) ? '' : 'json2.min.js'
         })(),
         'jquery-cookie': 'jquery.cookie.js',
         'jquery-ui': '../jquery-ui/jquery-ui.min.js',
@@ -24,14 +26,14 @@ Yee.config = {
         'yee-dialog': 'yee.dialog.js',
         'yee-searchform': 'yee.searchform.js',
         'yee-linkage': 'yee.linkage-1.2.0.js',
-        'yee-upimggroup': 'yee.upimggroup.js',
+        'yee-upimggroup': 'yee.upimggroup.js'
     },
     depends: {
         'jquery-ui': ['css!../jquery-ui/custom.css'],
         'yee-layer': ['layer'],
         'yee-upfile': ['yee-layer'],
         'yee-confirm': ['yee-layer'],
-        'yee-ajaxlink': ['yee-layer'],
+        'yee-ajaxlink': ['yee-layer', 'json'],
         'yee-ajaxform': ['yee-layer'],
         'yee-editbox': ['yee-layer'],
         'yee-searchform': ['yee-layer'],

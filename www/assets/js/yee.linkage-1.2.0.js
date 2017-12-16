@@ -1,12 +1,12 @@
 (function ($, Yee) {
     var tempdata = {};
 
-    $.fn._old_val_linkage = $.fn.val;
-    $.fn.val = function (val) {
-        if (val === void 0) {
-            return this._old_val_linkage();
+    var old_value = $.fn.val;
+    $.fn.val = function () {
+        if (arguments.length === 0) {
+            return old_value.apply(this, arguments);
         }
-        var rt = this._old_val_linkage(val);
+        var rt = old_value.apply(this, arguments);
         if (this.get(0).yee_modules && this.get(0).yee_modules.yee_linkage) {
             this.get(0).yee_modules.yee_linkage.update();
         }
