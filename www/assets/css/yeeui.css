@@ -50,6 +50,7 @@ a:hover{color:#E84C3D}
 .form-inp.xh-editor{height:280px}
 .form-inp.datetime{width:160px}
 .form-inp.date{width:140px}
+.form-inp.linkage{margin-right: 5px;}
 .form-inp.date,.form-inp.datetime{background-image:url(../images/sdopx.date.png);background-position:right+5px center;background-repeat:no-repeat}
 .form-inp.upfile{width:260px;border-bottom-left-radius:0;border-top-left-radius:0;margin-left:-13px}
 .form-box{margin-right:10px;vertical-align:middle}
