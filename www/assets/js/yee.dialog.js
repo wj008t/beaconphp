@@ -1,10 +1,10 @@
 (function ($, Yee, layer) {
     var dialogIndex = 0;
-    window.openTDialog = function (url, title, options, callwin) {
+    window.openYeeDialog = function (url, title, options, callwin) {
         callwin = callwin || window;
         if (window.top != window) {
-            if (window.top.openTDialog) {
-                window.top.openTDialog(url, title, options, callwin);
+            if (window.top.closeYDialog) {
+                window.top.closeYDialog(url, title, options, callwin);
             }
             return;
         }
@@ -25,7 +25,11 @@
             content: url,
             end: function () {
                 if (callwin.jQuery) {
-                    callwin.jQuery(callwin).triggerHandler('closeTDialog', options);
+                    if (options.data !== void 0) {
+                        callwin.jQuery(callwin).triggerHandler('closeYDialog', options);
+                    } else {
+                        callwin.jQuery(callwin).triggerHandler('closeYDialog', options);
+                    }
                 }
             },
             success: function (layero, index) {
@@ -36,22 +40,24 @@
                     dialogWindow = window[winName];
                 }
                 if (dialogWindow) {
-                    dialogWindow.getTDialogOptions = function () {
-                        return options;
-                    }
-                    dialogWindow.getCallWindow = function () {
-                        return callwin;
-                    }
                     dialogWindow.emit = function (event, data) {
                         if (callwin.jQuery) {
                             callwin.jQuery(callwin).triggerHandler(event, [data]);
                         }
                     }
-                    dialogWindow.closeTDialog = function () {
+                    dialogWindow.closeYeeDialog = function () {
                         layer.close(layIndex);
                     };
                     if (!(dialogWindow.document.title === null || dialogWindow.document.title === '')) {
                         layer.title(dialogWindow.document.title, index);
+                    }
+                    //准备好了
+                    if (typeof dialogWindow.readyYeeDialog == 'function') {
+                        if (options.data !== void 0) {
+                            dialogWindow.readyYeeDialog(options.data, callwin);
+                        } else {
+                            dialogWindow.readyYeeDialog(null, callwin);
+                        }
                     }
                 }
             }
@@ -66,7 +72,7 @@
                 height: 720,
                 width: 1060
             }, that.data() || {});
-            window.openTDialog(url, title, option, window);
+            window.openYeeDialog(url, title, option, window);
             ev.preventDefault();
             return false;
         });
