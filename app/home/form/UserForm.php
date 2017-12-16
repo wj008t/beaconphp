@@ -133,11 +133,41 @@ class UserForm extends Form
                 'label' => '文本编辑器',
                 'type' => 'xh_editor',
             ],
+
+            'select_dialog' => [
+                'label' => '选择对话框',
+                'type' => 'select_dialog',
+                'data-href' => 'http://www.beacon.com/',
+            ],
+
             'linkage' => [
-                'label' => '文本编辑器',
+                'label' => '关联',
                 'type' => 'linkage',
                 'names' => ['name1', 'name2', 'name3'],
-                'varType' => 'int'
+                'varType' => 'int',
+                'value' => [11, 21, 32],
+                'data-source' => [
+                    [
+                        'text' => '1选项1',
+                        'value' => '11',
+                        'childs' => [
+                            [
+                                'text' => '2选项1',
+                                'value' => '21',
+                                'childs' => [
+                                    [
+                                        'text' => '3选项1',
+                                        'value' => '31',
+                                    ],
+                                    [
+                                        'text' => '3选项2',
+                                        'value' => '32',
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             ],
 
         ];

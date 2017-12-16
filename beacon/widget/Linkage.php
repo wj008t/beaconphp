@@ -22,7 +22,7 @@ class Linkage implements BoxInterface
         if ($value === null) {
             $value = $field->default;
         }
-        if ($value != null || !is_array($value)) {
+        if ($value == null || !is_array($value)) {
             $value = [];
         }
         $args['value'] = '';

@@ -42,9 +42,15 @@
             script.onload = function () {
                 callback();
             };
+            script.onerror = function () {
+                callback();
+            };
         }
         script.src = url;
-        document.body.appendChild(script);
+        try {
+            document.body.appendChild(script);
+        } catch (e) {
+        }
     }
 
     var cssLoader = function (url) {

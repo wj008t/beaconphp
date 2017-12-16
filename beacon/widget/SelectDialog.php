@@ -17,6 +17,8 @@ class SelectDialog extends Hidden
     {
         $args['yee-module'] = 'select_dialog';
         $args['type'] = 'text';
+        $id = isset($args['id']) ? $args['id'] : $field->boxId;
+        $name = isset($args['name']) ? $args['name'] : $field->boxName;
         $btn_args = [];
         $btn_css = isset($args['data-btn-css']) ? $args['data-btn-css'] : $field->dataBtnCss;
         $btn_args['href'] = isset($args['data-href']) ? $args['data-href'] : $field->dataHref;
@@ -26,7 +28,6 @@ class SelectDialog extends Hidden
         $args['data-width'] = '';
         $args['data-height'] = '';
         $args['data-btn-css'] = '';
-
         $args['readonly'] = 'readonly';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
@@ -35,7 +36,7 @@ class SelectDialog extends Hidden
         }
         $btn = [];
         $btn[] = '<a href="javascript:;" yee-module="dialog" class="' . $btn_css . '"';
-        $btn[] = ' id="' . htmlspecialchars($attr['id']) . ':select_dialog_btn"';
+        $btn[] = ' id="' . htmlspecialchars($id) . ':select_dialog_btn"';
         foreach ($btn_args as $key => $arg) {
             if (empty($arg)) {
                 continue;
