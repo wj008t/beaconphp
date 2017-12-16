@@ -1,26 +1,6 @@
 //Yee插件
 (function ($) {
-
-    var Yee = window.Yee = $.Yee = window.Yee || {};
-    //Yee 路径
-    Yee.baseUrl = (function () {
-        var scripts = document.getElementsByTagName('script'), script = scripts[scripts.length - 1];
-        var src = null;
-        if (script.getAttribute.length !== undefined) {
-            src = script.src
-        } else {
-            src = script.getAttribute('src', -1);
-        }
-        var m = src.match(/^(.*)yee(-\d+(\.\d+)*)?(\.min)?\.js/i);
-        if (m) {
-            return m[1];
-        }
-        return '';
-    })();
-
-    Yee.config = null;
-    Yee.loadModule = {};
-
+    var readyCallback = [];
     var scriptLoader = function (url, callback) {
         //加载的是css 文件
         url = Yee.baseUrl + url;
@@ -52,7 +32,6 @@
         } catch (e) {
         }
     }
-
     var cssLoader = function (url) {
         if (Yee.config && Yee.config.version) {
             var query = Yee.parseURL(url);
@@ -64,7 +43,28 @@
         link.attr('rel', 'stylesheet');
         link.appendTo($('head'));
     }
-
+    var Yee = window.Yee = $.Yee = window.Yee || {};
+    //Yee 路径
+    Yee.baseUrl = (function () {
+        var scripts = document.getElementsByTagName('script'), script = scripts[scripts.length - 1];
+        var src = null;
+        if (script.getAttribute.length !== undefined) {
+            src = script.src
+        } else {
+            src = script.getAttribute('src', -1);
+        }
+        var m = src.match(/^(.*)yee(-\d+(\.\d+)*)?(\.min)?\.js/i);
+        if (m) {
+            return m[1];
+        }
+        return '';
+    })();
+    Yee.config = null;
+    Yee.loadModule = {};
+    Yee.extendMaps = {};
+    //是否已渲染
+    Yee.rendered = false;
+    //模块加载器
     Yee.loader = function (module, callback) {
         if (module === null || module === '') {
             return callback();
@@ -145,9 +145,6 @@
             load(module, callback);
         }
     }
-
-    Yee.extendMaps = {};
-
     // 更新渲染
     Yee.update = function (base, callback) {
 
@@ -203,7 +200,6 @@
             update();
         });
     };
-
     //扩展器
     Yee.extend = function (selector, name, module) {
         if (typeof (selector) !== 'string' || typeof (name) !== 'string') {
@@ -232,16 +228,11 @@
             return this;
         };
     };
-
-    //是否已渲染
-    Yee.rendered = false;
-    var readyCallback = [];
-
     //初始化以后
     Yee.ready = function (fn) {
         readyCallback.push(fn);
     };
-
+    //渲染
     Yee.render = function () {
         //如果已经渲染就不再渲染
         if (Yee.rendered) {
@@ -260,7 +251,7 @@
             }
         });
     };
-
+    //解析URL
     Yee.parseURL = function (url) {
         url = url || '';
         var query = url.replace(/&+$/, '');
@@ -283,7 +274,7 @@
         }
         return {path: path, prams: prams};
     };
-
+    //转换成URL
     Yee.toUrl = function (info) {
         if (info === void 0 || info == null) {
             info = {};
@@ -311,44 +302,6 @@
         }
         return path + '?' + qurey.join('&');
     };
-
-    //扩展JQ功能
-    $.fn.emit = function () {
-        var event = arguments[0] || null;
-        var args = [];
-        if (arguments.length > 1) {
-            for (var i = 1; i < arguments.length; i++) {
-                args.push(arguments[i]);
-            }
-        }
-        return $(this).triggerHandler(event, args);
-    }
-    var isIE = navigator.userAgent.match(/MSIE\s*(\d+)/i);
-    $('html').hide();
-    isIE = isIE ? (isIE[1] < 9) : false;
-    if (isIE) {
-        var itv = setInterval(function () {
-            try {
-                document.documentElement.doScroll();
-                clearInterval(itv);
-                Yee.render();
-            } catch (e) {
-            }
-        }, 1);
-    } else {
-        window.addEventListener('DOMContentLoaded', function () {
-            Yee.render();
-        }, false);
-    }
-    if (window.attachEvent) {
-        window.attachEvent('onload', Yee.render);
-    } else {
-        window.addEventListener('load', Yee.render, false);
-    }
-})(jQuery);
-
-//数值验证
-(function ($, Yee) {
     //number 数值输入
     Yee.extend(':input', 'number', function (elem) {
         var that = $(elem);
@@ -396,7 +349,39 @@
             this.value = /^-?([1-9]\d*|0)$/.test(this.value) ? this.value : '';
         });
     });
-
-})(jQuery, Yee);
+    //扩展JQ功能
+    $.fn.emit = function () {
+        var event = arguments[0] || null;
+        var args = [];
+        if (arguments.length > 1) {
+            for (var i = 1; i < arguments.length; i++) {
+                args.push(arguments[i]);
+            }
+        }
+        return $(this).triggerHandler(event, args);
+    }
+    var isIE = navigator.userAgent.match(/MSIE\s*(\d+)/i);
+    $('html').hide();
+    isIE = isIE ? (isIE[1] < 9) : false;
+    if (isIE) {
+        var itv = setInterval(function () {
+            try {
+                document.documentElement.doScroll();
+                clearInterval(itv);
+                Yee.render();
+            } catch (e) {
+            }
+        }, 1);
+    } else {
+        window.addEventListener('DOMContentLoaded', function () {
+            Yee.render();
+        }, false);
+    }
+    if (window.attachEvent) {
+        window.attachEvent('onload', Yee.render);
+    } else {
+        window.addEventListener('load', Yee.render, false);
+    }
+})(jQuery);
 
 
