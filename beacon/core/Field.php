@@ -257,9 +257,10 @@ class Field
             foreach ($args as $key => $val) {
                 $key = Utils::camelToAttr($key);
                 //排除隐藏的类型和数据绑定类型
-                if (!preg_match('/^data-/', $key)) {
+                if (!preg_match('/^data-(.*)$/', $key, $match)) {
                     continue;
                 }
+                $key = $match[1];
                 $data[$key] = $val;
             }
         }

@@ -187,6 +187,9 @@
         if (!elem.style.width) {
             elem.style.width = '100%';
         }
+        if (!elem.style.height) {
+            elem.style.height = '180px';
+        }
         $(elem).xheditor(options);
     });
 

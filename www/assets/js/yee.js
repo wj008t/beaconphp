@@ -22,8 +22,14 @@
     Yee.loadModule = {};
 
     var scriptLoader = function (url, callback) {
+
         //加载的是css 文件
         url = Yee.baseUrl + url;
+        if (Yee.config && Yee.config.version) {
+            var query = Yee.parseURL(url);
+            query.prams.v = Yee.config.version;
+            url = Yee.toUrl(query);
+        }
         var script = document.createElement("script");
         script.type = "text/javascript";
         if (script.readyState) {
@@ -43,6 +49,11 @@
     }
 
     var cssLoader = function (url) {
+        if (Yee.config && Yee.config.version) {
+            var query = Yee.parseURL(url);
+            query.prams.v = Yee.config.version;
+            url = Yee.toUrl(query);
+        }
         var link = $('<link />');
         link.attr('href', Yee.baseUrl + url);
         link.attr('rel', 'stylesheet');
@@ -51,6 +62,22 @@
 
     Yee.loader = function (module, callback) {
         if (module === null || module === '') {
+            return callback();
+        }
+        if (typeof module != 'string' && module instanceof Array) {
+            (function (modules, callback) {
+                var nextModule = function (index, cb) {
+                    if (index >= modules.length) {
+                        return cb();
+                    }
+                    Yee.loader(modules[index], function () {
+                        nextModule(index + 1, cb);
+                    });
+                };
+                nextModule(0, function () {
+                    callback();
+                });
+            })(module, callback);
             return;
         }
         //如果已经加载过模块了 就不再加载了
@@ -84,7 +111,6 @@
             next(0, function () {
                 func();
             });
-
         }
         //加载模块
         var load = function (name, func) {
@@ -92,6 +118,10 @@
                 var path = Yee.config.paths[name] || null;
                 if (path === null || path === '') {
                     if (/\.js$/i.test(name)) {
+                        return scriptLoader(name, func);
+                    }
+                    else if (/^yee-/.test(name)) {
+                        name = name.replace(/^yee-/, 'yee.') + '.js';
                         return scriptLoader(name, func);
                     }
                     console.error('Yee加载器没有找到模块:' + name);
@@ -102,7 +132,7 @@
         }
         //如果没有加载配置文件 先加载
         if (Yee.config == null) {
-            scriptLoader('yee.confog.js', function () {
+            scriptLoader('yee.confog.js?r=' + new Date().getTime(), function () {
                 load(module, callback);
             });
         } else {
@@ -313,7 +343,7 @@
 
 //数值验证
 (function ($, Yee) {
-//number 数值输入
+    //number 数值输入
     Yee.extend(':input', 'number', function (elem) {
         var that = $(elem);
         that.on('keydown', function (event) {
@@ -337,7 +367,7 @@
         });
 
     });
-//integer 整数输入
+    //integer 整数输入
     Yee.extend(':input', 'integer', function (elem) {
         var that = $(elem);
         that.on('keydown', function (event) {
@@ -359,20 +389,6 @@
         that.on('blur', function () {
             this.value = /^-?([1-9]\d*|0)$/.test(this.value) ? this.value : '';
         });
-    });
-
-    Yee.extend(':input', 'radio_group', function (elem) {
-        var that = $(elem);
-        var bindName = that.data('bind-name');
-        var boxs = $(':input[name="' + bindName + '"]');
-        boxs.on('click', function () {
-            that.val($(this).val());
-            that.triggerHandler('mousedown');
-        });
-        var box = boxs.filter(':checked').eq(0);
-        if (box.length > 0) {
-            that.val(box.val());
-        }
     });
 
 })(jQuery, Yee);

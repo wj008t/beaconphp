@@ -27,6 +27,14 @@ class UserForm extends Form
                 'label' => '整数',
                 'type' => 'integer',
             ],
+            'date' => [
+                'label' => '日期',
+                'type' => 'date',
+            ],
+            'datetime' => [
+                'label' => '时间',
+                'type' => 'datetime',
+            ],
             'number' => [
                 'label' => '数值',
                 'type' => 'number',

@@ -63,7 +63,7 @@ class Validate
         });
     }
 
-    public static function __callStatic($name, ...$args)
+    public static function __callStatic($name, $args)
     {
         if (preg_match('@^test_(\w+)$@', $name, $match)) {
             $func = self::getFunc($match[1]);

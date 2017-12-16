@@ -1,7 +1,9 @@
 Yee.config = {
-
+    version: "0.0.1",
     paths: {
-        'jquery-json': 'jquery.json.js',
+        'jquery-json': (function () {
+            return (!!window.JSON) ? '' : 'jquery.json.js'
+        })(),
         'jquery-cookie': 'jquery.cookie.js',
         'jquery-ui': '../jquery-ui/jquery-ui.min.js',
         'yee-validate': 'yee.validate-2.0.1.js',
@@ -33,10 +35,10 @@ Yee.config = {
         'yee-ajaxlink': ['yee-layer'],
         'yee-ajaxform': ['yee-layer'],
         'yee-editbox': ['yee-layer'],
-        'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js'],
-        'yee-date': ['jquery-ui', 'jquery-ui-timepicker-addon.js'],
-        'yee-list': ['yee-layer'],
         'yee-searchform': ['yee-layer'],
-        'yee-dialog': ['jquery-ui']
+        'yee-list': ['yee-layer'],
+        'yee-date': ['../laydate/laydate.js'],
+        'yee-dialog': ['jquery-ui'],
+        'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js', '../xheditor/xheditor_lang/zh-cn.js']
     }
 };
