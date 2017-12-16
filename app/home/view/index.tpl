@@ -21,5 +21,13 @@
         <div class="form-submit" style="padding-left: 260px;"><input type="submit" class="btn submit" value="提交"/></div>
     </div>
 </form>
+{literal}
+    <script>
+        $('#select_dialog\\:select_dialog_btn').data('data', {'a': 'aa', 'b': 'bb'});
+        window.readyYDialog = function (data, callwin) {
+            console.log(data, callwin);
+        };
+    </script>
+{/literal}
 </body>
 </html>
