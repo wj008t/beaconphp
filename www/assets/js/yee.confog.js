@@ -6,9 +6,9 @@ Yee.config = {
         })(),
         'jquery-cookie': 'jquery.cookie.js',
         'jquery-ui': '../jquery-ui/jquery-ui.min.js',
-        'yee-validate': 'yee.validate-2.0.1.js',
         'layer': '../layer/layer.js',
         'yee-layer': 'yee.layer.js',
+        'yee-validate': 'yee.validate-2.0.1.js',
         'yee-confirm': 'yee.confirm.js',
         'yee-ajaxlink': 'yee.ajaxlink.js',
         'yee-ajaxform': 'yee.ajaxform.js',
@@ -24,7 +24,6 @@ Yee.config = {
         'yee-dialog': 'yee.dialog.js',
         'yee-searchform': 'yee.searchform.js',
         'yee-linkage': 'yee.linkage-1.2.0.js',
-        'yee-check_group': 'yee.check_group.js',
         'yee-upimggroup': 'yee.upimggroup.js',
     },
     depends: {

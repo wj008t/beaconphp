@@ -22,7 +22,6 @@
     Yee.loadModule = {};
 
     var scriptLoader = function (url, callback) {
-
         //加载的是css 文件
         url = Yee.baseUrl + url;
         if (Yee.config && Yee.config.version) {
