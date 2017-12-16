@@ -148,20 +148,54 @@ class UserForm extends Form
                 'value' => [11, 21, 32],
                 'data-source' => [
                     [
-                        'text' => '1选项1',
-                        'value' => '11',
+                        'text' => 'a选项1',
+                        'value' => '1',
                         'childs' => [
                             [
-                                'text' => '2选项1',
+                                'text' => 'a选项21',
                                 'value' => '21',
                                 'childs' => [
                                     [
-                                        'text' => '3选项1',
+                                        'text' => 'a选项31',
                                         'value' => '31',
                                     ],
                                     [
-                                        'text' => '3选项2',
+                                        'text' => 'a选项32',
                                         'value' => '32',
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    [
+                        'text' => 'b选项2',
+                        'value' => '2',
+                        'childs' => [
+                            [
+                                'text' => 'b选项21',
+                                'value' => '21',
+                                'childs' => [
+                                    [
+                                        'text' => 'b选项31',
+                                        'value' => '31',
+                                    ],
+                                    [
+                                        'text' => 'b选项32',
+                                        'value' => '32',
+                                    ]
+                                ]
+                            ],
+                            [
+                                'text' => 'b选项22',
+                                'value' => '22',
+                                'childs' => [
+                                    [
+                                        'text' => 'b选项34',
+                                        'value' => '34',
+                                    ],
+                                    [
+                                        'text' => 'b选项35',
+                                        'value' => '35',
                                     ]
                                 ]
                             ]
