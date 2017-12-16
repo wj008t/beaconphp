@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'DB_HOST' => '127.0.0.1',
-    'DB_PORT' => '3306',
-    'DB_NAME' => 'smshop',
-    'DB_USER' => 'root',
-    'DB_PWD' => '123456',
-    'DB_PREFIX' => 'sl_',
+    'db_host' => '127.0.0.1',
+    'db_port' => '3306',
+    'db_name' => 'smshop',
+    'db_user' => 'root',
+    'db_pwd' => '123456',
+    'db_prefix' => 'sl_',
 ];
