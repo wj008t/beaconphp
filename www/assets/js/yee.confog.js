@@ -40,7 +40,7 @@ Yee.config = {
         'yee-searchform': ['yee-layer'],
         'yee-list': ['yee-layer'],
         'yee-date': ['../laydate/laydate.js'],
-        'yee-dialog': ['jquery-ui'],
+        'yee-dialog': ['yee-layer'],
         'yee-linkage': ['json'],
         'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js', '../xheditor/xheditor_lang/zh-cn.js']
     }

@@ -4,7 +4,7 @@ return [
     //字段默认值
     'field_default' => [
         'box-class' => function ($field) {
-            if ($field->type == 'radio') {
+            if ($field->type == 'check' || $field->type == 'check_group' || $field->type == 'radio_group') {
                 return $field->type;
             }
             if ($field->type == 'hidden') {

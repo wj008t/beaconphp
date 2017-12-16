@@ -44,9 +44,9 @@ class UserForm extends Form
                 'type' => 'text',
             ],
 
-            'radio' => [
+            'check' => [
                 'label' => '单选框',
-                'type' => 'radio',
+                'type' => 'check',
             ],
 
             'select1' => [
