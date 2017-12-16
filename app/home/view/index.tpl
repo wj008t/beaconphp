@@ -24,7 +24,7 @@
 {literal}
     <script>
         $('#select_dialog\\:select_dialog_btn').data('data', {'a': 'aa', 'b': 'bb'});
-        window.readyYDialog = function (data, callwin) {
+        window.readyYeeDialog = function (data, callwin) {
             console.log(data, callwin);
         };
     </script>
