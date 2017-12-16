@@ -122,8 +122,9 @@
                     else if (/^yee-/.test(name)) {
                         name = name.replace(/^yee-/, 'yee.') + '.js';
                         return scriptLoader(name, func);
+                    } else if (Yee.config.paths[name] === void 0) {
+                        console.error('Yee加载器没有找到模块:' + name);
                     }
-                    console.error('Yee加载器没有找到模块:' + name);
                     return func();
                 }
                 scriptLoader(path, func);
@@ -240,10 +241,10 @@
         if (Yee.rendered) {
             return;
         }
-        Yee.loader('yee-dialog', function () {
+        Yee.rendered = true;
+        Yee.update(function () {
+            // console.log('更新了');
             $('html').show();
-            Yee.rendered = true;
-            Yee.update();
             if (readyCallback.length > 0) {
                 for (var i = 0; i < readyCallback.length; i++) {
                     if (typeof(readyCallback[i]) == 'function') {

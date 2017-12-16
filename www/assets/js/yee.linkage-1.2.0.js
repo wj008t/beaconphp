@@ -53,9 +53,9 @@
                 box = box.nextBox;
             }
             if (empty) {
-                qem._old_val_linkage("");
+                old_value.call(qem, "");
             } else {
-                qem._old_val_linkage(JSON.stringify(vlas));
+                old_value.call(qem, JSON.stringify(vlas));
             }
         };
         //拷贝属性

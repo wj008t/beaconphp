@@ -4,7 +4,7 @@ Yee.config = {
     }()),
     paths: {
         'json': (function () {
-            return (!!window.JSON) ? '' : 'json2.min.js'
+            return (!!window.JSON) ? '' : 'json2.js'
         })(),
         'jquery-cookie': 'jquery.cookie.js',
         'jquery-ui': '../jquery-ui/jquery-ui.min.js',
@@ -40,6 +40,7 @@ Yee.config = {
         'yee-list': ['yee-layer'],
         'yee-date': ['../laydate/laydate.js'],
         'yee-dialog': ['jquery-ui'],
+        'yee-linkage': ['json'],
         'yee-xheditor': ['../xheditor/xheditor-1.2.2.min.js', '../xheditor/xheditor_lang/zh-cn.js']
     }
 };
