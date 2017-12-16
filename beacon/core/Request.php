@@ -218,6 +218,47 @@ class Request
         }
     }
 
+    public function getSession(string $name = null)
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        if (empty($name)) {
+            return $_SESSION;
+        }
+        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
+    }
+
+    public function setSession(string $name, $value)
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        $_SESSION[$name] = $value;
+    }
+
+    public function getCookie(string $name)
+    {
+        return isset($_COOKIE["name"]) ? $_COOKIE["name"] : null;
+    }
+
+    public function setCookie(string $name, $value, $options)
+    {
+        if ($options == null) {
+            return setcookie($name, $value);
+        }
+        if (is_integer($options)) {
+            return setcookie($name, $value, $options);
+        }
+        $expire = isset($options['expire']) ? intval($options['expire']) : 0;
+        $path = isset($options['path']) ? intval($options['path']) : '';
+        $domain = isset($options['domain']) ? intval($options['domain']) : '';
+        $secure = isset($options['secure']) ? intval($options['secure']) : false;
+        $httponly = isset($options['httponly ']) ? intval($options['httponly ']) : false;
+        return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+
+    }
+
     public function req(string $method, string $name, $def = null)
     {
         $method = strtolower($method);
