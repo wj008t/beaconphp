@@ -1,7 +1,17 @@
 (function ($, Yee, layer) {
-
+    //获取上传文件信息
+    var filesInfo = function (field) {
+        var items = [];
+        var files = field[0].files;
+        for (var i = 0; i < files.length; i++) {
+            var file = files[i];
+            var path = file.name.toString();
+            var extension = path.lastIndexOf('.') === -1 ? '' : path.substr(path.lastIndexOf('.') + 1, path.length).toLowerCase();
+            items.push({fileName: path, fileSize: file.size, extension: extension});
+        }
+        return items;
+    };
     Yee.Html5Upload = function (qem, options) {
-
         options = $.extend({
             multiple: false,
             extensions: '',
@@ -15,18 +25,6 @@
         if (options.multiple) {
             field.attr('multiple', 'multiple');
         }
-        //获取上传文件信息
-        var filesInfo = function (field) {
-            var items = [];
-            var files = field[0].files;
-            for (var i = 0; i < files.length; i++) {
-                var file = files[i];
-                var path = file.name.toString();
-                var extension = path.lastIndexOf('.') === -1 ? '' : path.substr(path.lastIndexOf('.') + 1, path.length).toLowerCase();
-                items.push({fileName: path, fileSize: file.size, extension: extension});
-            }
-            return items;
-        };
         //提交上传
         var upload = function () {
             var infoItems = filesInfo(field);
