@@ -10,6 +10,6 @@ require(ROOT_DIR . '/vendor/autoload.php');
 use \beacon\Route;
 
 Route::register('home');
-
+Route::register('service');
 Route::run();
 

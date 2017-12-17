@@ -52,6 +52,8 @@ abstract class Controller
             reset($error);
             $out['error'] = current($error);
             $out['error'] = $out['error'] == null ? '错误' : $out['error'];
+        } else {
+            $out['error'] = $error;
         }
         if (Request::instance()->getContentType() == 'application/json') {
             echo json_encode($out);

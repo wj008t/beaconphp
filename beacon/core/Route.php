@@ -57,7 +57,13 @@ class Route
      */
     private static function matchUrl(string $url)
     {
-        foreach (self::$routeMap as $key => $item) {
+        uasort(self::$routeMap, function ($a, $b) {
+            if (strlen($a['base']) == strlen($b['base'])) {
+                return 0;
+            }
+            return strlen($a['base']) > strlen($b['base']) ? -1 : 1;
+        });
+        foreach (self::$routeMap as $name => $item) {
             if (preg_match($item['base_match'], $url, $m)) {
                 $item['uri'] = empty($m[1]) ? '' : $m[1];
                 return $item;
