@@ -80,9 +80,6 @@
         //处理输入项
         var field = $('<input type="file" style="cursor:pointer"/>').attr('name', options.fieldName).appendTo(fileArea);
         field.css({'font-size': '460px', 'margin': '0', 'padding': '0', 'border': '0', 'width': '100px'});
-        if (options.multiple) {
-            field.attr('multiple', 'multiple');
-        }
         //上传
         field.on('change', function () {
             var infoItems = filesInfo(field);
