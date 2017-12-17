@@ -18,9 +18,6 @@
         } else {
             button = qem;
         }
-        button.on('click', function () {
-            qem.triggerHandler('upload');
-        });
         var bindBox = options.input ? $(options.input) : null;
         options.bindData = [];
         qem.on('completeUpload', function (ev, context) {
@@ -40,7 +37,14 @@
                 layer.msg(context.message);
             }
         });
-        new Yee.FrameUpload(qem, button, options);
+        if (typeof FormData == 'function') {
+            button.on('click', function () {
+                qem.triggerHandler('upload');
+            });
+            new Yee.Html5Upload(qem, options);
+        } else {
+            new Yee.FrameUpload(qem, button, options);
+        }
     }
 
     Yee.extend('input,a,img', 'upfile', UpFile);

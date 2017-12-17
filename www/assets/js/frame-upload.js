@@ -33,7 +33,7 @@
         button.off('click');
         frameIndex++;
         var frameName = 'yee_upload_frame_' + frameIndex;
-        var iframe = $('<iframe name="' + frameName + '" src="javascript:false;"  width="500"  height="200" style="position:absolute; top:550px; left:580px" id="' + frameName + '" ></iframe>').appendTo(document.body);
+        var iframe = $('<iframe name="' + frameName + '" src="javascript:false;"  width="500"  height="200" style="position:absolute; top:-550px; left:-580px" id="' + frameName + '" ></iframe>').appendTo(document.body);
         iframe.load(function () {
             form.trigger('reset');
             var jsonText = this.contentWindow.document.body.innerText;
@@ -49,7 +49,7 @@
         });
         var form = $('<form action="' + options.url + '" target="' + frameName + '" method="post" enctype="multipart/form-data"></form>').appendTo(document.body);
         var fileLayout = $('<div style="overflow:hidden;position:absolute;"></div>').hide().appendTo(form);
-        fileLayout.css({'opacity': 1, 'top': '0', 'left': '0', 'position': 'absolute', 'background-color': '#06F', 'zIndex': 1000000, 'cursor': 'pointer'});
+        fileLayout.css({'opacity': 0, 'top': '-300px', 'left': '-300px', 'position': 'absolute', 'background-color': '#06F', 'zIndex': 1000000, 'cursor': 'pointer'});
         button.on('mouseenter', function () {
             if (qem.is(':disabled')) {
                 return;
