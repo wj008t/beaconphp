@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<form action="index.php/index/save" method="post">
+<form action="/index/save" method="post">
 
     {foreach from=$form->getViewFields() item=field}
         <div class="form-group">
