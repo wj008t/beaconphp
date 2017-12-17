@@ -101,4 +101,15 @@ class Utils
         return is_string($str) && !empty($str) && preg_match('@^[\[\{].*[\]\}]$@', $str);
     }
 
+    public static function makeDir($filedir, $mode = 0777)
+    {
+        if (!is_dir($filedir)) {
+            $pfiledir = dirname($filedir);
+            self::makeDir($pfiledir);
+            @mkdir($filedir, $mode);
+            @fclose(fopen($filedir . DIRECTORY_SEPARATOR . 'index.htm', 'w'));
+        }
+    }
+
+
 }
