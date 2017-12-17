@@ -11,22 +11,12 @@ namespace beacon;
 
 class Uploader
 {
-
-    private $fileField; //文件域名
-    private $file; //文件上传对象
-    private $img;
-    private $upType;
     private $config; //配置信息
-    private $oriName; //原始文件名
-    private $fileName; //新文件名
-    private $fullName; //完整文件名,即从当前配置目录开始的URL
-    private $filePath; //完整文件名,即从当前配置目录开始的URL
-    private $fileSize; //文件大小
-    private $fileType; //文件类型
-    private $isImage;  //是否图片
-    private $stateInfo; //上传状态信息,
+    private $fieldName; //文件域名
+    private $files = [];     //文件上传对象数组
+    private $state; //上传状态信息,
     private $stateMap = array(//上传状态映射表，国际化用户需考虑此处数据的国际化
-        "SUCCESS", //上传成功标记，在UEditor中内不可改变，否则flash判断会出错
+        "SUCCESS",
         "文件大小超出 upload_max_filesize 限制",
         "文件大小超出 MAX_FILE_SIZE 限制",
         "文件未被完整上传",
@@ -54,245 +44,147 @@ class Uploader
      */
     public function __construct($fileField, $config)
     {
-        $this->fileField = $fileField;
+        $this->fieldName = $fileField;
         $this->config = $config;
     }
 
-    /**
-     * 上传文件的主处理方法
-     * @return mixed
-     */
-    public function upFile()
+    private function upFile()
     {
-        $this->upType = 'upload';
-        $html5upfile = false;
+        $html5 = false;
         if (isset($_SERVER['HTTP_CONTENT_DISPOSITION']) && preg_match('/attachment;\s+name="(.+?)";\s+filename="(.+?)"/i', $_SERVER['HTTP_CONTENT_DISPOSITION'], $info)) {
+            $html5 = true;
             $tmp_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
-            $tempPath = $tmp_dir . DS . microtime();
+            $tempPath = $tmp_dir . DIRECTORY_SEPARATOR . microtime();
             file_put_contents($tempPath, file_get_contents("php://input"));
             $localName = urldecode($info[2]);
-            $html5upfile = true;
-            $file = $this->file = array(
+            $this->files[0] = [
                 'error' => 0,
                 'tmp_name' => $tempPath,
                 'name' => $localName,
                 'size' => filesize($tempPath),
                 'type' => 'application/octet-stream'
-            );
+            ];
         } else {
-            if (!isset($_FILES[$this->fileField])) {
-                $this->stateInfo = $this->getStateInfo("ERROR_FILE_NOT_FOUND");
+            if (!isset($_FILES[$this->fieldName])) {
+                $this->state = $this->getStateText("ERROR_FILE_NOT_FOUND");
                 return false;
             }
-            $file = $this->file = $_FILES[$this->fileField];
+            $files = [];
+            foreach ($_FILES[$this->fieldName] as $key => $value) {
+                if (is_array($value)) {
+                    foreach ($value as $idx => $val) {
+                        if (!isset($files[$idx])) {
+                            $files[$idx] = [];
+                        }
+                        $files[$idx][$key] = $val;
+                    }
+                } else {
+                    if (!isset($files[0])) {
+                        $files[0] = [];
+                    }
+                    $files[0][$key] = $value;
+                }
+            }
+            $this->files = $files;
         }
-
-        if (!$file) {
-            $this->stateInfo = $this->getStateInfo("ERROR_FILE_NOT_FOUND");
-            return false;
-        }
-        if ($this->file['error']) {
-            $this->stateInfo = $this->getStateInfo($file['error']);
-            return false;
-        } else if (!file_exists($file['tmp_name'])) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TMP_FILE_NOT_FOUND");
-            return false;
-        } else if (!$html5upfile && !is_uploaded_file($file['tmp_name'])) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TMP_FILE");
-            return false;
-        }
-
-        $this->oriName = $file['name'];
-        $this->fileSize = $file['size'];
-        $this->fileType = $this->getFileExt();
-        //检查文件大小是否超出限制
-        if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
+        //没有任何可上传的文件
+        if (count($this->files) == 0) {
+            $this->state = $this->getStateText("ERROR_FILE_NOT_FOUND");
             return false;
         }
-        //检查是否不允许的文件格式
-        if (!$this->checkType()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TYPE_NOT_ALLOWED");
-            return false;
+        //检查错误
+        foreach ($this->files as &$file) {
+            if ($file['error']) {
+                $this->state = $this->getStateText($file['error']);
+                return false;
+            } else if (!file_exists($file['tmp_name'])) {
+                $this->state = $this->getStateText("ERROR_TMP_FILE_NOT_FOUND");
+                return false;
+            } else if (!$html5 && !is_uploaded_file($file['tmp_name'])) {
+                $this->state = $this->getStateText("ERROR_TMP_FILE");
+                return false;
+            }
+            $file['ext'] = strtolower(strrchr($file['name'], '.'));
+            if (!$this->checkSize($file)) {
+                $this->state = $this->getStateText("ERROR_SIZE_EXCEED");
+                return false;
+            }
+            if (!$this->checkExt($file)) {
+                $this->state = $this->getStateText("ERROR_TYPE_NOT_ALLOWED");
+                return false;
+            }
         }
-        //创建目录失败
         return true;
     }
 
-    public function getBase64(&$data)
-    {
-        if ($this->upType == 'upload') {
-            $data = base64_encode(file_get_contents($this->file["tmp_name"]));
-            $this->stateInfo = $this->stateMap[0];
-            return true;
-        }
-        if ($this->upType == 'base64' || $this->upType == 'remote') {
-            $data = base64_encode($this->img);
-            $this->stateInfo = $this->stateMap[0];
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * 保存上传文件
-     */
     public function saveFile()
     {
-        $this->isImage = preg_match('/jpg|jpeg|gif|png|bmp/i', $this->fileType) ? true : false;
-        $this->fullName = $this->getFullName();
-        $this->filePath = $this->getFilePath();
-        $this->fileName = $this->getFileName();
-        $dirname = dirname($this->filePath);
-        Utils::makeDir($dirname, 0777);
-        if (!file_exists($dirname) && !mkdir($dirname, 0777, true)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_CREATE_DIR");
-            return false;
-        } else if (!is_writeable($dirname)) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DIR_NOT_WRITEABLE");
-            return false;
+        if (!$this->upFile()) {
+            return $this->state;
         }
-        if ($this->upType == 'upload') {
-            //移动文件
-            $rm = @rename($this->file['tmp_name'], $this->filePath);
+        $saved = [];
+        foreach ($this->files as &$file) {
+            $file['isImage'] = preg_match('/jpg|jpeg|gif|png|bmp/i', $file['ext']) ? true : false;
+            $file['url'] = $this->getUrl($file);
+            $file['filePath'] = Utils::path($_SERVER['DOCUMENT_ROOT'], $file['url']);
+            $file['fileName'] = substr(strrchr($file['url'], '/'), 1);
+            $dirName = dirname($file['filePath']);
+            Utils::makeDir($dirName, 0777);
+            if (!file_exists($dirName) && !mkdir($dirName, 0777, true)) {
+                $this->state = $this->getStateText("ERROR_CREATE_DIR");
+                foreach ($saved as $item) {
+                    if (file_exists($item)) {
+                        @unlink($item);
+                    }
+                }
+                return false;
+            } else if (!is_writeable($dirName)) {
+                $this->state = $this->getStateText("ERROR_DIR_NOT_WRITEABLE");
+                foreach ($saved as $item) {
+                    if (file_exists($item)) {
+                        @unlink($item);
+                    }
+                }
+                return false;
+            }
+            $rm = @rename($file['tmp_name'], $file['filePath']);
             if ($rm) {
-                $this->stateInfo = $this->stateMap[0];
-                return true;
+                $this->state = $this->stateMap[0];
+                $saved[] = $file['filePath'];
+                continue;
             }
-            if (!(move_uploaded_file($this->file["tmp_name"], $this->filePath) && file_exists($this->filePath))) { //移动失败
-                $this->stateInfo = $this->getStateInfo("ERROR_FILE_MOVE");
+            if (!(move_uploaded_file($file["tmp_name"], $file['filePath']) && file_exists($file['filePath']))) {
+                $this->state = $this->getStateText("ERROR_FILE_MOVE");
+                foreach ($saved as $item) {
+                    if (file_exists($item)) {
+                        @unlink($item);
+                    }
+                }
                 return false;
             } else { //移动成功
-                $this->stateInfo = $this->stateMap[0];
-                return true;
+                $this->state = $this->stateMap[0];
+                $saved[] = $file['filePath'];
+                continue;
             }
         }
-        if ($this->upType == 'base64' || $this->upType == 'remote') {
-            //移动文件
-            if (!(file_put_contents($this->filePath, $this->img) && file_exists($this->filePath))) { //移动失败
-                $this->stateInfo = $this->getStateInfo("ERROR_WRITE_CONTENT");
-                return false;
-            } else { //移动成功
-                $this->stateInfo = $this->stateMap[0];
-                return true;
-            }
-        }
-        return false;
+        return $this->state;
     }
 
-    /**
-     * 处理base64编码的图片上传
-     * @return mixed
-     */
-    public function upBase64()
+    public function getState()
     {
-        $this->upType = 'base64';
-        if (!isset($_POST[$this->fileField])) {
-            $this->stateInfo = $this->getStateInfo("ERROR_FILE_NOT_FOUND");
-            return false;
-        }
-        $base64Data = $_POST[$this->fileField];
-        $this->img = $img = base64_decode($base64Data);
-        $this->oriName = $this->config['oriName'];
-        $this->fileSize = strlen($img);
-        $this->fileType = $this->getFileExt();
-        //检查文件大小是否超出限制
-        if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
-            return false;
-        }
-        //检查是否不允许的文件格式
-        if (!$this->checkType()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TYPE_NOT_ALLOWED");
-            return false;
-        }
-        return true;
+        return $this->state;
     }
 
-    /**
-     * 拉取远程图片
-     * @return mixed
-     */
-    public function saveRemote()
-    {
-        $this->upType = 'remote';
-        $imgUrl = htmlspecialchars($this->fileField);
-        $imgUrl = str_replace("&amp;", "&", $imgUrl);
-        //http开头验证
-        if (strpos($imgUrl, "http") !== 0) {
-            $this->stateInfo = $this->getStateInfo("ERROR_HTTP_LINK");
-            return false;
-        }
-        //获取请求头并检测死链
-        $heads = get_headers($imgUrl);
-        if (!(stristr($heads[0], "200") && stristr($heads[0], "OK"))) {
-            $this->stateInfo = $this->getStateInfo("ERROR_DEAD_LINK");
-            return false;
-        }
-        //格式验证(扩展名验证和Content-Type验证)
-        $fileType = strtolower(strrchr($imgUrl, '.'));
-        if (!in_array($fileType, $this->config['allowFiles']) || stristr($heads['Content-Type'], "image")) {
-            $this->stateInfo = $this->getStateInfo("ERROR_HTTP_CONTENTTYPE");
-            return false;
-        }
-
-        //打开输出缓冲区并获取远程图片
-        ob_start();
-        $context = stream_context_create(
-            array('http' => array(
-                'follow_location' => false // don't follow redirects
-            ))
-        );
-        readfile($imgUrl, false, $context);
-        $this->img = $img = ob_get_contents();
-        ob_end_clean();
-        preg_match("/[\/]([^\/]*)[\.]?[^\.\/]*$/", $imgUrl, $m);
-        $this->oriName = $m ? $m[1] : "";
-        $this->fileSize = strlen($img);
-        $this->fileType = $this->getFileExt();
-        //检查文件大小是否超出限制
-        if (!$this->checkSize()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_SIZE_EXCEED");
-            return false;
-        }
-        //检查是否不允许的文件格式
-        if (!$this->checkType()) {
-            $this->stateInfo = $this->getStateInfo("ERROR_TYPE_NOT_ALLOWED");
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 上传错误检查
-     * @param $errCode
-     * @return string
-     */
-    private function getStateInfo($errCode)
+    private function getStateText($errCode)
     {
         return !$this->stateMap[$errCode] ? $this->stateMap["ERROR_UNKNOWN"] : $this->stateMap[$errCode];
     }
 
-    /**
-     * 获取文件扩展名
-     * @return string
-     */
-    private function getFileExt()
+    private function getUrl(&$file)
     {
-        return strtolower(strrchr($this->oriName, '.'));
-    }
-
-    /**
-     * 重命名文件
-     * @return string
-     */
-    private function getFullName()
-    {
-        //替换日期事件
         $t = time();
         $d = explode('-', date("Y-y-m-d-H-i-s"));
-        if ($this->isImage) {
+        if ($file['isImage']) {
             $format = $this->config["imagePathFormat"];
         } else {
             $format = $this->config["filePathFormat"];
@@ -306,89 +198,40 @@ class Uploader
         $format = str_replace("{ss}", $d[6], $format);
         $format = str_replace("{time}", $t, $format);
         if (stripos($format, '{md5}') !== false) {
-            $md5 = md5_file($this->file['tmp_name']);
+            $md5 = md5_file($file['tmp_name']);
             $format = str_replace("{md5}", $md5, $format);
         }
-        //过滤文件名的非法自负,并替换文件名
-        $oriName = substr($this->oriName, 0, strrpos($this->oriName, '.'));
+        $oriName = substr($file['name'], 0, strrpos($file['name'], '.'));
         $oriName = preg_replace("/[\|\?\"\<\>\/\*\\\\]+/", '', $oriName);
         $format = str_replace("{filename}", $oriName, $format);
-        //替换随机字符串
         $randNum = rand(1, 1000000) . rand(1, 1000000);
         if (preg_match("/\{rand\:([\d]*)\}/i", $format, $matches)) {
             $format = preg_replace("/\{rand\:[\d]*\}/i", substr($randNum, 0, $matches[1]), $format);
         }
-        return $format . $this->fileType;
+        return $format . $file['ext'];
     }
 
-    /**
-     * 获取文件名
-     * @return string
-     */
-    private function getFileName()
-    {
-        return substr($this->filePath, strrpos($this->filePath, '/') + 1);
-    }
-
-    /**
-     * 获取文件完整路径
-     * @return string
-     */
-    private function getFilePath()
-    {
-        $fullname = $this->fullName;
-        $rootPath = $_SERVER['DOCUMENT_ROOT'];
-        if (substr($fullname, 0, 1) != '/') {
-            $fullname = '/' . $fullname;
-        }
-        return $rootPath . $fullname;
-    }
-
-    /**
-     * 文件类型检测
-     * @return bool
-     */
-    private function checkType()
+    private function checkExt($file)
     {
         if (count($this->config["uploadAllowFiles"]) == 0) {
             return true;
         }
-        return in_array($this->getFileExt(), $this->config["uploadAllowFiles"]);
+        return in_array($file['ext'], $this->config["uploadAllowFiles"]);
     }
 
-    /**
-     * 文件大小检测
-     * @return bool
-     */
-    private function checkSize()
+    private function checkSize($file)
     {
-        return $this->fileSize <= ($this->config["uploadMaxSize"]);
+        return $file['size'] <= ($this->config["uploadMaxSize"]);
     }
 
-    /**
-     * 获取当前上传成功文件的各项信息
-     * @return array
-     */
     public function getFileInfo()
     {
-        return array(
-            "state" => $this->stateInfo,
-            "url" => $this->fullName,
-            "title" => $this->fileName,
-            "original" => $this->oriName,
-            "type" => $this->fileType,
-            "size" => $this->fileSize,
-            "isimg" => $this->isImage,
-        );
+        $items = [];
+        foreach ($this->files as $file) {
+            $items[] = $file;
+        }
+        return $items;
     }
 
-    /**
-     * 获取当前上传成功文件的各项信息
-     * @return array
-     */
-    public function getState()
-    {
-        return $this->stateInfo;
-    }
 
 }

@@ -122,6 +122,7 @@ class UserForm extends Form
             'upfile' => [
                 'label' => '上传框',
                 'type' => 'up_file',
+                'data-multiple' => 1,
             ],
 
             'upimg' => [
@@ -132,7 +133,7 @@ class UserForm extends Form
             'xheditor' => [
                 'label' => '文本编辑器',
                 'type' => 'xh_editor',
-                'box-style'=>'height:250px',
+                'box-style' => 'height:250px',
             ],
 
             'select_dialog' => [

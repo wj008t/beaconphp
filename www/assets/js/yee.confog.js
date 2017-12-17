@@ -1,6 +1,6 @@
 Yee.config = {
     version: (function () {
-       // return '1.0.1';
+        // return '1.0.1';
         return new Date().getTime();
     }()),
     paths: {
@@ -18,7 +18,7 @@ Yee.config = {
         'yee-editbox': 'yee.editbox.js',
         'yee-xheditor': 'yee.xheditor.js',
         'yee-date': 'yee.date.js',
-        'yee-upfile': 'yee.upfile-1.1.0.js',
+        'yee-upfile': 'yee.upfile.js',
         'yee-imgshower': 'yee.imgshower.js',
         'yee-tabs': 'yee.tabs.js',
         'yee-dynamic': 'yee.dynamic.js',
@@ -32,7 +32,7 @@ Yee.config = {
     depends: {
         'jquery-ui': ['css!../jquery-ui/custom.css'],
         'yee-layer': ['layer'],
-        'yee-upfile': ['yee-layer'],
+        'yee-upfile': ['yee-layer', 'html5-upload.js', 'frame-upload.js'],
         'yee-confirm': ['yee-layer'],
         'yee-ajaxlink': ['yee-layer', 'json'],
         'yee-ajaxform': ['yee-layer'],

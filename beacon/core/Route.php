@@ -385,7 +385,7 @@ class Route
                         $example->initialize();
                     }
                     $out = $method->invokeArgs($example, $args);
-                    if (Request::instance()->getContentType() == 'application/json') {
+                    if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
                         echo json_encode($out);
                         exit;
                     } else {

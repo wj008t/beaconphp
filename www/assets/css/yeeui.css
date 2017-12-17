@@ -52,7 +52,7 @@ a:hover{color:#E84C3D}
 .form-inp.date{width:140px}
 .form-inp.linkage{margin-right: 5px;}
 .form-inp.date,.form-inp.datetime{background-image:url(../images/sdopx.date.png);background-position:right+5px center;background-repeat:no-repeat}
-.form-inp.upfile{width:260px;border-bottom-left-radius:0;border-top-left-radius:0;margin-left:-13px}
+.form-inp.up_file,.form-inp.up_img{width:260px; vertical-align:middle;border-bottom-left-radius:0;border-top-left-radius:0;margin-left:-13px}
 .form-box{margin-right:10px;vertical-align:middle}
 .form-line{background:#f2f2f2;line-height:30px;padding:0 5px}
 .form-inp-group label{display:inline-block;margin-right:20px;line-height:36px}
@@ -103,7 +103,7 @@ button.search-btn,input.search-btn{vertical-align:middle;width:30px;height:30px;
 .yeeui-pagebar .pagebar b{border:1px solid #e1e1e1;background:0 0;background-color:#e1e1e1;color:#FFF}
 .yeeui-pagebar .pagebar_info{float:right;line-height:22px}
 .ifont{font-family:IcoFont!important}
-.yee-upfile-btn{border:1px solid #e1e1e1;height:28px;line-height:28px;font-size:14px;padding:0 10px;border-radius:3px;margin-right:10px;cursor:pointer;display:inline-block}
+.yee-upfile-btn{border:1px solid #e1e1e1; vertical-align:middle;height:28px;line-height:28px;font-size:14px;padding:0 10px;border-radius:3px;margin-right:10px;cursor:pointer;display:inline-block}
 .yee-upfile-btn:hover{background:#f1f1f1}
 .yee-upfile-btn:before{color:#a0a0a0;font-family:IcoFont!important;content:'\f0ff';width:15px;display:inline-block;margin-right:3px;margin-left:-5px}
 .tgl{display:none}

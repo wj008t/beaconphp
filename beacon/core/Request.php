@@ -377,7 +377,7 @@ class Request
                 'php' => 'text/html',
                 'css' => 'text/css',
                 'js' => 'application/javascript',
-                'json' => 'application/json',
+                'json' => 'text/json',
                 'xml' => 'application/xml',
                 'swf' => 'application/x-shockwave-flash',
                 'flv' => 'video/x-flv',
