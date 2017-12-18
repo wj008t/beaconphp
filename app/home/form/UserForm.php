@@ -128,6 +128,7 @@ class UserForm extends Form
             'upimg' => [
                 'label' => '上传图片',
                 'type' => 'up_img',
+                'data-val' => ['r' => true]
             ],
 
             'xheditor' => [

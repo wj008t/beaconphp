@@ -16,7 +16,7 @@ class UpImg extends Hidden
 
     public function code(Field $field, $args)
     {
-        $args['yee-module'] = 'upfile imgshower';
+        $args['yee-module'] = 'upimage';
 
         $field->dataShowType = $field->dataShowType == null ? 1 : $field->dataShowType;
         $field->dataHideInput = $field->dataHideInput == null ? 0 : $field->dataHideInput;

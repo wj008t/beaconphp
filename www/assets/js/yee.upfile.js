@@ -47,6 +47,6 @@
         }
     }
 
-    Yee.extend('input,a,img', 'upfile', UpFile);
+    Yee.extend('input,a', 'upfile', UpFile);
 
 })(jQuery, Yee, layer);

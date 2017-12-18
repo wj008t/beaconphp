@@ -19,7 +19,7 @@ Yee.config = {
         'yee-xheditor': 'yee.xheditor.js',
         'yee-date': 'yee.date.js',
         'yee-upfile': 'yee.upfile.js',
-        'yee-imgshower': 'yee.imgshower.js',
+        'yee-upimage': 'yee.upimage.js',
         'yee-tabs': 'yee.tabs.js',
         'yee-dynamic': 'yee.dynamic.js',
         'yee-list': 'yee.list.js',
@@ -39,7 +39,12 @@ Yee.config = {
             }
             return ['yee-layer', 'frame-upload.js'];
         }()),
-        
+        'yee-upimage': (function () {
+            if (typeof FormData == 'function') {
+                return ['yee-layer', 'html5-upload.js'];
+            }
+            return ['yee-layer', 'frame-upload.js'];
+        }()),
         'yee-confirm': ['yee-layer'],
         'yee-ajaxlink': ['yee-layer', 'json'],
         'yee-ajaxform': ['yee-layer'],
