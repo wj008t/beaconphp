@@ -58,11 +58,13 @@
                 }
             }, false);
             var fd = new FormData();
-            if (options.bindData) {
-                for (var key in options.bindData) {
+
+            for (var key in options.bindData) {
+                if (options.bindData[key] !== null) {
                     fd.append(key, options.bindData[key]);
                 }
             }
+
             if (options.multiple) {
                 for (var i = 0; i < field[0].files.length; i++) {
                     fd.append(options.fieldName + '[]', field[0].files[i]);

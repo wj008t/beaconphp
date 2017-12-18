@@ -17,13 +17,8 @@ class UpImg extends Hidden
     public function code(Field $field, $args)
     {
         $args['yee-module'] = 'upimage';
-
-        $field->dataShowType = $field->dataShowType == null ? 1 : $field->dataShowType;
-        $field->dataHideInput = $field->dataHideInput == null ? 0 : $field->dataHideInput;
-        $field->dataBtnText = $field->dataBtnText == null ? '选择图片' : $field->dataBtnText;
-        $field->dataShowMaxwidth = $field->dataShowMaxwidth == null ? 120 : $field->dataShowMaxwidth;
-        $field->dataShowMaxheight = $field->dataShowMaxheight == null ? 120 : $field->dataShowMaxheight;
-
+        $field->dataBtnWidth = $field->dataBtnWidth == null ? 150 : $field->dataBtnWidth;
+        $field->dataBtnHeight = $field->dataBtnHeight == null ? 100 : $field->dataBtnHeight;
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';

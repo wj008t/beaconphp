@@ -25,17 +25,18 @@
     function UpImage(element, options) {
 
         options = $.extend({
-            catSize: '',
+            catSizes: '',
             catType: 0,
-            showSize: '',
-            imgWidth: 300,
-            imgHeight: 200,
             btnWidth: 150,
             btnHeight: 100,
             strictSize: 0,
             button: null
         }, options || {});
+        var bindData = {};
 
+        bindData.catSizes = options.catSizes || null;
+        bindData.catType = options.catType || null;
+        bindData.strictSize = options.strictSize || null;
 
         var qem = $(element).hide();
         qem.parent().wrapInner('<div style="display: inline-block; vertical-align: bottom;line-height: 50px;"></div>');

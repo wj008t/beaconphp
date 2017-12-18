@@ -74,7 +74,9 @@
         }).appendTo(fileLayout);
         $('<input type="hidden" name="UPLOAD_IDENTIFIER"/>').appendTo(fileArea);
         for (var key in options.bindData) {
-            $('<input type="hidden"/>').attr('name', key).val(options.bindData[key]).appendTo(fileArea);
+            if (options.bindData[key] !== null) {
+                $('<input type="hidden"/>').attr('name', key).val(options.bindData[key]).appendTo(fileArea);
+            }
         }
         //处理输入项
         var field = $('<input type="file" style="cursor:pointer"/>').attr('name', options.fieldName).appendTo(fileArea);
