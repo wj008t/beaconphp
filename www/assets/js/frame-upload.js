@@ -48,7 +48,7 @@
             }
         });
         var form = $('<form action="' + options.url + '" target="' + frameName + '" method="post" enctype="multipart/form-data"></form>').appendTo(document.body);
-        var fileLayout = $('<div style="overflow:hidden;position:absolute;"></div>').hide().appendTo(form);
+        var fileLayout = $('<div style="overflow: hidden;position:absolute;"></div>').hide().appendTo(form);
         fileLayout.css({'opacity': 0, 'top': '-300px', 'left': '-300px', 'position': 'absolute', 'background-color': '#06F', 'zIndex': 1000000, 'cursor': 'pointer'});
         button.on('mouseenter', function () {
             if (qem.is(':disabled')) {
@@ -56,10 +56,9 @@
             }
             var left = button.offset().left;
             var top = button.offset().top;
-            if ($.browser.msie && ($.browser.version == "6.0") && !$.support.style) {
+            if ($.browser.msie && ($.browser.version == "6.0" || $.browser.version == "7.0") && !$.support.style) {
                 left = left + document.body.scrollLeft;
                 top = top + document.body.scrollTop;
-
             }
             var width = button.outerWidth();
             var height = button.outerHeight();
@@ -79,7 +78,7 @@
         }
         //处理输入项
         var field = $('<input type="file" style="cursor:pointer"/>').attr('name', options.fieldName).appendTo(fileArea);
-        field.css({'font-size': '460px', 'margin': '0', 'padding': '0', 'border': '0', 'width': '100px'});
+        field.css({'font-size': '460px', 'margin': '0', 'padding': '0', 'border': '0', 'width': '1000px'});
         //上传
         field.on('change', function () {
             var infoItems = filesInfo(field);

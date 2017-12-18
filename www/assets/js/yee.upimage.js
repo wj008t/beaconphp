@@ -72,7 +72,7 @@
             button.removeClass('error');
         });
         button.on('mouseenter', function () {
-            if (type(qem.setDefault) == 'function') {
+            if (typeof(qem.setDefault) == 'function') {
                 qem.setDefault();
             }
         });
