@@ -46,9 +46,10 @@
         options.button = button;
         var table = $('<table  border="0" cellspacing="0" cellpadding="0"><tr><td style="padding:0px; vertical-align:middle; text-align:center; line-height:0px;"></td></tr></table>').appendTo(button);
         table.width(options.btnWidth).height(options.btnHeight);
-        var delBtn = $('<a href="javascript:void(0);"></a>').addClass('up_image_delpic').appendTo(btnLayout);
+        var delBtn = $('<a href="javascript:void(0);"></a>').addClass('up_image_delpic').hide().appendTo(btnLayout);
         delBtn.click(function () {
             table.hide();
+            delBtn.hide();
             qem.val('');
         });
         var image = $('<img/ title="请选择上传图片">').appendTo(table.find('td'));
