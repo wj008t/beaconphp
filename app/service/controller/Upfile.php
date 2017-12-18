@@ -25,6 +25,12 @@ class Upfile extends Controller
             $_SERVER['DOCUMENT_ROOT'] = Utils::path(ROOT_DIR, 'www');
         }
         $config = Config::get('upload.*');
+        $catSizes = $request->param('catSizes:s', '');
+        $catType = $request->param('catType:i', 0);
+        $strictSize = $request->param('strictSize:i', 0);
+        \ChromePhp::log($catSizes, $catType, $strictSize);
+
+
         try {
             $upload = new Uploader('filedata', $config);
             $upload->saveFile();

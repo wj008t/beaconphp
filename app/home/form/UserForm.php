@@ -128,7 +128,10 @@ class UserForm extends Form
             'upimg' => [
                 'label' => '上传图片',
                 'type' => 'up_img',
-                'data-val' => ['r' => true]
+                'data-val' => ['r' => true],
+                'data-cat-sizes' => '100x200,300x400',
+                'data-cat-type' => 2,
+                'data-strict-size' => 3
             ],
 
             'xheditor' => [

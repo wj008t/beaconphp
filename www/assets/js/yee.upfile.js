@@ -19,7 +19,7 @@
             button = qem;
         }
         var bindBox = options.input ? $(options.input) : null;
-        options.bindData = [];
+        options.bindData = options.bindData || {};
         qem.on('completeUpload', function (ev, context) {
             if (!context.status) {
                 if (context.error !== '') {

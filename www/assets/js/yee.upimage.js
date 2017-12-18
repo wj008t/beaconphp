@@ -37,7 +37,7 @@
         bindData.catSizes = options.catSizes || null;
         bindData.catType = options.catType || null;
         bindData.strictSize = options.strictSize || null;
-
+        options.bindData = bindData;
         var qem = $(element).hide();
         qem.parent().wrapInner('<div style="display: inline-block; vertical-align: bottom;line-height: 50px;"></div>');
         var boxLayout = qem.parent();
@@ -65,7 +65,6 @@
             delBtn.show();
         }
         var bindBox = options.input ? $(options.input) : null;
-        options.bindData = [];
         qem.on('displayError', function (ev, data) {
             button.addClass('error');
         });
