@@ -21,7 +21,9 @@ class UserForm extends Form
                 'default' => function () {
                     //  return DB::getMax('@pf_advertisement', 'name');
                     return 'test';
-                }
+                },
+                'data-val' => ['r' => true],
+                'data-val-msg' => ['r' => '标题不能为空'],
             ],
             'integer' => [
                 'label' => '整数',

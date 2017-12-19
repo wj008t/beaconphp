@@ -1,51 +1,48 @@
 //表单验证器
-(function ($, Yee) {
+(function ($, Yee, layer) {
 
-    var NotPlaceholderSupport = !('placeholder' in document.createElement('input'));
-    if (NotPlaceholderSupport) {
-        $.fn.yee_oldPlaceholderSupportVal = $.fn.val;
+    //是否支持placeholder
+    var SUPPORT_PLACEHOLDER = ('placeholder' in document.createElement('input'));
+    if (!SUPPORT_PLACEHOLDER) {
+        var jqVal = $.fn.val;
         $.fn.val = function (value) {
-            var that = this;
-            if (value === undefined) {
-                if (that[0] && (that.is(':text[placeholder],textarea[placeholder]'))) {
-                    var holder = that.attr('placeholder');
-                    if (holder && that.yee_oldPlaceholderSupportVal() == holder) {
+            if (value === void 0) {
+                if (this.length > 0 && (this.is(':text[placeholder],textarea[placeholder]'))) {
+                    var holder = this.attr('placeholder');
+                    if (holder && jqVal.call(this) == holder) {
                         return '';
                     }
                 }
-                return that.yee_oldPlaceholderSupportVal();
-            }//读
-            return that.yee_oldPlaceholderSupportVal(value);
+                return jqVal.call(this);
+            }
+            return jqVal.call(this, value);
         };
+        Yee.extend(':text[placeholder],textarea[placeholder]', 'placeholder', function (element) {
+            var that = $(element);
+            var holder = that.attr('placeholder');
+            that.removeAttr('placeholder');
+            if (holder && that.val() === '') {
+                that.addClass('placeholder');
+                that.val(holder);
+                that.on('focus', {holder: holder}, function (ev) {
+                    var that = $(this);
+                    that.removeClass('placeholder');
+                    if (that.val() === ev.data.holder) {
+                        that.val('');
+                    }
+                });
+                that.on('blur', {holder: holder}, function (ev) {
+                    var that = $(this);
+                    if (that.val() === '') {
+                        that.addClass('placeholder');
+                        that.val(ev.data.holder);
+                    }
+                });
+            }
+        });
     }
-    Yee.extend(':text[placeholder],textarea[placeholder]', 'placeholder', function (element) {
-        if (!NotPlaceholderSupport) {
-            return false;
-        }
-        var that = $(element);
-        var holder = that.attr('placeholder');
-        that.removeAttr('placeholder');
-        if (holder && that.val() === '') {
-            that.addClass('placeholder');
-            that.val(holder);
-            that.on('focus', {holder: holder}, function (ev) {
-                var that = $(this);
-                that.removeClass('placeholder');
-                if (that.val() === ev.data.holder) {
-                    that.val('');
-                }
-            });
-            that.on('blur', {holder: holder}, function (ev) {
-                var that = $(this);
-                if (that.val() === '') {
-                    that.addClass('placeholder');
-                    that.val(ev.data.holder);
-                }
-            });
-        }
-    }, false);
     //字符串格式化输出
-    var StringFormat = function (str, args) {
+    var stringFormat = function (str, args) {
         var args = args;
         if (str == '' || str == null || args == void 0) {
             return str;
@@ -80,7 +77,6 @@
     };
 
     function YeeValidate() {
-
         var Config = {
             rules: 'val'				    //验证器规则
             , val_msg: 'val-msg'		 		    //验证消息
@@ -97,41 +93,33 @@
             , input_error: 'input-error'
             , input_valid: 'input-valid'
             , input_default: 'input-default'
+            //消息配置----------------------
+            , message_required: '必选字段'
+            , message_email: '请输入正确格式的电子邮件'
+            , message_url: '请输入正确格式的网址'
+            , message_date: '请输入正确格式的日期'
+            , message_number: '仅可输入数字'
+            , message_integer: '只能输入整数'
+            , message_equalto: '请再次输入相同的值'
+            , message_maxlength: '请输入一个 长度最多是 {0} 的字符串'
+            , message_minlength: '请输入一个 长度最少是 {0} 的字符串'
+            , message_rangelength: '请输入 一个长度介于 {0} 和 {1} 之间的字符串'
+            , message_range: '请输入一个介于 {0} 和 {1} 之间的值'
+            , message_max: '请输入一个小于 {0} 的值'
+            , message_min: '请输入一个大于 {0} 的值'
+            , message_remote: '检测数据不符合要求'
+            , message_regex: '请输入正确格式字符'
+            , message_mobile: '手机号码格式不正确'
+            , message_idcard: '身份证号码格式不正确'
         };
-
-        var Messages = {
-            required: '必选字段'
-            , email: '请输入正确格式的电子邮件'
-            , url: '请输入正确格式的网址'
-            , date: '请输入正确格式的日期'
-            , number: '仅可输入数字'
-            , integer: '只能输入整数'
-            , equalto: '请再次输入相同的值'
-            , maxlength: '请输入一个 长度最多是 {0} 的字符串'
-            , minlength: '请输入一个 长度最少是 {0} 的字符串'
-            , rangelength: '请输入 一个长度介于 {0} 和 {1} 之间的字符串'
-            , range: '请输入一个介于 {0} 和 {1} 之间的值'
-            , max: '请输入一个小于 {0} 的值'
-            , min: '请输入一个大于 {0} 的值'
-            , remote: '检测数据不符合要求'
-            , regex: '请输入正确格式字符'
-            , mobile: '手机号码格式不正确'
-            , idcard: '身份证号码格式不正确'
-        };
-
-        var setMessages = function (msgs) {
-            Messages = $.extend(Messages, msgs);
-        };
-
+        var displayMode = 0;
         var setConfig = function (cfg) {
             Config = $.extend(Config, cfg);
         };
-
         //显示队列
-        var TempValFors = {};
+        var tempValFors = {};
         var remoteElems = [];
-        var FormSubmitState = false;
-
+        var formSubmitState = false;
         //函数管理器
         var FuncManager = new (function () {
             var Funcs = {};
@@ -144,11 +132,51 @@
                     return ShotName[shotname];
                 return shotname;
             };
+
+            this.getOirRules = function (rules) {
+                var tempRules = {};
+                for (var key in rules) {
+                    var oir_key = this.getOirName(key);
+                    if (oir_key === 'required') {
+                        tempRules[oir_key] = rules[key];
+                        break;
+                    }
+                }
+                for (var key in rules) {
+                    var oir_key = this.getOirName(key);
+                    if (oir_key !== 'remote' && oir_key !== 'required') {
+                        tempRules[oir_key] = rules[key];
+                    }
+                }
+                for (var key in rules) {
+                    var oir_key = this.getOirName(key);
+                    if (oir_key === 'remote') {
+                        tempRules[oir_key] = rules[key];
+                        break;
+                    }
+                }
+                return tempRules;
+            }
+            this.getOirMessages = function (rules, messages) {
+                var tempMessages = {};
+                for (var key in messages) {
+                    var oir_key = this.getOirName(key);
+                    tempMessages[oir_key] = messages[key];
+                }
+                for (var key in rules) {
+                    var oir_key = this.getOirName(key);
+                    if (!tempMessages[oir_key] && Config['message_' + oir_key]) {
+                        tempMessages[oir_key] = Config['message_' + oir_key];
+                    }
+                }
+                return tempMessages;
+            }
+
             var regFunc = this.regFunc = function (name, fn, defmsg) {
                 if (typeof (fn) === 'function') {
                     Funcs[name] = fn;
                     if (typeof (defmsg) !== 'undefined') {
-                        Messages[name] = defmsg;
+                        Config['message_' + name] = defmsg;
                     }
                 } else if (typeof (fn) === 'string') {
                     ShotName[name] = fn;
@@ -276,24 +304,28 @@
             regFunc('neq', 'notequal');
         })();
         //获得控件标签
-        var getInfoLabel = function (elem) {
+        var getTipLabel = function (elem) {
             var label = null;
-            var id = elem.attr('id') || '';
-            var forid = elem.data(Config.val_for) || '';
-            if (forid == '') {
-                forid = id == '' ? '' : '#' + id + '_info';
-                elem.data(Config.val_for, forid);
+            var id = elem.attr('id') || null;
+            var forId = elem.data('val-for') || null;
+            if (!forId) {
+                if (id === '' || id === null) {
+                    forId = null;
+                } else {
+                    forId = '#' + id + '_info';
+                    elem.data('val-for', forId);
+                }
             }
-            if (forid) {
-                label = $(forid.replace(/(:|\.)/g, '\\$1'));
+            if (forId) {
+                label = $(forId.replace(/(:|\.)/g, '\\$1'));
                 if (label.length == 0) {
-                    id = forid.substr(1);
+                    id = forId.substr(1);
                     label = $('<span id="' + id + '"></span>').appendTo(elem.parent());
                 }
             } else {
                 id = randomString(20);
                 label = $('<span id="temp_info_' + id + '"></span>').appendTo(elem.parent());
-                elem.data(Config.val_for, '#temp_info_' + id);
+                elem.data('val-for', '#temp_info_' + id);
             }
             return label;
         };
@@ -303,7 +335,7 @@
                 return;
             }
             elem.removeClass(Config.input_error + ' ' + Config.input_valid).addClass(Config.input_default);
-            var label = getInfoLabel(elem);
+            var label = getTipLabel(elem);
             label.removeClass(Config.field_error + ' ' + Config.field_valid).addClass(Config.field_default);
             label.html(msg);
             if (!msg) {
@@ -317,7 +349,7 @@
             }
             elem.removeClass(Config.input_error + ' ' + Config.input_default).addClass(Config.input_valid);
             if (msg) {
-                var label = getInfoLabel(elem);
+                var label = getTipLabel(elem);
                 label.show();
                 label.removeClass(Config.field_error + ' ' + Config.field_default).addClass(Config.field_valid);
                 label.html(msg);
@@ -332,7 +364,10 @@
             }
             elem.removeClass(Config.input_valid + ' ' + Config.input_default).addClass(Config.input_error);
             if (msg) {
-                var label = getInfoLabel(elem);
+                if (displayMode == 1 || displayMode == 2) {
+                    return;
+                }
+                var label = getTipLabel(elem);
                 label.removeClass(Config.field_valid + ' ' + Config.field_default).addClass(Config.field_error);
                 label.show();
                 label.html(msg);
@@ -344,9 +379,9 @@
             if (typeof (elemcache) === 'object') {
                 if (elem.val() === elemcache.val) {
                     data.pass = elemcache.pass;
-                    data.erropt = 'remote';
-                    data.remote_msg = elemcache.remote_msg;
-                    data.remote_valid = elemcache.remote_valid;
+                    data.errType = 'remote';
+                    data.remoteError = elemcache.remoteError;
+                    data.remoteValid = elemcache.remoteValid;
                     fn(data);
                     return;
                 }
@@ -368,9 +403,9 @@
                 url = val;
             } else {
                 data.pass = true;
-                data.erropt = 'remote';
-                data.remote_msg = '';
-                data.remote_valid = '';
+                data.errType = 'remote';
+                data.remoteError = '';
+                data.remoteValid = '';
                 fn(data);
                 return;
             }
@@ -401,24 +436,24 @@
                             data.pass = true;
                         } else {
                             data.pass = false;
-                            data.erropt = 'remote';
+                            data.errType = 'remote';
                         }
                         elem.data('yee-ajax-cache', {val: value, pass: data.pass});
                         fn(data);
                     } else {
                         if (ret.status === true) {
                             data.pass = true;
-                            data.remote_valid = ret.message || null;
+                            data.remoteValid = ret.message || null;
                         } else {
-                            data.remote_msg = ret.error;
+                            data.remoteError = ret.error;
                             data.pass = false;
-                            data.erropt = 'remote';
+                            data.errType = 'remote';
                         }
                         elem.data('yee-ajax-cache', {
                             val: value,
                             pass: data.pass,
-                            remote_msg: (ret.error || null),
-                            remote_valid: (ret.message || null)
+                            remoteError: (ret.error || null),
+                            remoteValid: (ret.message || null)
                         });
                         fn(data);
                     }
@@ -426,105 +461,70 @@
             });
         };
         //获取元素数据
-        var getElemData = function (elem) {
+        var getFieldData = function (elem) {
             var rules = elem.data(Config.rules) || null;
             if (rules === null) {
                 return null;
             }
             var val_msg = elem.data(Config.val_msg) || {};
-            var msg_default = elem.data(Config.val_info) || '';
-            var msg_valid = elem.data(Config.val_valid) || '';
-            var msg_error = elem.data(Config.val_error) || '';
-            var val_events = elem.data(Config.val_events) || '';
             var val_off = elem.data(Config.val_off) || '';
             val_off = (val_off === 'true' || val_off === true || val_off == '1' || val_off === 'on');
-            var temp_rules = {};
-            var temp_msgs = {};
-            for (var key in rules) {
-                var bkey = FuncManager.getOirName(key);
-                if (bkey === 'required') {
-                    temp_rules[bkey] = rules[key];
-                    break;
-                }
-            }
-            for (var key in rules) {
-                var bkey = FuncManager.getOirName(key);
-                if (bkey !== 'remote' && bkey !== 'required') {
-                    temp_rules[bkey] = rules[key];
-                }
-            }
-            for (var key in rules) {
-                var bkey = FuncManager.getOirName(key);
-                if (bkey === 'remote') {
-                    temp_rules[bkey] = rules[key];
-                    break;
-                }
-            }
-            for (var key in val_msg) {
-                var bkey = FuncManager.getOirName(key);
-                temp_msgs[bkey] = val_msg[key];
-            }
-            for (var key in temp_rules) {
-                if (!temp_msgs[key] && Messages[key]) {
-                    temp_msgs[key] = Messages[key];
-                }
-            }
-            var dat = {
-                rules: temp_rules,
-                msgs: temp_msgs,
-                msg_default: msg_default,
-                msg_valid: msg_valid,
-                msg_error: msg_error,
-                erropt: null,
-                pass: true,
+            var data = {
+                rules: FuncManager.getOirRules(rules),
+                valMessages: FuncManager.getOirMessages(rules, val_msg),
+                valDefault: elem.data(Config.val_info) || '',
+                valValid: elem.data(Config.val_valid) || '',
+                valError: elem.data(Config.val_error) || '',
+                valEvents: elem.data(Config.val_events) || '',
+                valOff: val_off,
                 remote: !!rules.remote,
-                off: val_off,
-                events: val_events
+                errType: null,
+                pass: true
             };
-            return dat;
+            return data;
         };
 
-        var setError = function (elem, msg, force) {
+        var setError = function (elem, message, force) {
             force = typeof (force) === 'undefined' ? true : force;
             if (force) {
-                displayError(elem, msg);
+                displayError(elem, message);
                 return;
             }
-            if (msg !== false) {
+            if (message !== false) {
                 var forid = elem.data(Config.val_for) || '';
                 if (forid !== '') {
-                    if (typeof (TempValFors[forid]) == 'undefined') {
-                        TempValFors[forid] = msg;
+                    if (typeof (tempValFors[forid]) == 'undefined') {
+                        tempValFors[forid] = message;
                     } else {
-                        msg = TempValFors[forid];
+                        message = tempValFors[forid];
                     }
                 }
             }
-            displayError(elem, msg);
+            displayError(elem, message);
         };
 
-        var setValid = function (elem, msg, force) {
+        var setValid = function (elem, message, force) {
             force = typeof (force) === 'undefined' ? true : force;
             if (force) {
-                displayValid(elem, msg);
+                displayValid(elem, message);
                 return;
             }
-            if (msg !== false) {
+            if (message !== false) {
                 var forid = elem.data(Config.val_for) || '';
                 if (forid !== '') {
-                    if (typeof (TempValFors[forid]) != 'undefined') {
+                    if (typeof (tempValFors[forid]) != 'undefined') {
                         return;
                     }
                 }
             }
-            displayValid(elem, msg);
+            displayValid(elem, message);
         };
 
-        var setDefault = function (elem, msg) {
-            displayDefault(elem, msg);
+        var setDefault = function (elem, message) {
+            displayDefault(elem, message);
         };
 
-        var elem_mousedown = function () {
+        var mouseDownEvent = function () {
             var elem = $(this);
             if (elem.is(':radio') || elem.is(':checkbox')) {
                 var name = elem.attr('name');
@@ -547,25 +547,25 @@
                     });
                 }
             }
-            var data = getElemData(elem);
+            var data = getFieldData(elem);
             if (!data) {
                 setDefault(elem);
                 return;
             }
-            setDefault(elem, data.msg_default);
+            setDefault(elem, data.valDefault);
         };
 
-        var elem_chcek = function () {
+        var checkEvent = function () {
             var elem = $(this);
-            var data = getElemData(elem);
-            if (!data || data.off) {
+            var data = getFieldData(elem);
+            if (!data || data.valOff) {
                 return;
             }
             data = checkElem(elem, data);
             if (!data.pass) {
-                var msg = data.msgs[data.erropt] || '';
-                msg = StringFormat(msg, data.rules[data.erropt]);
-                if (!(elem.data('yee-remote-display') === true && !FormSubmitState)) {
+                var msg = data.valMessages[data.errType] || '';
+                msg = stringFormat(msg, data.rules[data.errType]);
+                if (!(elem.data('yee-remote-display') === true && !formSubmitState)) {
                     setError(elem, msg, true);
                 }
                 return;
@@ -573,24 +573,24 @@
             if (data.remote) {
                 ajaxRemote(elem, data, function (tdata) {
                     if (!tdata.pass) {
-                        var msg = tdata.msgs[tdata.erropt] || '';
-                        if (tdata.remote_msg) {
-                            msg = tdata.remote_msg;
+                        var msg = tdata.valMessages[tdata.errType] || '';
+                        if (tdata.remoteError) {
+                            msg = tdata.remoteError;
                         }
-                        msg = StringFormat(msg, tdata.rules[tdata.erropt]);
+                        msg = stringFormat(msg, tdata.rules[tdata.errType]);
                         setError(elem, msg, true);
                     } else {
-                        setValid(elem, tdata.remote_valid || tdata.msg_valid, true);
+                        setValid(elem, tdata.remoteValid || tdata.valValid, true);
                     }
                 });
                 return;
             }
-            setValid(elem, data.msg_valid);
+            setValid(elem, data.valValid);
         };
 
         var checkElem = function (elem, data) {
-            elem.off('mousedown', elem_mousedown);
-            elem.on('mousedown', elem_mousedown);
+            elem.off('mousedown', mouseDownEvent);
+            elem.on('mousedown', mouseDownEvent);
             var val = elem.val();
             var rules = data.rules;
             var type = (elem.attr('type') || elem[0].type || 'text').toLowerCase();
@@ -599,14 +599,14 @@
             }
             for (var key in rules) {
                 if (key === 'remote') {
-                    if (FormSubmitState) {
+                    if (formSubmitState) {
                         remoteElems.push(elem);
                         var rmdata = elem.data('yee-ajax-cache');
                         if (rmdata && !rmdata.pass) {
-                            data.erropt = key;
+                            data.errType = key;
                             data.pass = false;
-                            if (rmdata.remote_msg) {
-                                data.msgs.remote = rmdata.remote_msg;
+                            if (rmdata.remoteError) {
+                                data.valMessages.remote = rmdata.remoteError;
                             }
                         }
                     }
@@ -618,7 +618,7 @@
                 }
                 //验证非空====
                 if ((key === 'required') && rules[key] !== false && !func.call(elem, val, rules[key])) {
-                    data.erropt = key;
+                    data.errType = key;
                     data.pass = false;
                 }
 
@@ -634,7 +634,7 @@
                 args = args.slice(0);
                 args.unshift(val);
                 if (!func.apply(elem, args)) {
-                    data.erropt = key;
+                    data.errType = key;
                     data.pass = false;
                     return data;
                 }
@@ -647,9 +647,9 @@
                 return;
             }
             elem.data('yee-validate-init', true);
-            var data = getElemData(elem);
-            if (data && data.msg_default) {
-                setDefault(elem, data.msg_default);
+            var data = getFieldData(elem);
+            if (data && data.valDefault) {
+                setDefault(elem, data.valDefault);
             }
             //显示来自服务器的错误数据
             if (elem.is(':radio') || elem.is(':checkbox')) {
@@ -669,33 +669,33 @@
                 }
                 if (ckbox && ckbox.length > 0) {
                     $(ckbox).each(function () {
-                        $(this).off('change', elem_mousedown).on('change', elem_mousedown);
+                        $(this).off('change', mouseDownEvent).on('change', mouseDownEvent);
                     });
                 }
             } else {
-                elem.off('mousedown', elem_mousedown);
-                elem.on('mousedown', elem_mousedown);
+                elem.off('mousedown', mouseDownEvent);
+                elem.on('mousedown', mouseDownEvent);
             }
             if (elem.data(Config.val_error)) {
                 var msg = elem.data(Config.val_error);
                 setError(elem, msg, true);
                 elem.removeData(Config.val_error);
             }
-            if (!data || data.off) {
+            if (!data || data.valOff) {
                 return;
             }
-            if (data.events) {
-                elem.on(data.events, elem_chcek);
+            if (data.valEvents) {
+                elem.on(data.valEvents, checkEvent);
             }
-            if (data.remote && !/blur/.test(data.events)) {
+            if (data.remote && !/blur/.test(data.valEvents)) {
                 elem.data('yee-remote-display', true);
                 if (typeof data.remote != 'boolean') {
-                    elem.on('blur', elem_chcek);
+                    elem.on('blur', checkEvent);
                 }
             }
         };
 
-        var getFormElems = function (form) {
+        var getFields = function (form) {
             var inputs = [];
             for (var i = 0; i < form.elements.length; i++) {
                 inputs.push(form.elements.item(i));
@@ -705,20 +705,23 @@
         };
 
         var initValidator = function (form) {
-            FormSubmitState = false;
+            formSubmitState = false;
             var qform = $(form);
+            displayMode = qform.data('display-mode') || 0;
             qform.data('yee-validate-init', true);
             var init = function () {
                 qform.on('update', function () {
-                    var inputs = getFormElems(qform[0]);
-                    inputs.yee_placeholder();
+                    var inputs = getFields(qform[0]);
+                    if (!SUPPORT_PLACEHOLDER) {
+                        inputs.yee_placeholder();
+                    }
                     inputs.each(function (index, element) {
                         var elem = $(element);
                         initElem(elem);
                     });
                 }).triggerHandler('update');
             };
-            var initjson = function (data) {
+            var initJson = function (data) {
                 for (var sel in data) {
                     var box = $(sel);
                     if (box.length > 0) {
@@ -733,52 +736,78 @@
                 var url = qform.data('json');
                 if (typeof (url) == 'string') {
                     var url = url + '.json';
-                    $.getJSON(url, initjson);
+                    $.getJSON(url, initJson);
                 } else {
-                    initjson(url);
+                    initJson(url);
                 }
             } else {
                 init();
             }
         };
 
+        var displayAllError = function (errItems) {
+            if (displayMode == 1 && layer) {
+                var errors = [];
+                $(errItems).each(function () {
+                    errors.push('* ' + this.msg);
+                });
+                layer.alert(errors.join('<br/>'), {
+                    title: '错误提示',
+                    icon: 7
+                });
+            }
+            if (displayMode == 2 && layer) {
+                var error = '';
+                $(errItems).each(function () {
+                    error = this.msg;
+                    return false;
+                });
+                layer.alert(error, {
+                    title: '错误提示',
+                    icon: 7
+                });
+            }
+            $(errItems).each(function () {
+                setError(this.elem, this.msg, false);
+            });
+        }
+
         var checkFormNoRemote = function (form) {
-            TempValFors = {};
-            FormSubmitState = true;
+            tempValFors = {};
+            formSubmitState = true;
             remoteElems = [];
-            var allpass = true;
+            var allPass = true;
             var errItems = [];
-            var inputs = getFormElems(form);
+            var inputs = getFields(form);
             inputs.each(function (index, element) {
                 var elem = $(element);
-                var data = getElemData(elem);
-                if (!data || data.off) {
+                var data = getFieldData(elem);
+                if (!data || data.valOff) {
                     return;
                 }
                 data = checkElem(elem, data);
                 //接管处理请求
                 var Result = elem.triggerHandler('timely', [data]);
                 if (!data.pass) {
-                    var msg = data.msgs[data.erropt] || '';
-                    msg = StringFormat(msg, data.rules[data.erropt]);
+                    var msg = data.valMessages[data.errType] || '';
+                    msg = stringFormat(msg, data.rules[data.errType]);
                     errItems.push({elem: elem, msg: msg, data: data});
                 } else {
-                    setValid(elem, data.msg_valid, false);
+                    setValid(elem, data.valValid, false);
                 }
-                allpass = allpass && data.pass;
+                allPass = allPass && data.pass;
                 if (Result === false) {
-                    if (!allpass) {
+                    if (!allPass) {
                         return false;
                     }
                 }
             });
-
-            if (allpass === false) {
-
+            if (allPass === false) {
                 if ($(form).triggerHandler('displayAllError', [errItems]) !== false) {
-                    $(errItems).each(function () {
-                        setError(this.elem, this.msg, false);
-                    });
+                    displayAllError(errItems);
+                }
+                if (errItems[0].elem.is(':checkbox') || errItems[0].elem.is(':radio')) {
+                    return;
                 }
                 setTimeout(function () {
                     try {
@@ -791,19 +820,18 @@
                         errItems[0].elem.triggerHandler('focus');
                     }
                 }, 10);
-
             }
             //如果全部通过
-            if (allpass && NotPlaceholderSupport) {
-                var holderinputs = inputs.filter(':text[placeholder],textarea[placeholder]');
-                holderinputs.each(function (index, element) {
+            if (allPass && !SUPPORT_PLACEHOLDER) {
+                var holderInputs = inputs.filter(':text[placeholder],textarea[placeholder]');
+                holderInputs.each(function (index, element) {
                     var that = $(element);
                     if (that.val() == '') {
                         that.val('');
                     }
                 });
             }
-            return allpass;
+            return allPass;
         };
         //检查表单数据==
         var checkForm = function (form) {
@@ -813,41 +841,41 @@
             if (beforeValid === false) {
                 return false;
             }
-            var allpass = checkFormNoRemote(form);
+            var allPass = checkFormNoRemote(form);
             var i = 0;
-            var nextajax = function () {
+            var nextAjax = function () {
                 if (i >= remoteElems.length) {
                     return;
                 }
                 var xcelem = remoteElems[i];
-                var xcdata = getElemData(xcelem);
+                var xcdata = getFieldData(xcelem);
                 i++;
                 ajaxRemote(xcelem, xcdata, function (tdata) {
                     if (!tdata.pass) {
-                        var msg = tdata.msgs[tdata.erropt] || '';
-                        if (tdata.remote_msg) {
-                            msg = tdata.remote_msg;
+                        var msg = tdata.valMessages[tdata.errType] || '';
+                        if (tdata.remoteError) {
+                            msg = tdata.remoteError;
                         }
-                        msg = StringFormat(msg, tdata.rules[tdata.erropt]);
+                        msg = stringFormat(msg, tdata.rules[tdata.errType]);
                         setError(xcelem, msg, true);
                     } else {
-                        setValid(xcelem, tdata.remote_valid || xcdata.msg_valid, true);
+                        setValid(xcelem, tdata.remoteValid || xcdata.valValid, true);
                     }
-                    nextajax();
+                    nextAjax();
                 });
             };
-            if (!allpass) {
-                nextajax();
+            if (!allPass) {
+                nextAjax();
             }
-            FormSubmitState = false;
-            if (!allpass) {
+            formSubmitState = false;
+            if (!allPass) {
                 return false;
             }
             var afterValid = qform.triggerHandler('afterValid');
             if (afterValid === false) {
                 return false;
             }
-            return allpass;
+            return allPass;
         };
 
         return {
@@ -879,12 +907,12 @@
                         }
                         if (ckbox && ckbox.length > 0) {
                             $(ckbox).each(function () {
-                                $(this).off('change', elem_mousedown).on('change', elem_mousedown);
+                                $(this).off('change', mouseDownEvent).on('change', mouseDownEvent);
                             });
                         }
                     } else {
-                        elem.off('mousedown', elem_mousedown);
-                        elem.on('mousedown', elem_mousedown);
+                        elem.off('mousedown', mouseDownEvent);
+                        elem.on('mousedown', mouseDownEvent);
                     }
                 });
             },
@@ -906,7 +934,7 @@
                     setDefault(elem, msg);
                 });
             },
-            getElemData: getElemData,
+            getFieldData: getFieldData,
             initElem: function (selector) {
                 $(selector).each(function () {
                     var elem = $(this);
@@ -916,7 +944,7 @@
                     initElem(elem);
                 });
             },
-            setMessages: setMessages,
+            displayAllError: displayAllError,
             setConfig: setConfig
         };
     }
@@ -944,6 +972,9 @@
         },
         showError: function (formError) {
             var that = $(this[0]);
+            if (!that.is('form')) {
+                return;
+            }
             var first = null;
             var errItems = [];
             for (var name in formError) {
@@ -960,11 +991,12 @@
                 }
             }
             if (that.triggerHandler('displayAllError', [errItems, true]) !== false) {
-                $(errItems).each(function () {
-                    YeeValidator.setError(this.elem, this.msg, true);
-                });
+                YeeValidator.displayAllError(errItems);
             }
             if (first) {
+                if (first.is(':checkbox') || first.is(':radio')) {
+                    return this;
+                }
                 setTimeout(function () {
                     try {
                         if (first.is(':hidden')) {
@@ -977,7 +1009,6 @@
                     }
                 }, 10);
             }
-
             return this;
         }
     });
@@ -994,4 +1025,4 @@
             }
         });
     });
-})(jQuery, Yee);
+})(jQuery, Yee, layer);

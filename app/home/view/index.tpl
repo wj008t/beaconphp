@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<form action="/index/save" method="post" yee-module="validate">
+<form action="/index/save" method="post" data-display-mode="2" yee-module="validate">
 
     {foreach from=$form->getViewFields() item=field}
         <div class="form-group">
