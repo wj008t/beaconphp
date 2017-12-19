@@ -9,7 +9,7 @@ use beacon\Request;
 
 class Index extends Controller
 {
-    public function indexAction(Request $request, string $name = 'wj008')
+    public function indexAction(Request $request, string $name='wj008', int $t=2)
     {
         // $row = DB::getList('select 1 as temp;');
         // $v = DB::beginTransaction();
