@@ -323,7 +323,11 @@ class Route
                                 if ($param->hasType()) {
                                     $refType = $param->getType();
                                     if ($refType != null) {
-                                        $type = $refType->getName();
+                                        if (is_callable([$refType, 'getName'])) {
+                                            $type = $refType->getName();
+                                        } else {
+                                            $type = strval($refType);
+                                        }
                                         $type = empty($type) ? 'any' : $type;
                                     }
                                 }
@@ -332,7 +336,11 @@ class Route
                                 if (is_callable([$param, 'getClass'])) {
                                     $refType = $param->getClass();
                                     if ($refType != null) {
-                                        $type = $refType->getName();
+                                        if (is_callable([$refType, 'getName'])) {
+                                            $type = $refType->getName();
+                                        } else {
+                                            $type = strval($refType);
+                                        }
                                         $type = empty($type) ? 'any' : $type;
                                     }
                                 }
