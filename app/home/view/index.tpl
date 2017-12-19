@@ -11,10 +11,14 @@
 <body>
 <form action="/index/save" method="post" data-display-mode="0" yee-module="validate">
     {foreach from=$form->getViewFields() item=field}
-        <div class="form-group">
-            <label class="form-label">{$field->label}:</label>
-            <div class="form-box">{$field->box()}</div>
-        </div>
+        {if $field->type=='blend'}
+            {$field->box()}
+        {else}
+            <div class="form-group">
+                <label class="form-label">{$field->label}:</label>
+                <div class="form-box">{$field->box()}</div>
+            </div>
+        {/if}
     {/foreach}
     <div class="form-group">
         <div class="form-submit" style="padding-left: 260px;"><input type="submit" class="btn submit" value="提交"/></div>

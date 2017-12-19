@@ -21,36 +21,36 @@ class Hidden implements BoxInterface
         return '<input ' . join(' ', $attr) . ' />';
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $boxName = $field->boxName;
         $request = Request::instance();
         switch ($field->varType) {
             case 'bool':
             case 'boolean':
-                $field->value = $request->req($method, $boxName . ':b', $field->default);
+                $field->value = $request->req($data, $boxName . ':b', $field->default);
                 break;
             case 'int':
             case 'integer':
-                $val = $request->req($method, $boxName . ':s', $field->default);
+                $val = $request->req($data, $boxName . ':s', $field->default);
                 if (preg_match('@[+-]?\d*\.\d+@', $field->default)) {
-                    $field->value = $request->req($method, $boxName . ':f', $field->default);
+                    $field->value = $request->req($data, $boxName . ':f', $field->default);
                 } else {
-                    $field->value = $request->req($method, $boxName . ':i', $field->default);
+                    $field->value = $request->req($data, $boxName . ':i', $field->default);
                 }
                 break;
             case 'double':
             case 'float':
-                $field->value = $request->req($method, $boxName . ':f', $field->default);
+                $field->value = $request->req($data, $boxName . ':f', $field->default);
                 break;
             case 'string':
-                $field->value = $request->req($method, $boxName . ':s', $field->default);
+                $field->value = $request->req($data, $boxName . ':s', $field->default);
                 break;
             case 'array':
-                $field->value = $request->req($method, $boxName . ':a', $field->default);
+                $field->value = $request->req($data, $boxName . ':a', $field->default);
                 break;
             default :
-                $field->value = $request->req($method, $boxName, $field->default);
+                $field->value = $request->req($data, $boxName, $field->default);
                 break;
         }
         return $field->value;

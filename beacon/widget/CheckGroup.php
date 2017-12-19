@@ -144,14 +144,14 @@ class CheckGroup implements BoxInterface
         return $values;
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $request = Request::instance();
         $default = [];
         if (is_array($field->default)) {
             $default = $field->default;
         }
-        $field->value = $request->req($method, $field->boxName . ':a', $default);
+        $field->value = $request->req($data, $field->boxName . ':a', $default);
         return $field->value;
     }
 

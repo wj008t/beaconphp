@@ -15,6 +15,7 @@ class Request
     private $header = null;
     private $content_type = 'text/html; charset=utf-8';
 
+
     public static function instance()
     {
         if (self::$instance == null) {
@@ -25,197 +26,17 @@ class Request
 
     public function get(string $name = null, $def = null)
     {
-        if (empty($name)) {
-            return $_GET;
-        }
-        $type = '';
-        if (preg_match('@^(.*):([abfis])@', $name, $m)) {
-            $type = $m[2];
-            $name = $m[1];
-        }
-        switch ($type) {
-            case 's':
-                if (!isset($_GET[$name])) {
-                    if (is_string($def)) {
-                        return $def;
-                    }
-                    return '';
-                }
-                if (is_string($_GET[$name])) {
-                    return $_GET[$name];
-                }
-                return strval($_GET[$name]);
-            case 'b':
-                if (!isset($_GET[$name])) {
-                    if (is_bool($def)) {
-                        return $def;
-                    }
-                    if (is_string($def)) {
-                        return $def == '1' || $def == 'on' || $def == 'yes' || $def == 'true';
-                    }
-                    return false;
-                }
-                return $_GET[$name] == '1' || $_GET[$name] == 'on' || $_GET[$name] == 'yes' || $_GET[$name] == 'true';
-            case 'f':
-                if (!isset($_GET[$name]) || !is_numeric($_GET[$name])) {
-                    if (is_double($def) || is_float($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return doubleval($_GET[$name]);
-            case 'i':
-                if (!isset($_GET[$name]) || !is_numeric($_GET[$name])) {
-                    if (is_integer($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return intval($_GET[$name]);
-            case 'a':
-                if (!isset($_GET[$name])) {
-                    if (is_array($def)) {
-                        return $def;
-                    }
-                    return [$def];
-                }
-                if (is_array($_GET[$name])) {
-                    return $_GET[$name];
-                }
-                return [$_GET[$name]];
-            default:
-                return isset($_GET[$name]) ? $_GET[$name] : $def;
-        }
+        return $this->req($_GET, $name, $def);
     }
 
     public function post(string $name = null, $def = null)
     {
-        if (empty($name)) {
-            return $_POST;
-        }
-        $type = '';
-        if (preg_match('@^(.*):([abfis])@', $name, $m)) {
-            $type = $m[2];
-            $name = $m[1];
-        }
-        switch ($type) {
-            case 's':
-                if (!isset($_POST[$name])) {
-                    if (is_string($def)) {
-                        return $def;
-                    }
-                    return '';
-                }
-                if (is_string($_POST[$name])) {
-                    return $_POST[$name];
-                }
-                return strval($_POST[$name]);
-            case 'b':
-                if (!isset($_POST[$name])) {
-                    if (is_bool($def)) {
-                        return $def;
-                    }
-                    if (is_string($def)) {
-                        return $def == '1' || $def == 'on' || $def == 'yes' || $def == 'true';
-                    }
-                    return false;
-                }
-                return $_POST[$name] == '1' || $_POST[$name] == 'on' || $_POST[$name] == 'yes' || $_POST[$name] == 'true';
-            case 'f':
-                if (!isset($_POST[$name]) || !is_numeric($_POST[$name])) {
-                    if (is_double($def) || is_float($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return doubleval($_POST[$name]);
-            case 'i':
-                if (!isset($_POST[$name]) || !is_numeric($_POST[$name])) {
-                    if (is_integer($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return intval($_POST[$name]);
-            case 'a':
-                if (!isset($_POST[$name])) {
-                    if (is_array($def)) {
-                        return $def;
-                    }
-                    return [$def];
-                }
-                if (is_array($_POST[$name])) {
-                    return $_POST[$name];
-                }
-                return [$_POST[$name]];
-            default:
-                return isset($_POST[$name]) ? $_POST[$name] : $def;
-        }
+        return $this->req($_POST, $name, $def);
     }
 
     public function param(string $name = null, $def = null)
     {
-        if (empty($name)) {
-            return $_REQUEST;
-        }
-        $type = '';
-        if (preg_match('@^(.*):([abfis])@', $name, $m)) {
-            $type = $m[2];
-            $name = $m[1];
-        }
-        switch ($type) {
-            case 's':
-                if (!isset($_REQUEST[$name])) {
-                    if (is_string($def)) {
-                        return $def;
-                    }
-                    return '';
-                }
-                if (is_string($_REQUEST[$name])) {
-                    return $_REQUEST[$name];
-                }
-                return strval($_REQUEST[$name]);
-            case 'b':
-                if (!isset($_REQUEST[$name])) {
-                    if (is_bool($def)) {
-                        return $def;
-                    }
-                    if (is_string($def)) {
-                        return $def == '1' || $def == 'on' || $def == 'yes' || $def == 'true';
-                    }
-                    return false;
-                }
-                return $_REQUEST[$name] == '1' || $_REQUEST[$name] == 'on' || $_REQUEST[$name] == 'yes' || $_REQUEST[$name] == 'true';
-            case 'f':
-                if (!isset($_REQUEST[$name]) || !is_numeric($_REQUEST[$name])) {
-                    if (is_double($def) || is_float($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return doubleval($_REQUEST[$name]);
-            case 'i':
-                if (!isset($_REQUEST[$name]) || !is_numeric($_REQUEST[$name])) {
-                    if (is_integer($def)) {
-                        return $def;
-                    }
-                    return 0;
-                }
-                return intval($_REQUEST[$name]);
-            case 'a':
-                if (!isset($_REQUEST[$name])) {
-                    if (is_array($def)) {
-                        return $def;
-                    }
-                    return [$def];
-                }
-                if (is_array($_REQUEST[$name])) {
-                    return $_REQUEST[$name];
-                }
-                return [$_REQUEST[$name]];
-            default:
-                return isset($_REQUEST[$name]) ? $_REQUEST[$name] : $def;
-        }
+        return $this->req($_REQUEST, $name, $def);
     }
 
     public function getSession(string $name = null)
@@ -259,15 +80,74 @@ class Request
 
     }
 
-    public function req(string $method, string $name, $def = null)
+    public function req(array $data, string $name, $def = null)
     {
-        $method = strtolower($method);
-        if ($method == 'get') {
-            return $this->get($name, $def);
-        } else if ($method == 'post') {
-            return $this->post($name, $def);
-        } else {
-            return $this->param($name, $def);
+        if (empty($name)) {
+            return $data;
+        }
+        $type = '';
+        if (preg_match('@^(.*):([abfis])@', $name, $m)) {
+            $type = $m[2];
+            $name = $m[1];
+        }
+        switch ($type) {
+            case 's':
+                if (!isset($data[$name])) {
+                    if (is_string($def)) {
+                        return $def;
+                    }
+                    return '';
+                }
+                if (is_string($data[$name])) {
+                    return $data[$name];
+                }
+                return strval($data[$name]);
+            case 'b':
+                if (!isset($data[$name])) {
+                    if (is_bool($def)) {
+                        return $def;
+                    }
+                    if (is_string($def)) {
+                        return $def == '1' || $def == 'on' || $def == 'yes' || $def == 'true';
+                    }
+                    return false;
+                }
+                return $data[$name] == '1' || $data[$name] == 'on' || $data[$name] == 'yes' || $data[$name] == 'true';
+            case 'f':
+                if (!isset($data[$name]) || !is_numeric($data[$name])) {
+                    if (is_double($def) || is_float($def)) {
+                        return $def;
+                    }
+                    return 0;
+                }
+                return doubleval($data[$name]);
+            case 'i':
+                if (!isset($data[$name]) || !is_numeric($data[$name])) {
+                    if (is_integer($def)) {
+                        return $def;
+                    }
+                    return 0;
+                }
+                return intval($data[$name]);
+            case 'a':
+                if (!isset($data[$name])) {
+                    if (is_array($def)) {
+                        return $def;
+                    }
+                    if ($def === null || $def === '') {
+                        return [];
+                    }
+                    return [$def];
+                }
+                if (is_array($data[$name])) {
+                    return $data[$name];
+                }
+                if ($data[$name] === null || $data[$name] === '') {
+                    return [];
+                }
+                return [$data[$name]];
+            default:
+                return isset($data[$name]) ? $data[$name] : $def;
         }
     }
 

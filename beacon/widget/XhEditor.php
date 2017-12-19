@@ -27,9 +27,9 @@ class Xheditor extends Hidden
         return '<textarea ' . join(' ', $attr) . '>' . htmlspecialchars($field->value) . '</textarea>';
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $field->varType = 'string';
-        return parent::assign($field, $method);
+        return parent::assign($field, $data);
     }
 }

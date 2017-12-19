@@ -67,7 +67,7 @@ class Linkage implements BoxInterface
         return $values;
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $request = Request::instance();
         if ($field->names !== null && is_array($field->names)) {
@@ -75,12 +75,12 @@ class Linkage implements BoxInterface
             $values = [];
             foreach ($field->names as $idx => $name) {
                 $def = isset($default[$idx]) ? $default[$idx] : null;
-                $values[] = $request->req($method, $name . ':s', $def);
+                $values[] = $request->req($data, $name . ':s', $def);
             }
             return $field->value = $this->convertType($values, $field->varType);
         }
         $boxName = $field->boxName;
-        $values = $request->req($method, $boxName, null);
+        $values = $request->req($data, $boxName, null);
         if (is_array($values)) {
             return $field->value = $this->convertType($values, $field->varType);
         }

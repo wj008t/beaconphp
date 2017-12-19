@@ -23,10 +23,10 @@ class DateTime extends Hidden
         return '<input ' . join(' ', $attr) . ' />';
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $field->varType = 'string';
-        parent::assign($field, $method);
+        parent::assign($field, $data);
         if (!Validate::test_date($field->value)) {
             $field->value = null;
         }

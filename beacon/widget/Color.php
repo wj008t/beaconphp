@@ -22,9 +22,9 @@ class Color extends Hidden
         return '<input ' . join(' ', $attr) . ' />';
     }
 
-    public function assign(Field $field, string $method = '')
+    public function assign(Field $field, array $data)
     {
         $field->varType = 'string';
-        return parent::assign($field, $method);
+        return parent::assign($field, $data);
     }
 }

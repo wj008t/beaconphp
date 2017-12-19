@@ -307,7 +307,7 @@ class Form
 
     public function autoComplete($method = 'post')
     {
-        $method = strtolower($method);
+
         $fields = $this->getCurrentFields();
         foreach ($fields as $name => $field) {
             if ($field->close || ($field->offEdit && $this->type = 'edit')) {
@@ -318,37 +318,50 @@ class Form
                 continue;
             }
             $box = self::getBoxInstance($field->type);
+            if (is_string($method)) {
+                $method = strtolower($method);
+                $data = $_REQUEST;
+                if ($method == 'get') {
+                    $data = $_GET;
+                } elseif ($method == 'post') {
+                    $data = $_POST;
+                }
+            } elseif (is_array($method)) {
+                $data = $method;
+            } else {
+                $data = [];
+            }
             if ($box != null) {
-                $box->assign($field, $method);
+                $box->assign($field, $data);
             } else {
                 $boxName = $field->boxName;
                 $request = Request::instance();
                 switch ($field->varType) {
                     case 'bool':
                     case 'boolean':
-                        $field->value = $request->req($method, $boxName . ':b', $field->default);
+                        $field->value = $request->req($data, $boxName . ':b', $field->default);
                         break;
                     case 'int':
                     case 'integer':
-                        $val = $request->req($method, $boxName . ':s', $field->default);
+                        $val = $request->req($data, $boxName . ':s', $field->default);
                         if (preg_match('@[+-]?\d*\.\d+@', $field->default)) {
-                            $field->value = $request->req($method, $boxName . ':f', $field->default);
+                            $field->value = $request->req($data, $boxName . ':f', $field->default);
                         } else {
-                            $field->value = $request->req($method, $boxName . ':i', $field->default);
+                            $field->value = $request->req($data, $boxName . ':i', $field->default);
                         }
                         break;
                     case 'double':
                     case 'float':
-                        $field->value = $request->req($method, $boxName . ':f', $field->default);
+                        $field->value = $request->req($data, $boxName . ':f', $field->default);
                         break;
                     case 'string':
-                        $field->value = $request->req($method, $boxName . ':s', $field->default);
+                        $field->value = $request->req($data, $boxName . ':s', $field->default);
                         break;
                     case 'array':
-                        $field->value = $request->req($method, $boxName . ':a', $field->default);
+                        $field->value = $request->req($data, $boxName . ':a', $field->default);
                         break;
                     default :
-                        $field->value = $request->req($method, $boxName, $field->default);
+                        $field->value = $request->req($data, $boxName, $field->default);
                         break;
                 }
             }

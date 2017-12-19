@@ -14,7 +14,7 @@ interface BoxInterface
 {
     public function code(Field $field, $args);
 
-    public function assign(Field $field, string $method = '');
+    public function assign(Field $field, array $data);
 
     public function fill(Field $field, array &$values);
 

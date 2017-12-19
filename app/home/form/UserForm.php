@@ -25,6 +25,12 @@ class UserForm extends Form
                 'data-val' => ['r' => true],
                 'data-val-msg' => ['r' => '标题不能为空'],
             ],
+            'blend' => [
+                'label' => '联合插件',
+                'type' => 'blend',
+                'plugForm' => 'app\\home\form\\TestForm',
+                'plugType' => 2
+            ],
             'integer' => [
                 'label' => '整数',
                 'type' => 'integer',
