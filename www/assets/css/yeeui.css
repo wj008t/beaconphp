@@ -392,7 +392,11 @@ input.input-error, select.input-error, textarea.input-error {
 }
 
 input.input-error:focus, select.input-error:focus, textarea.input-error:focus {
-    border: 1px dashed #E84C3D
+    border: 1px dashed #E84C3D;
+    -webkit-box-shadow: 0 0 3px rgba(232, 76, 61, .3);
+    -moz-box-shadow: 0 0 3px rgba(232, 76, 61, .3);
+    box-shadow: 0 0 3px rgba(232, 76, 61, .3);
+    outline: 0;
 }
 
 input.input-valid {
@@ -772,6 +776,7 @@ button.search-btn, input.search-btn {
     height: 14px;
     background-image: url("../images/pic_close.png");
 }
-.up_image_delpic:hover{
+
+.up_image_delpic:hover {
     background-position-x: -14px;
 }
