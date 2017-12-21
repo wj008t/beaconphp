@@ -23,6 +23,12 @@
             });
         }
         var button = $('<a class="yee-btn" href="javascript:;" yee-module="dialog" style="display: inline-block;">选择</a>').insertAfter(textBox);
+        if (option.width) {
+            button.data('width', width);
+        }
+        if (option.height) {
+            button.data('width', height);
+        }
         button.data('href', option.href || '');
         button.on('select_dialog_data', function (ev, data) {
             if (data && data.value && data.text) {
