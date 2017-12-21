@@ -25,12 +25,13 @@ class UserForm extends Form
                 'data-val' => ['r' => true],
                 'data-val-msg' => ['r' => '标题不能为空'],
             ],
+            /*
             'blend' => [
                 'label' => '联合插件',
                 'type' => 'blend',
                 'plugForm' => 'app\\home\form\\TestForm',
                 'plugType' => 2
-            ],
+            ],*/
             'integer' => [
                 'label' => '整数',
                 'type' => 'integer',
@@ -93,24 +94,29 @@ class UserForm extends Form
                 'label' => '单选框',
                 'type' => 'radio_group',
                 'data-val' => ['r' => true],
-                'default' => 3,
+                //  'default' => 3,
                 'options' => [
                     ['value' => 1, 'text' => '选项1'],
                     ['value' => 2, 'text' => '选项2'],
                     ['value' => 3, 'text' => '选项3'],
-                ]
+                ],
+                'data-val-msg' => ['r' => '请选择单选框'],
             ],
 
 
             'check_group' => [
                 'label' => '多选框',
                 'type' => 'check_group',
-                'data-val' => ['r' => true],
+                'data-val' => ['r' => true, 'rangesize' => [2, 4]],
                 'default' => 3,
+                'data-val-msg' => ['r' => '请选择多选项', 'rangesize' => '请选择{0}-{1}项'],
                 'options' => [
                     ['value' => 1, 'text' => '选项1'],
                     ['value' => 2, 'text' => '选项2'],
                     ['value' => 3, 'text' => '选项3'],
+                    ['value' => 4, 'text' => '选项4'],
+                    ['value' => 5, 'text' => '选项5'],
+                    ['value' => 6, 'text' => '选项6'],
                 ],
                 'names' => ['check_name1', 'check_name2', 'check_name3'],
             ],
