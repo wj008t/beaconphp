@@ -29,6 +29,11 @@ class Index extends Controller
         return $this->fetch('index.tpl');
     }
 
+    public function showAction()
+    {
+        return $this->fetch('show.tpl');
+    }
+
     public function saveAction()
     {
         $form = new UserForm('add');

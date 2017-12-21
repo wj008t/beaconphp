@@ -48,6 +48,11 @@
                             callwin.jQuery(callwin).triggerHandler(event, [data]);
                         }
                     }
+                    dialogWindow.trigger = function (event, data) {
+                        if (options.elem) {
+                            options.elem.triggerHandler(event, [data]);
+                        }
+                    }
                     dialogWindow.closeYeeDialog = function () {
                         layer.close(layIndex);
                     };
@@ -55,13 +60,18 @@
                         layer.title(dialogWindow.document.title, index);
                     }
                     //准备好了
-                    if (typeof dialogWindow.readyYeeDialog == 'function') {
-                        if (options.data !== void 0) {
-                            dialogWindow.readyYeeDialog(options.data, callwin);
+                    var readyFunc = function () {
+                        if (typeof dialogWindow.readyYeeDialog == 'function') {
+                            if (options.data !== void 0) {
+                                dialogWindow.readyYeeDialog(options.data, callwin);
+                            } else {
+                                dialogWindow.readyYeeDialog(null, callwin);
+                            }
                         } else {
-                            dialogWindow.readyYeeDialog(null, callwin);
+                            setTimeout(readyFunc, 100);
                         }
                     }
+                    readyFunc();
                 }
             }
         });
@@ -75,6 +85,7 @@
                 height: 720,
                 width: 1060
             }, that.data() || {});
+            option.elem = that;
             window.openYeeDialog(url, title, option, window);
             ev.preventDefault();
             return false;

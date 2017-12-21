@@ -157,7 +157,9 @@ class UserForm extends Form
             'select_dialog' => [
                 'label' => '选择对话框',
                 'type' => 'select_dialog',
-                'data-href' => 'http://www.beacon.com/',
+                'data-href' => 'http://localhost:8088/index/show',
+                'data-val' => ['r' => true],
+                'data-val-msg' => ['r' => '请选择单选框'],
             ],
 
             'linkage' => [

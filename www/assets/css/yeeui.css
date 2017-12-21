@@ -515,6 +515,13 @@ input.input-valid:focus {
     height: 18px
 }
 
+.form-box .yee-btn {
+    line-height: 24px;
+    height: 24px;
+    margin-left: 2px;
+    vertical-align: middle;
+}
+
 .yee-btn.small.del, .yee-btn.small.edit, .yee-btn.small.show {
     border: solid 1px #e1e1e1;
     background-color: #FFF;
