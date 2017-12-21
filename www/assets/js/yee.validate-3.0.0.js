@@ -76,6 +76,30 @@
         return '';
     };
 
+    var getBoxByName = function (elem) {
+        if (!(elem.is(':radio') || elem.is(':checkbox'))) {
+            return null;
+        }
+        var name = elem.attr('name');
+        var form = null;
+        if (elem.get(0).form) {
+            form = $(elem.get(0).form);
+        }
+        else {
+            form = elem.parents('form:first');
+        }
+        var ckbox = null;
+        if (elem.is(':radio')) {
+            ckbox = form.find(':radio[name="' + name + '"]');
+        } else {
+            ckbox = form.find(':checkbox[name="' + name + '"]');
+        }
+        if (ckbox.length == 0) {
+            return null;
+        }
+        return ckbox;
+    }
+
     function YeeValidate() {
         var Config = {
             rules: 'val'				    //验证器规则
@@ -183,27 +207,6 @@
                 }
             };
             regFunc('required', function (val, bwo) {
-                if (this.is(':radio') || this.is(':checkbox')) {
-                    var name = this.attr('name');
-                    var form = null;
-                    if (this.get(0).form) {
-                        form = $(this.get(0).form);
-                    }
-                    else {
-                        form = this.parents('form:first');
-                    }
-                    var ckbox = null;
-                    if (this.is(':radio')) {
-                        ckbox = form.find(':radio[name="' + name + '"]:checked');
-                    } else {
-                        ckbox = form.find(':checkbox[name="' + name + '"]:checked');
-                    }
-                    if (ckbox && ckbox.length > 0) {
-                        val = 'on';
-                    } else {
-                        val = null;
-                    }
-                }
                 if (val === null) {
                     return false;
                 }
@@ -253,6 +256,34 @@
             regFunc("rangelength", function (val, len1, len2) {
                 return val.length >= len1 && val.length <= len2;
             });
+
+            regFunc("minsize", function (val, len) {
+                var boxs = getBoxByName(this);
+                var length = 0;
+                if (boxs !== null) {
+                    length = boxs.filter(':checked').length;
+                }
+                return length >= len;
+            });
+
+            regFunc("maxsize", function (val, len) {
+                var boxs = getBoxByName(this);
+                var length = 0;
+                if (boxs !== null) {
+                    length = boxs.filter(':checked').length;
+                }
+                return length <= len;
+            });
+
+            regFunc("rangesize", function (val, len1, len2) {
+                var boxs = getBoxByName(this);
+                var length = 0;
+                if (boxs !== null) {
+                    length = boxs.filter(':checked').length;
+                }
+                return length >= len1 && length <= len2;
+            });
+
             regFunc('money', function (val) {
                 return /^[-]{0,1}\d+[\.]\d{1,2}$/.test(val) || /^[-]{0,1}\d+$/.test(val);
             }, '仅可输入带有2位小数以内的数字及整数');
@@ -334,7 +365,14 @@
             if (elem.triggerHandler('displayDefault', [msg]) === false || elem.parents('form').triggerHandler('displayDefault', [elem, msg]) === false) {
                 return;
             }
-            elem.removeClass(Config.input_error + ' ' + Config.input_valid).addClass(Config.input_default);
+            var ckBoxs = getBoxByName(elem);
+            if (ckBoxs) {
+                $(ckBoxs).each(function () {
+                    $(this).removeClass(Config.input_error + ' ' + Config.input_valid).addClass(Config.input_default);
+                });
+            } else {
+                elem.removeClass(Config.input_error + ' ' + Config.input_valid).addClass(Config.input_default);
+            }
             var label = getTipLabel(elem);
             label.removeClass(Config.field_error + ' ' + Config.field_valid).addClass(Config.field_default);
             label.html(msg);
@@ -347,7 +385,14 @@
             if (elem.triggerHandler('displayValid', [msg]) === false || elem.parents('form').triggerHandler('displayValid', [elem, msg]) === false) {
                 return;
             }
-            elem.removeClass(Config.input_error + ' ' + Config.input_default).addClass(Config.input_valid);
+            var ckBoxs = getBoxByName(elem);
+            if (ckBoxs) {
+                $(ckBoxs).each(function () {
+                    $(this).removeClass(Config.input_error + ' ' + Config.input_default).addClass(Config.input_valid);
+                });
+            } else {
+                elem.removeClass(Config.input_error + ' ' + Config.input_default).addClass(Config.input_valid);
+            }
             if (msg) {
                 var label = getTipLabel(elem);
                 label.show();
@@ -362,7 +407,14 @@
             if (elem.triggerHandler('displayError', [msg]) === false || elem.parents('form').triggerHandler('displayError', [elem, msg]) === false) {
                 return;
             }
-            elem.removeClass(Config.input_valid + ' ' + Config.input_default).addClass(Config.input_error);
+            var ckBoxs = getBoxByName(elem);
+            if (ckBoxs) {
+                $(ckBoxs).each(function () {
+                    $(this).removeClass(Config.input_valid + ' ' + Config.input_default).addClass(Config.input_error);
+                });
+            } else {
+                elem.removeClass(Config.input_valid + ' ' + Config.input_default).addClass(Config.input_error);
+            }
             if (msg) {
                 if (displayMode == 1 || displayMode == 2) {
                     return;
@@ -526,26 +578,11 @@
 
         var mouseDownEvent = function () {
             var elem = $(this);
-            if (elem.is(':radio') || elem.is(':checkbox')) {
-                var name = elem.attr('name');
-                var form = null;
-                if (elem.get(0).form) {
-                    form = $(elem.get(0).form);
-                }
-                else {
-                    form = elem.parents('form:first');
-                }
-                var ckbox = null;
-                if (elem.is(':radio')) {
-                    ckbox = form.find(':radio[name="' + name + '"]');
-                } else {
-                    ckbox = form.find(':checkbox[name="' + name + '"]');
-                }
-                if (ckbox && ckbox.length > 0) {
-                    elem = ckbox.filter(function () {
-                        return $(this).data('val') != void 0;
-                    });
-                }
+            var ckBoxs = getBoxByName(elem);
+            if (ckBoxs) {
+                elem = ckBoxs.filter(function () {
+                    return $(this).data('val') != void 0;
+                });
             }
             var data = getFieldData(elem);
             if (!data) {
@@ -595,7 +632,16 @@
             var rules = data.rules;
             var type = (elem.attr('type') || elem[0].type || 'text').toLowerCase();
             if (type === 'checkbox' || type === 'radio') {
-                val = elem.is(':checked') ? val : '';
+                var boxs = getBoxByName(elem);
+                if (boxs == null) {
+                    val = '';
+                } else {
+                    var vitem = [];
+                    boxs.filter(':checked').each(function (idx, em) {
+                        vitem.push($(em).val());
+                    });
+                    val = vitem.join(',');
+                }
             }
             for (var key in rules) {
                 if (key === 'remote') {
@@ -652,26 +698,12 @@
                 setDefault(elem, data.valDefault);
             }
             //显示来自服务器的错误数据
-            if (elem.is(':radio') || elem.is(':checkbox')) {
-                var name = elem.attr('name');
-                var form = null;
-                if (elem.get(0).form) {
-                    form = $(elem.get(0).form);
-                }
-                else {
-                    form = elem.parents('form:first');
-                }
-                var ckbox = null;
-                if (elem.is(':radio')) {
-                    ckbox = form.find(':radio[name="' + name + '"]');
-                } else {
-                    ckbox = form.find(':checkbox[name="' + name + '"]');
-                }
-                if (ckbox && ckbox.length > 0) {
-                    $(ckbox).each(function () {
-                        $(this).off('change', mouseDownEvent).on('change', mouseDownEvent);
-                    });
-                }
+
+            var ckBoxs = getBoxByName(elem);
+            if (ckBoxs) {
+                $(ckBoxs).each(function () {
+                    $(this).off('change', mouseDownEvent).on('change', mouseDownEvent);
+                });
             } else {
                 elem.off('mousedown', mouseDownEvent);
                 elem.on('mousedown', mouseDownEvent);
@@ -753,7 +785,8 @@
                 });
                 layer.alert(errors.join('<br/>'), {
                     title: '错误提示',
-                    icon: 7
+                    icon: 7,
+                    anim: 6
                 });
             }
             if (displayMode == 2 && layer) {
@@ -762,9 +795,10 @@
                     error = this.msg;
                     return false;
                 });
-                layer.msg(error, {
+                layer.alert(error, {
                     title: '错误提示',
-                    icon: 7
+                    icon: 7,
+                    anim: 6
                 });
             }
             $(errItems).each(function () {
@@ -805,9 +839,6 @@
             if (allPass === false) {
                 if ($(form).triggerHandler('displayAllError', [errItems]) !== false) {
                     displayAllError(errItems);
-                }
-                if (errItems[0].elem.is(':checkbox') || errItems[0].elem.is(':radio')) {
-                    return;
                 }
                 setTimeout(function () {
                     try {

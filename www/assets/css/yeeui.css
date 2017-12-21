@@ -391,6 +391,14 @@ input.input-error, select.input-error, textarea.input-error {
     border-radius: 3px
 }
 
+input.input-error[type='checkbox'] + span, input.input-error[type='radio'] + span {
+    background: #FFF0F0;
+    border-radius: 3px;
+    padding: 2px;
+    margin-left: -2px;
+    margin-right: -2px;
+}
+
 input.input-error:focus, select.input-error:focus, textarea.input-error:focus {
     border: 1px dashed #E84C3D;
     -webkit-box-shadow: 0 0 3px rgba(232, 76, 61, .3);
