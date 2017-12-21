@@ -762,7 +762,7 @@
                     error = this.msg;
                     return false;
                 });
-                layer.alert(error, {
+                layer.msg(error, {
                     title: '错误提示',
                     icon: 7
                 });
