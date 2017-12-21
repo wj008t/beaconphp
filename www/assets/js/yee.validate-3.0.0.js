@@ -207,6 +207,16 @@
                 }
             };
             regFunc('required', function (val, bwo) {
+                if (this.is(':radio') || this.is(':checkbox')) {
+                    var boxs = getBoxByName(this);
+                    if (boxs == null) {
+                        return false;
+                    }
+                    if (boxs.filter(':checked').length == 0) {
+                        return false;
+                    }
+                    return true;
+                }
                 if (val === null) {
                     return false;
                 }
