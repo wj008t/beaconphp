@@ -32,7 +32,7 @@ class RadioGroup extends Hidden
         $args['style'] = '';
         $args['class'] = '';
         $args['name'] = '';
-        $args['id'] = '';
+        $args['type'] = '';
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
 
