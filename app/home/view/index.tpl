@@ -9,7 +9,7 @@
 </head>
 
 <body>
-<form action="/index/save" method="post" data-display-mode="0" yee-module="validate">
+<form action="/index/save" method="post" data-display-mode="2" yee-module="validate">
     {foreach from=$form->getViewFields() item=field}
         {if $field->type=='blend'}
             {$field->box()}
