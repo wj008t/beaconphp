@@ -273,6 +273,10 @@ a:hover {
     width: 60px
 }
 
+.form-inp.nnumber {
+    width: 40px
+}
+
 .form-inp.number {
     width: 100px
 }
@@ -283,6 +287,10 @@ a:hover {
 
 .form-inp.stext {
     width: 160px
+}
+
+.form-inp.ntext {
+    width: 100px
 }
 
 .form-inp.ltext {
@@ -513,6 +521,17 @@ input.input-valid:focus {
 .yee-btn.small {
     line-height: 18px;
     height: 18px
+}
+
+.yee-btn.big {
+    line-height: 26px;
+    height: 26px
+}
+
+.yee-btn.disabled, .yee-btn.disabled:hover, .yee-btn[disabled], .yee-btn[disabled]:hover {
+    background: #f7f7f7;
+    color: #999;
+    border: solid 1px #e1e1e1;
 }
 
 .form-box .yee-btn {

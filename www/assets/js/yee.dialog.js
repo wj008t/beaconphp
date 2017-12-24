@@ -1,34 +1,30 @@
 (function ($, Yee, layer) {
-    window.openYeeDialog = function (url, title, options, callwin) {
+    window.openYeeDialog = function (url, title, option, callwin, assign) {
         callwin = callwin || window;
         if (window.top != window) {
             if (window.top.openYeeDialog) {
-                window.top.openYeeDialog(url, title, options, callwin);
+                window.top.openYeeDialog(url, title, option, callwin, assign);
             }
             return;
         }
         title = title || '网页对话框';
-        options = options || {};
-        options.width = options.width || 1060;
-        options.height = options.height || 720;
+        option = option || {};
+        option.width = option.width || 1060;
+        option.height = option.height || 720;
         var winW = $(window).width() - 20;
         var winH = $(window).height() - 20;
-        options.width = options.width > winW ? winW : options.width;
-        options.height = options.height > winH ? winH : options.height;
+        option.width = option.width > winW ? winW : option.width;
+        option.height = option.height > winH ? winH : option.height;
         var iframe = null;
         var layIndex = layer.open({
             type: 2,
             title: title,
-            area: [options.width + 'px', options.height + 'px'],
-            maxmin: true,
+            area: [option.width + 'px', option.height + 'px'],
+            maxmin: option.maxmin === void 0 ? true : option.maxmin,
             content: url,
             end: function () {
                 if (callwin.jQuery) {
-                    if (options.data !== void 0) {
-                        callwin.jQuery(callwin).triggerHandler('closeYDialog', options);
-                    } else {
-                        callwin.jQuery(callwin).triggerHandler('closeYDialog', options);
-                    }
+                    callwin.jQuery(callwin).triggerHandler('closeYDialog', [option, assign]);
                 }
                 if (iframe != null) {
                     iframe.remove();
@@ -49,8 +45,8 @@
                         }
                     }
                     dialogWindow.trigger = function (event, data) {
-                        if (options.elem) {
-                            options.elem.triggerHandler(event, [data]);
+                        if (option.elem) {
+                            option.elem.triggerHandler(event, [data]);
                         }
                     }
                     dialogWindow.closeYeeDialog = function () {
@@ -62,10 +58,10 @@
                     //准备好了
                     var readyFunc = function () {
                         if (typeof dialogWindow.readyYeeDialog == 'function') {
-                            if (options.data !== void 0) {
-                                dialogWindow.readyYeeDialog(options.data, callwin);
+                            if (assign !== void 0) {
+                                dialogWindow.readyYeeDialog(assign, callwin, option.elem || null);
                             } else {
-                                dialogWindow.readyYeeDialog(null, callwin);
+                                dialogWindow.readyYeeDialog(null, callwin, option.elem || null);
                             }
                         } else {
                             setTimeout(readyFunc, 100);
@@ -79,6 +75,9 @@
     Yee.extend('a', 'dialog', function (elem) {
         $(elem).on('click', function (ev) {
             var that = $(this);
+            if (that.is('.disabled') || that.is(':disabled')) {
+                return false;
+            }
             var url = that.data('href') || that.attr('href');
             var title = that.attr('title') || '';
             var option = $.extend({
@@ -86,7 +85,7 @@
                 width: 1060
             }, that.data() || {});
             option.elem = that;
-            window.openYeeDialog(url, title, option, window);
+            window.openYeeDialog(url, title, option, window, option.assign || null);
             ev.preventDefault();
             return false;
         });

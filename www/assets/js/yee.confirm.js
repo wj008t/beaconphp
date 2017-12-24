@@ -73,6 +73,9 @@
 
         if (qem.is('form')) {
             qem.on('submit', function (ev) {
+                if (qem.is('.disabled') || qem.is(':disabled')) {
+                    return false;
+                }
                 if (qem.triggerHandler('before_confirm') === false) {
                     return false;
                 }
@@ -80,6 +83,9 @@
             });
         } else {
             qem.on('click', function (ev) {
+                if (qem.is('.disabled') || qem.is(':disabled')) {
+                    return false;
+                }
                 if (qem.triggerHandler('before_confirm') === false) {
                     return false;
                 }

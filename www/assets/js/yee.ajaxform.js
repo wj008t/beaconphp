@@ -79,14 +79,12 @@
                         }
                         //如果存在错误
                         if (ret.status === false) {
-
                             if (ret.formError && that.data('yee-validate-init')) {
                                 that.showError(ret.formError);
                             }
                             else {
                                 if (layer !== void 0) {
                                     if (alert) {
-
                                         layer.alert(ret.error, {icon: 7}, function (idx) {
                                             layer.close(idx);
                                         });
@@ -100,10 +98,8 @@
                                 return;
                             }
                         }
-
                         //提交成功
                         if (ret.status === true) {
-
                             if (layer && ret.message && typeof (ret.message) === 'string') {
                                 layer.msg(ret.message, {icon: 1, time: 1000});
                             }

@@ -60,6 +60,9 @@
         });
         qem.on('click', function (ev) {
             var that = $(this);
+            if (that.is('.disabled') || that.is(':disabled')) {
+                return false;
+            }
             if (ev.result === false) {
                 return false;
             }

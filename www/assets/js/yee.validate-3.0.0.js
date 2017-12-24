@@ -1018,18 +1018,31 @@
             }
             var first = null;
             var errItems = [];
+            var error = null;
             for (var name in formError) {
+                error = error === null ? formError[name] : error;
                 var elem = that.find(":input[name='" + name + "']");
                 if (elem.length == 0) {
                     elem = that.find(":input[id='" + name + "']");
                 }
-                if (elem.length) {
+                if (elem.length > 0) {
                     if (!first) {
                         first = elem;
                     }
                     var msg = formError[name];
                     errItems.push({elem: elem, msg: msg});
                 }
+            }
+            if (errItems.length == 0) {
+                if (error === null) {
+                    error = '错误,未知原因';
+                }
+                layer.alert(error, {
+                    title: '错误提示',
+                    icon: 7,
+                    anim: 6
+                });
+                return;
             }
             if (that.triggerHandler('displayAllError', [errItems, true]) !== false) {
                 YeeValidator.displayAllError(errItems);
