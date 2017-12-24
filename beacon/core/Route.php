@@ -40,10 +40,44 @@ class Route
             self::$routePath = Utils::path(ROOT_DIR, 'config');
         }
         $filepath = Utils::path(self::$routePath, $name . '.route.php');
-        if (!file_exists($filepath)) {
-            return;
+        if (file_exists($filepath)) {
+            $idata = require $filepath;
+        } else {
+            $idata = [
+                'path' => 'app/' . $name,
+                'namespace' => 'app\\' . $name,
+                'base' => '/' . ($name == 'home' ? '' : $name),
+                'rules' => [
+                    '@^/(\w+)/(\w+)/(\d+)$@i' => [
+                        'ctl' => '$1',
+                        'act' => '$2',
+                        'id' => '$3',
+                    ],
+                    '@^/(\w+)/(\w+)$@i' => [
+                        'ctl' => '$1',
+                        'act' => '$2',
+                    ],
+                    '@^/(\w+)/?$@i' => [
+                        'ctl' => '$1',
+                        'act' => 'index',
+                    ],
+                    '@^/$@' => [
+                        'ctl' => 'index',
+                        'act' => 'index',
+                    ],
+                ],
+                'resolve' => function ($ctl, $act, $keys) {
+                    $url = '/{ctl}';
+                    if (!empty($act)) {
+                        $url .= '/{act}';
+                    }
+                    if (isset($keys['id'])) {
+                        $url .= '/{id}';
+                    }
+                    return $url;
+                }
+            ];
         }
-        $idata = require $filepath;
         $idata['name'] = $name;
         $idata['base'] = rtrim(empty($idata['base']) ? '' : $idata['base'], '/');
         $idata['base_match'] = '@^' . preg_quote($idata['base'], '@') . '(/.*)?$@i';

@@ -272,7 +272,7 @@ namespace beacon {
 
         public static function escape($value)
         {
-            if ($value == null) {
+            if ($value === null) {
                 return 'NULL';
             }
             $type = gettype($value);
@@ -395,7 +395,6 @@ namespace beacon {
                 return;
             }
             $where = trim($where);
-            $args = is_array($args) ? $args : null;
             if (is_int($where) || is_numeric($where)) {
                 $args = [intval($where)];
                 $where = 'id=?';
@@ -421,7 +420,6 @@ namespace beacon {
         public function delete(string $tbname, $where = null, $args = null)
         {
             $where = trim($where);
-            $args = is_array($args) ? $args : null;
             if (is_int($where) || is_numeric($where)) {
                 $args = [intval($where)];
                 $where = 'id=?';
