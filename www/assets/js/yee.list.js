@@ -4,7 +4,11 @@
         var qem = $(elem);
         option = $.extend({method: 'get', showMsg: false, autoUrl: 0, autoLoad: 0}, option);
         if (option.autoUrl == 1) {
-            option.url = window.location.pathname + '.json' + window.location.search;
+            if (String(window.location.pathname).test(/\/$/)) {
+                option.url = window.location.pathname + 'index.json' + window.location.search;
+            } else {
+                option.url = window.location.pathname + '.json' + window.location.search;
+            }
         }
         var last_opts = null;
         var bind = option.bind || null;
