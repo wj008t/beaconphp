@@ -100,6 +100,7 @@ class Route
         foreach (self::$routeMap as $name => $item) {
             if (preg_match($item['base_match'], $url, $m)) {
                 $item['uri'] = empty($m[1]) ? '' : $m[1];
+                $item['uri'] = preg_replace('@^/index\.php@i', '/', $item['uri']);
                 return $item;
             }
         }
@@ -302,7 +303,12 @@ class Route
 
     public static function run($url = null)
     {
-        Request::instance()->setContentType('html');
+        $request = Request::instance();
+        if ($request->isAjax()) {
+            $request->setContentType('json');
+        } else {
+            $request->setContentType('html');
+        }
         if ($url === null) {
             if (isset($_SERVER['PATH_INFO'])) {
                 self::parse($_SERVER['PATH_INFO']);

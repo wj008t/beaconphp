@@ -331,6 +331,9 @@ class Request
 
     public function isAjax()
     {
+        if (isset($_SERVER['DOCUMENT_URI']) && preg_match('@\.json$@i', $_SERVER['DOCUMENT_URI'])) {
+            return true;
+        }
         return strtolower($this->getHeader('x-requested-with')) === 'xmlhttprequest';
     }
 
