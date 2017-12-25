@@ -2,10 +2,12 @@
 
 namespace sdopx\libs {
 
+    use sdopx\Sdopx;
+
     class ResourceExtends
     {
 
-        private function getResource($tplname, $sdopx)
+        private function getResource($tplname, Sdopx $sdopx)
         {
             Resource::parseResourceName($tplname, 'file', $name, $type);
             $_resource_class = '\\sdopx\\libs\\Resource' . ucfirst($type);
