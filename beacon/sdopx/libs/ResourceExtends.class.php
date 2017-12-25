@@ -2,9 +2,11 @@
 
 namespace sdopx\libs {
 
-    class ResourceExtends {
+    class ResourceExtends
+    {
 
-        private function getResource($tplname, $sdopx) {
+        private function getResource($tplname, $sdopx)
+        {
             Resource::parseResourceName($tplname, 'file', $name, $type);
             $_resource_class = '\\sdopx\\libs\\Resource' . ucfirst($type);
             if (!class_exists($_resource_class)) {
@@ -16,13 +18,13 @@ namespace sdopx\libs {
                 if ($name != '' && $name[0] == '@') {
                     $name = $sdopx->getTemplateDir('common') . substr($name, 1);
                 }
-                  
+
                 if (file_exists($name)) {
                     $filepath = realpath($name);
                 } else {
                     $tempdir = $sdopx->getTemplateDir();
                     foreach ($tempdir as $path) {
-                        $filename = $path . $name;
+                        $filename = Utils::path($path, $name);
                         if (file_exists($filename)) {
                             $filepath = realpath($filename);
                             break;
@@ -37,7 +39,8 @@ namespace sdopx\libs {
             return [$_resource, $name, $type, $filepath];
         }
 
-        public function fetch($tplname, &$content, &$timestamp, $sdopx) {
+        public function fetch($tplname, &$content, &$timestamp, $sdopx)
+        {
             $names = explode('|', $tplname);
             if (count($names) < 2) {
                 throw new \sdopx\SdopxException("Sdopx 解析母版继承错误{$tplname} .");
@@ -45,7 +48,8 @@ namespace sdopx\libs {
             $tplchild = array_pop($names);
             $extends = join('|', $names);
             list($_resource, $name, $type, $filepath) = $this->getResource($tplchild, $sdopx);
-       
+            $rcontent = '';
+            $rtimestamp = 0;
             if ($type == 'file') {
                 $_resource->fetch($filepath, $rcontent, $rtimestamp, $sdopx);
             } else {
@@ -55,7 +59,8 @@ namespace sdopx\libs {
             $timestamp = $rtimestamp;
         }
 
-        public function fetchTimestamp($tplname, $sdopx) {
+        public function fetchTimestamp($tplname, $sdopx)
+        {
             $names = explode('|', $tplname);
             if (count($names) < 2) {
                 throw new \sdopx\SdopxException("Sdopx 解析母版继承错误{$tplname} .");
