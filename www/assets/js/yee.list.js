@@ -18,7 +18,6 @@
             last_opts = opts;
             var query = opts.url;
             var args = Yee.parseURL(opts.url);
-
             if (option.autoUrl == 1 && typeof(window.history.replaceState) != 'undefined') {
                 var thisUrl = Yee.toUrl({path: args.path.replace(/\.json$/i, ''), prams: args.prams});
                 window.history.replaceState(null, document.title, thisUrl);
@@ -39,8 +38,8 @@
                     }
                     //拉取数据成功
                     if (ret.status === true) {
-                        if (opts.showMsg && layer && ret.success && typeof (ret.success) === 'string') {
-                            layer.msg(ret.success, {icon: 1, time: 1000});
+                        if (opts.showMsg && layer && ret.message && typeof (ret.message) === 'string') {
+                            layer.msg(ret.message, {icon: 1, time: 1000});
                         }
                         if (ret.data) {
                             qem.triggerHandler('source', [ret.data, query || ""]);
