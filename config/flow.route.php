@@ -5,10 +5,10 @@ return [
     'namespace' => 'app\\flow',
     'base' => '/flow',
     'rules' => [
-        '@^/(\w+)/(\w+)/(\d+)(\.json)?$@i' => [
+        '@^/(main)_(\d+)/(\w+)$@i' => [
             'ctl' => '$1',
-            'act' => '$2',
-            'id' => '$3',
+            'act' => '$3',
+            'fid' => '$2'
         ],
         '@^/(\w+)/(\w+)(\.json)?$@i' => [
             'ctl' => '$1',
@@ -27,9 +27,6 @@ return [
         $url = '/{ctl}';
         if (!empty($act)) {
             $url .= '/{act}';
-        }
-        if (isset($keys['id'])) {
-            $url .= '/{id}';
         }
         return $url;
     }
