@@ -305,9 +305,12 @@ class Form
         }
     }
 
-    public function autoComplete($method = 'post')
+    public function autoComplete($method, $callback = null)
     {
-
+        if ($callback === null && !is_string($method) && is_callable($method)) {
+            $callback = $method;
+            $method = 'post';
+        }
         $fields = $this->getCurrentFields();
         foreach ($fields as $name => $field) {
             if ($field->close || ($field->offEdit && $this->type = 'edit')) {
@@ -366,10 +369,15 @@ class Form
                 }
             }
         }
+        if ($callback !== null && is_callable($callback) && !$this->validation()) {
+            $errors = $this->getAllError();
+            call_user_func($callback, $errors);
+            return null;
+        }
         return $this->getValues();
     }
 
-    public function validation(&$errors)
+    public function validation()
     {
         $fields = $this->getCurrentFields();
         if (method_exists($this, 'beforeValid')) {
@@ -394,9 +402,6 @@ class Form
         }
         if (method_exists($this, 'afterValid')) {
             $this->afterValid($fields);
-        }
-        if (!$result) {
-            $errors = $this->getAllError();
         }
         return $result;
     }

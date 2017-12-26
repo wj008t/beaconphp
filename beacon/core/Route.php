@@ -179,6 +179,17 @@ class Route
         }
         $arg['ctl'] = strtolower($arg['ctl']);
         $arg['act'] = strtolower($arg['act']);
+        foreach ($arg as $key => $val) {
+            if (in_array($key, ['act', 'ctl', 'base', 'app'])) {
+                continue;
+            }
+            if (!isset($_GET[$key])) {
+                $_GET[$key] = $val;
+            }
+            if (!isset($_REQUEST[$key])) {
+                $_REQUEST[$key] = $val;
+            }
+        }
         self::$route = $arg;
         return $arg;
     }

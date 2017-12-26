@@ -82,8 +82,8 @@ class Validate
     public static function getFunc($type)
     {
         $rtype = self::getRealType($type);
-        if (method_exists('Validate', 'test_' . $rtype)) {
-            return 'Validate::' . 'test_' . $rtype;
+        if (method_exists(self::class, 'test_' . $rtype)) {
+            return self::class . '::' . 'test_' . $rtype;
         }
         if (isset(self::$staticFunc[$rtype])) {
             return self::$staticFunc[$rtype];
@@ -304,7 +304,7 @@ class Validate
         $value = $field->value;
         //验证非空
         if ($rules['required']) {
-            $func = isset($this->func['required']) ? $this->func['required'] : 'Validate::test_required';
+            $func = isset($this->func['required']) ? $this->func['required'] : Validate::getFunc('required');
             $r = call_user_func_array($func, [$value]);
             if (!$r) {
                 $err = isset($this->def_errors['required']) ? $this->def_errors['required'] : (isset($errors['required']) ? $errors['required'] : (isset(Validate::$default_errors['required']) ? Validate::$default_errors['required'] : '必填项'));
