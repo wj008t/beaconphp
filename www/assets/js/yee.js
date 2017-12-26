@@ -89,6 +89,7 @@
             callback();
             return;
         }
+        Yee.loadModule[module] = module;
         var match = module.match(/^css\!(.*)$/i);
         if (match) {
             cssLoader(match[1]);
