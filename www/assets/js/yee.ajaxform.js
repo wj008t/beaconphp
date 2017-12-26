@@ -37,6 +37,7 @@
                 if (back == '' && that.find(":input[name='__BACK__']").length > 0) {
                     back = that.find(":input[name='__BACK__']").val() || '';
                 }
+                var keepBackParam = that.data('back-param') || false;
                 var alert = that.data('alert') || false;
                 var loading = that.data('loading') || false;
                 var timeout = that.data('timeout') || 3000;//提交超时时间
@@ -118,6 +119,21 @@
                                     a.find('span').trigger('click');
                                     a.remove();
                                 } else {
+                                    if (keepBackParam) {
+                                        var args = Yee.parseURL(document.referrer || '');
+                                        if (args.prams.length == 0) {
+                                            window.location.href = ret.jump;
+                                            return;
+                                        }
+                                        var bargs = Yee.parseURL(ret.jump || '');
+                                        for (var i in args.prams) {
+                                            if (bargs.prams[i] === void 0) {
+                                                bargs.prams[i] = args.prams[i];
+                                            }
+                                        }
+                                        window.location.href = Yee.toUrl(bargs);
+                                        return;
+                                    }
                                     window.location.href = ret.jump;
                                 }
                             };
