@@ -113,15 +113,14 @@
                         //页面跳转
                         if (typeof (ret.jump) !== 'undefined' && ret.jump !== null) {
                             var goFunc = function () {
-                                if (ret.jump === 0) {
-                                    window.location.reload();
-                                } else if (typeof (ret.jump) === 'number') {
-                                    window.history.go(ret.jump);
+                                if (/^javascript:/i.test(ret.jump)) {
+                                    var a = $('<a style="display: none"><span></span></a>').attr('href', ret.jump).appendTo(document.body);
+                                    a.find('span').trigger('click');
+                                    a.remove();
                                 } else {
                                     window.location.href = ret.jump;
                                 }
                             };
-
                             if (ret.status === true && ret.message) {
                                 window.setTimeout(goFunc, 1000);
                             } else if (ret.status === false && ret.error) {
