@@ -4,7 +4,7 @@
         var qem = $(elem);
         option = $.extend({method: 'get', showMsg: false, autoUrl: 0, autoLoad: 0}, option);
         if (option.autoUrl == 1) {
-            if (String(window.location.pathname).test(/\/$/)) {
+            if (/\/$/.test(String(window.location.pathname))) {
                 option.url = window.location.pathname + 'index.json' + window.location.search;
             } else {
                 option.url = window.location.pathname + '.json' + window.location.search;
