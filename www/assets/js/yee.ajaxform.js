@@ -114,29 +114,26 @@
                         //页面跳转
                         if (typeof (ret.jump) !== 'undefined' && ret.jump !== null) {
                             var goFunc = function () {
-                                if (/^javascript:/i.test(ret.jump)) {
-                                    var a = $('<a style="display: none"><span></span></a>').attr('href', ret.jump).appendTo(document.body);
-                                    a.find('span').trigger('click');
-                                    a.remove();
-                                } else {
-                                    if (keepBackParam) {
-                                        var args = Yee.parseURL(document.referrer || '');
-                                        if (args.prams.length == 0) {
-                                            window.location.href = ret.jump;
-                                            return;
-                                        }
-                                        var bargs = Yee.parseURL(ret.jump || '');
-                                        for (var i in args.prams) {
-                                            if (bargs.prams[i] === void 0) {
-                                                bargs.prams[i] = args.prams[i];
-                                            }
-                                        }
-                                        window.location.href = Yee.toUrl(bargs);
+                                if (keepBackParam) {
+                                    var args = Yee.parseURL(document.referrer || '');
+                                    if (args.prams.length == 0) {
+                                        window.location.href = ret.jump;
                                         return;
                                     }
-                                    window.location.href = ret.jump;
+                                    var bargs = Yee.parseURL(ret.jump || '');
+                                    for (var i in args.prams) {
+                                        if (bargs.prams[i] === void 0) {
+                                            bargs.prams[i] = args.prams[i];
+                                        }
+                                    }
+                                    window.location.href = Yee.toUrl(bargs);
+                                    return;
                                 }
+                                var a = $('<a style="display: none"><span></span></a>').attr('href', ret.jump).appendTo(document.body);
+                                a.find('span').trigger('click');
+                                a.remove();
                             };
+
                             if (ret.status === true && ret.message) {
                                 window.setTimeout(goFunc, 1000);
                             } else if (ret.status === false && ret.error) {
@@ -144,6 +141,7 @@
                             } else {
                                 goFunc();
                             }
+
                         }
                     },
                     error: function (xhr) {
