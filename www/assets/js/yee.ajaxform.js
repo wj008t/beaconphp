@@ -1,6 +1,5 @@
 (function ($, Yee, layer) {
     var fromTimeout = true;
-
     Yee.extend('form', 'ajaxform', function (elem) {
         var qem = $(elem);
         var timer = null;
@@ -22,12 +21,10 @@
                 if (that.data('confirm_prevent')) {
                     return false;
                 }
-
                 if (that.triggerHandler('before') === false) {
                     return;
                 }
                 var method = (that.attr('method') || 'GET').toUpperCase();
-
                 var action = that.attr('action') || window.location.href;
                 if (method == 'GET') {
                     var pathinfo = Yee.parseURL(action);
@@ -133,7 +130,6 @@
                                 a.find('span').trigger('click');
                                 a.remove();
                             };
-
                             if (ret.status === true && ret.message) {
                                 window.setTimeout(goFunc, 1000);
                             } else if (ret.status === false && ret.error) {
@@ -141,7 +137,6 @@
                             } else {
                                 goFunc();
                             }
-
                         }
                     },
                     error: function (xhr) {
