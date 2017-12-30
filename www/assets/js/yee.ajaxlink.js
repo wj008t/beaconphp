@@ -18,7 +18,7 @@
                 method: 'get',
             }, qem.data() || {});
             option.url = url;
-            var args = Yee.parseURL(url);
+            var args = Yee.parseUrl(url);
             args.path = args.path || window.location.pathname;
             option.path = args.path;
             option.prams = args.prams;

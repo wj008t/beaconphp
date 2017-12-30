@@ -11,7 +11,7 @@
                 href: '',
             }, qem.data() || {});
             var val = qem.val();
-            var args = Yee.parseURL(option.href);
+            var args = Yee.parseUrl(option.href);
             for (var key in args.prams) {
                 if (args.prams[key] == '#value#') {
                     args.prams[key] = val;

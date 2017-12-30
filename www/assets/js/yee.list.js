@@ -17,7 +17,7 @@
             opts = $.extend(option, opts || {});
             last_opts = opts;
             var query = opts.url;
-            var args = Yee.parseURL(opts.url);
+            var args = Yee.parseUrl(opts.url);
             if (option.autoUrl == 1 && typeof(window.history.replaceState) != 'undefined') {
                 var thisUrl = Yee.toUrl({path: args.path.replace(/\.json$/i, ''), prams: args.prams});
                 window.history.replaceState(null, document.title, thisUrl);

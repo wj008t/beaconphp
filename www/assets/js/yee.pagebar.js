@@ -14,7 +14,7 @@
         var size = size || option.page_size;
         var maxpage = parseInt(info.page_count);
         info.query = info.query || '';
-        var query = Yee.parseURL(info.query);
+        var query = Yee.parseUrl(info.query);
         var start = (maxpage < 10 || page <= 5) ? 1 : (page + 5 > maxpage ? maxpage - 9 : page - 4);
         var temp = start + 9;
         var end = (page + 5 > maxpage) ? maxpage : (temp > maxpage ? maxpage : temp);

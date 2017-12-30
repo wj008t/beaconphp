@@ -27,7 +27,7 @@
                 var method = (that.attr('method') || 'GET').toUpperCase();
                 var action = that.attr('action') || window.location.href;
                 if (method == 'GET') {
-                    var pathinfo = Yee.parseURL(action);
+                    var pathinfo = Yee.parseUrl(action);
                     action = pathinfo.path;
                 }
                 var back = that.data('back') || '';
@@ -111,12 +111,12 @@
                         if (typeof (ret.jump) !== 'undefined' && ret.jump !== null) {
                             var goFunc = function () {
                                 if (keepBackParam) {
-                                    var args = Yee.parseURL(document.referrer || '');
+                                    var args = Yee.parseUrl(document.referrer || '');
                                     if (args.prams.length == 0) {
                                         window.location.href = ret.jump;
                                         return;
                                     }
-                                    var bargs = Yee.parseURL(ret.jump || '');
+                                    var bargs = Yee.parseUrl(ret.jump || '');
                                     for (var i in args.prams) {
                                         if (bargs.prams[i] === void 0) {
                                             bargs.prams[i] = args.prams[i];

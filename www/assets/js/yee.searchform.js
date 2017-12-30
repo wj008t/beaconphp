@@ -8,7 +8,7 @@
             option.url = window.location.pathname + '.json';
         }
         var initform = function () {
-            var args = Yee.parseURL(window.location.href);
+            var args = Yee.parseUrl(window.location.href);
             for (var name in args.prams) {
                 var box = qem.find(':input[name="' + name + '"]');
                 if (box.length > 0) {

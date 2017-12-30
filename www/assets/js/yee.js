@@ -4,7 +4,7 @@
         //加载的是css 文件
         url = Yee.baseUrl + url;
         if (Yee.config && Yee.config.version) {
-            var query = Yee.parseURL(url);
+            var query = Yee.parseUrl(url);
             query.prams.v = Yee.config.version;
             url = Yee.toUrl(query);
         }
@@ -33,14 +33,19 @@
     }
     var cssLoader = function (url) {
         if (Yee.config && Yee.config.version) {
-            var query = Yee.parseURL(url);
+            var query = Yee.parseUrl(url);
             query.prams.v = Yee.config.version;
             url = Yee.toUrl(query);
         }
-        var link = $('<link />');
-        link.attr('href', Yee.baseUrl + url);
-        link.attr('rel', 'stylesheet');
-        link.appendTo($('head'));
+        var head = document.getElementsByTagName('head');
+        if (head.length > 0) {
+            head = head[0];
+            var link = document.createElement('link');
+            link.href = baseUrl + url;
+            link.setAttribute('rel', 'stylesheet');
+            link.setAttribute('type', 'text/css');
+            head.appendChild(link);
+        }
     }
     var Yee = window.Yee = $.Yee = window.Yee || {};
     //Yee 路径
@@ -252,7 +257,7 @@
         });
     };
     //解析URL
-    Yee.parseURL = function (url) {
+    Yee.parseUrl = function (url) {
         url = url || '';
         var query = url.replace(/&+$/, '');
         var path = query;

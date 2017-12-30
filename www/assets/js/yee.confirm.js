@@ -4,7 +4,7 @@
         qem.data('confirm_prevent', true);
 
         function send(opt, callback) {
-            var args = Yee.parseURL(opt.url);
+            var args = Yee.parseUrl(opt.url);
             args.path = args.path || window.location.pathname;
             $.ajax({
                 type: opt.method,
