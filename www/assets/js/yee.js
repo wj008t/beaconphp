@@ -1,3 +1,5 @@
+"use strict";
+
 (function ($) {
     var readyCallback = [];
     var scriptLoader = function (url, callback) {
