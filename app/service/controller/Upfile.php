@@ -30,7 +30,6 @@ class Upfile extends Controller
         $strictSize = $request->param('strictSize:i', 0);
         \ChromePhp::log($catSizes, $catType, $strictSize);
 
-
         try {
             $upload = new Uploader('filedata', $config);
             $upload->saveFile();
