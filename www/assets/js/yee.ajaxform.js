@@ -86,7 +86,6 @@
                                         layer.alert(ret.error, {icon: 7}, function (idx) {
                                             layer.close(idx);
                                         });
-
                                     } else {
                                         layer && layer.msg(ret.error, {icon: 0, time: 2000});
                                     }
