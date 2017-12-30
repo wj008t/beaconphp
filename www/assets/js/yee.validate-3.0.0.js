@@ -796,7 +796,7 @@
                 layer.alert(errors.join('<br/>'), {
                     title: '错误提示',
                     icon: 7,
-                    anim: 6
+                    anim: 5
                 });
             }
             if (displayMode == 2 && layer) {
@@ -808,7 +808,7 @@
                 layer.alert(error, {
                     title: '错误提示',
                     icon: 7,
-                    anim: 6
+                    anim: 5
                 });
             }
             $(errItems).each(function () {
