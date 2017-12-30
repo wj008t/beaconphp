@@ -32,7 +32,6 @@ Yee.config = {
     depends: {
         'jquery-ui': ['css!../jquery-ui/custom.css'],
         'yee-layer': ['layer'],
-
         'yee-upfile': (function () {
             if (typeof FormData == 'function') {
                 return ['yee-layer', 'html5-upload.js'];
