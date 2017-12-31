@@ -7,10 +7,15 @@
  */
 
 namespace beacon;
-
-define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
-define('IS_CLI', PHP_SAPI == 'cli' ? TRUE : FALSE);
-define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
+if (!defined('IS_CGI')) {
+    define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
+}
+if (!defined('IS_CLI')) {
+    define('IS_CLI', PHP_SAPI == 'cli' ? TRUE : FALSE);
+}
+if (!defined('IS_WIN')) {
+    define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
+}
 
 class Route
 {
