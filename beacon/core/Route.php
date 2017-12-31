@@ -8,6 +8,9 @@
 
 namespace beacon;
 
+define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
+define('IS_CLI', PHP_SAPI == 'cli' ? TRUE : FALSE);
+define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
 
 class Route
 {
@@ -321,10 +324,28 @@ class Route
             $request->setContentType('html');
         }
         if ($url === null) {
-            if (isset($_SERVER['PATH_INFO'])) {
-                self::parse($_SERVER['PATH_INFO']);
+            if (IS_CLI) {
+                if (isset($_SERVER['argv']) && !empty($_SERVER['argv'][1])) {
+                    $_SERVER['REQUEST_URI'] = $_SERVER['argv'][1];
+                    self::parse($_SERVER['argv'][1]);
+                    $data = parse_url($_SERVER['REQUEST_URI']);
+                    if (isset($data['query'])) {
+                        parse_str($data['query'], $args);
+                        foreach ($args as $key => $val) {
+                            $_GET[$key] = $val;
+                            $_REQUEST[$key] = $val;
+                        }
+                    }
+                } else {
+                    $_SERVER['REQUEST_URI'] = '/';
+                    self::parse('/');
+                }
             } else {
-                self::parse($_SERVER['REQUEST_URI']);
+                if (isset($_SERVER['PATH_INFO'])) {
+                    self::parse($_SERVER['PATH_INFO']);
+                } else {
+                    self::parse($_SERVER['REQUEST_URI']);
+                }
             }
         } else {
             self::parse($url);
