@@ -37,17 +37,21 @@
                     }
                     //拉取数据成功
                     if (ret.status === true) {
+                        if (qem.triggerHandler('success', [ret]) === false) {
+                            return;
+                        }
                         if (ret.message && typeof (ret.message) === 'string') {
                             layer.msg(ret.message, {icon: 1, time: 1000});
                         }
-                        qem.triggerHandler('success', [ret]);
                     }
                     //拉取数据错误
                     if (ret.status === false) {
+                        if (qem.triggerHandler('error', [ret]) === false) {
+                            return;
+                        }
                         if (ret.error && typeof (ret.error) === 'string') {
                             layer.msg(ret.error, {icon: 0, time: 2000});
                         }
-                        qem.triggerHandler('error', [ret]);
                     }
                 }
             });
