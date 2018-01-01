@@ -73,7 +73,6 @@
         }
 
         var allEvents = $._data(qem[0], "events") || qem.data("events");
-
         if (qem.is('form')) {
             var currentListener = qem[0].onsubmit;
             if (currentListener) {
@@ -115,8 +114,5 @@
             var newEvent = typeEvents.pop();
             typeEvents.unshift(newEvent);
         }
-        console.log(qem[0].onclick);
-
-
     });
 })(jQuery, Yee, layer);
