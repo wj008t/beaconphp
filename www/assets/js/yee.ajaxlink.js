@@ -63,10 +63,6 @@
             if (ev.result === false) {
                 return false;
             }
-            //如果被确认框阻止
-            if (that.data('confirm_prevent')) {
-                return false;
-            }
             var url = $(this).data('href') || $(this).attr('href');
             send(url);
             return false;

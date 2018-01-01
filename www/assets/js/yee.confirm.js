@@ -46,6 +46,7 @@
             if (!that.data('confirm_prevent')) {
                 return true;
             }
+            ev.stopImmediatePropagation();
             var tips = that.data('confirm') || '';
             var method = that.data('confirm-method') || 'get';
             var url = that.data('confirm-url') || '';
@@ -71,7 +72,16 @@
             return false;
         }
 
+        var allEvents = $._data(qem[0], "events") || qem.data("events");
+
         if (qem.is('form')) {
+            var currentListener = qem[0].onsubmit;
+            if (currentListener) {
+                qem.bind('submit', function (e) {
+                    return currentListener(e.originalEvent);
+                });
+                qem[0].onsubmit = null;
+            }
             qem.on('submit', function (ev) {
                 if (qem.is('.disabled') || qem.is(':disabled')) {
                     return false;
@@ -81,7 +91,17 @@
                 }
                 return confirm(ev, this);
             });
+            var typeEvents = allEvents.submit;
+            var newEvent = typeEvents.pop();
+            typeEvents.unshift(newEvent);
         } else {
+            var currentListener = qem[0].onclick;
+            if (currentListener) {
+                qem.bind('click', function (e) {
+                    return currentListener(e.originalEvent);
+                });
+                qem[0].onclick = null;
+            }
             qem.on('click', function (ev) {
                 if (qem.is('.disabled') || qem.is(':disabled')) {
                     return false;
@@ -91,6 +111,12 @@
                 }
                 return confirm(ev, this);
             });
+            var typeEvents = allEvents.click;
+            var newEvent = typeEvents.pop();
+            typeEvents.unshift(newEvent);
         }
+        console.log(qem[0].onclick);
+
+
     });
 })(jQuery, Yee, layer);

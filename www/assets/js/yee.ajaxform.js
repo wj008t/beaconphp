@@ -18,9 +18,6 @@
                 if (ev.result === false) {
                     return false;
                 }
-                if (that.data('confirm_prevent')) {
-                    return false;
-                }
                 if (that.triggerHandler('before') === false) {
                     return;
                 }
