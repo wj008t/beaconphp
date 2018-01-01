@@ -80,7 +80,7 @@ class Request
 
     }
 
-    public function req(array $data, string $name, $def = null)
+    public function req(array $data, string $name = null, $def = null)
     {
         if (empty($name)) {
             return $data;

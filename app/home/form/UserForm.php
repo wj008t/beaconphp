@@ -160,6 +160,8 @@ class UserForm extends Form
                 'data-href' => 'http://localhost:8088/index/show',
                 'data-val' => ['r' => true],
                 'data-val-msg' => ['r' => '请选择单选框'],
+                'data-width' => 300,
+                'data-height' => 200,
             ],
 
             'linkage' => [
