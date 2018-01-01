@@ -1,7 +1,6 @@
 (function ($, Yee, layer) {
 
     var fromTimeout = true;
-
     //AJAX提交连接
     Yee.extend('a', 'ajaxlink', function (elem) {
         var qem = $(elem);
@@ -53,8 +52,6 @@
                 }
             });
         };
-
-
         qem.on('send', function (ev, url) {
             send(url);
         });
