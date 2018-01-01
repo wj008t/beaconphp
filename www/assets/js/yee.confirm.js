@@ -77,7 +77,7 @@
             var currentListener = qem[0].onsubmit;
             if (currentListener) {
                 qem.bind('submit', function (e) {
-                    return currentListener(e.originalEvent);
+                    return currentListener.call(this, e.originalEvent);
                 });
                 qem[0].onsubmit = null;
             }
@@ -97,7 +97,7 @@
             var currentListener = qem[0].onclick;
             if (currentListener) {
                 qem.bind('click', function (e) {
-                    return currentListener(e.originalEvent);
+                    return currentListener.call(this, e.originalEvent);
                 });
                 qem[0].onclick = null;
             }
