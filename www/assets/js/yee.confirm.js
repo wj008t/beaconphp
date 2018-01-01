@@ -89,10 +89,8 @@
                 }
                 return confirm(ev, this);
             });
-            var allEvents = $._data(qem[0], "events") || qem.data("events");
-            var typeEvents = allEvents.submit;
-            var newEvent = typeEvents.pop();
-            typeEvents.unshift(newEvent);
+            var typeEvents = ($._data(qem[0], "events") || qem.data("events")).submit;
+            typeEvents.unshift(typeEvents.pop());
         } else {
             var currentListener = qem[0].onclick;
             if (currentListener) {
@@ -110,10 +108,8 @@
                 }
                 return confirm(ev, this);
             });
-            var allEvents = $._data(qem[0], "events") || qem.data("events");
-            var typeEvents = allEvents.click;
-            var newEvent = typeEvents.pop();
-            typeEvents.unshift(newEvent);
+            var typeEvents = ($._data(qem[0], "events") || qem.data("events")).click;
+            typeEvents.unshift(typeEvents.pop());
         }
     });
 })(jQuery, Yee, layer);
