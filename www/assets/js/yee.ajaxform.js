@@ -32,7 +32,6 @@
                     back = that.find(":input[name='__BACK__']").val() || '';
                 }
                 var keepBackParam = that.data('back-param') || false;
-                var alert = that.data('alert') || false;
                 var loading = that.data('loading') || false;
                 var timeout = that.data('timeout') || 3000;//提交超时时间
                 var sendData = that.serialize();
@@ -74,31 +73,27 @@
                         }
                         //如果存在错误
                         if (ret.status === false) {
-                            if (ret.formError && that.data('yee-validate-init')) {
+                            if (ret.formError && typeof (that.showError) == 'function') {
                                 that.showError(ret.formError);
                             }
-                            else {
-                                if (layer !== void 0) {
-                                    if (alert) {
-                                        layer.alert(ret.error, {icon: 7}, function (idx) {
-                                            layer.close(idx);
-                                        });
-                                    } else {
-                                        layer && layer.msg(ret.error, {icon: 0, time: 2000});
-                                    }
-                                }
-                            }
-                            if (that.triggerHandler('fail', [ret]) === false) {
+                            if (that.triggerHandler('error', [ret]) === false) {
                                 return;
+                            }
+                            if (!ret.formError) {
+                                if (layer) {
+                                    layer.alert(ret.error, {icon: 7}, function (idx) {
+                                        layer.close(idx);
+                                    });
+                                }
                             }
                         }
                         //提交成功
                         if (ret.status === true) {
-                            if (layer && ret.message && typeof (ret.message) === 'string') {
-                                layer.msg(ret.message, {icon: 1, time: 1000});
-                            }
                             if (that.triggerHandler('success', [ret]) === false) {
                                 return;
+                            }
+                            if (layer && ret.message && typeof (ret.message) === 'string') {
+                                layer.msg(ret.message, {icon: 1, time: 1000});
                             }
                             if (typeof (ret.jump) === 'undefined' && back != '') {
                                 ret.jump = back;
