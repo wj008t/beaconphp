@@ -72,7 +72,6 @@
             return false;
         }
 
-        var allEvents = $._data(qem[0], "events") || qem.data("events");
         if (qem.is('form')) {
             var currentListener = qem[0].onsubmit;
             if (currentListener) {
@@ -90,6 +89,7 @@
                 }
                 return confirm(ev, this);
             });
+            var allEvents = $._data(qem[0], "events") || qem.data("events");
             var typeEvents = allEvents.submit;
             var newEvent = typeEvents.pop();
             typeEvents.unshift(newEvent);
@@ -110,6 +110,7 @@
                 }
                 return confirm(ev, this);
             });
+            var allEvents = $._data(qem[0], "events") || qem.data("events");
             var typeEvents = allEvents.click;
             var newEvent = typeEvents.pop();
             typeEvents.unshift(newEvent);
