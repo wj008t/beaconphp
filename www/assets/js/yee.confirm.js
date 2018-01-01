@@ -14,8 +14,8 @@
                 dataType: 'json',
                 success: function (ret) {
                     //拉取数据成功
-                    if (ret.data && ret.data.confirm) {
-                        callback(ret.data.confirm);
+                    if (ret.confirm) {
+                        callback(ret.confirm);
                     }
                     else {
                         callback();
