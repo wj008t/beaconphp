@@ -38,8 +38,8 @@
                     }
                     //拉取数据成功
                     if (ret.status === true) {
-                        if (ret.success && typeof (ret.success) === 'string') {
-                            layer.msg(ret.success, {icon: 1, time: 1000});
+                        if (ret.message && typeof (ret.message) === 'string') {
+                            layer.msg(ret.message, {icon: 1, time: 1000});
                         }
                         qem.triggerHandler('success', [ret]);
                     }
