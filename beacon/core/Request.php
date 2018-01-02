@@ -15,7 +15,6 @@ class Request
     private $header = null;
     private $content_type = 'text/html; charset=utf-8';
 
-
     public static function instance()
     {
         if (self::$instance == null) {

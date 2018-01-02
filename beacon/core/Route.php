@@ -17,6 +17,11 @@ if (!defined('IS_WIN')) {
     define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
 }
 
+class ExitException extends \Exception
+{
+
+}
+
 class Route
 {
 
@@ -490,5 +495,7 @@ class Route
             throw new \Exception('不存在的控制器');
         }
     }
+
+
 }
 

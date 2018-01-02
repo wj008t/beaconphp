@@ -36,7 +36,7 @@ abstract class Controller
     {
         $url = empty($url) ? '/' : $url;
         Request::instance()->setHeader('Location', $url);
-        exit;
+        $this->exit();
     }
 
     public function error($error, $code = null, $jump = null)
@@ -57,7 +57,7 @@ abstract class Controller
         }
         if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
             echo json_encode($out);
-            exit;
+            $this->exit();
         } else {
             if (empty($jump)) {
                 $jump = Request::instance()->getReferrer();
@@ -68,7 +68,7 @@ abstract class Controller
             $out['jump'] = $jump;
             $this->assign('info', $out);
             $this->display('@fail.tpl');
-            exit;
+            $this->exit();
         }
     }
 
@@ -83,7 +83,7 @@ abstract class Controller
         }
         if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
             echo json_encode($out);
-            exit;
+            $this->exit();
         } else {
             if (empty($jump)) {
                 $jump = Request::instance()->param('__BACK__');
@@ -97,8 +97,19 @@ abstract class Controller
             $out['jump'] = $jump;
             $this->assign('info', $out);
             $this->display('@success.tpl');
-            exit;
+            $this->exit();
         }
     }
 
+    /**
+     *
+     */
+    public function exit()
+    {
+        if (IS_CLI) {
+            throw new \beacon\ExitException('exit');
+        } else {
+            exit;
+        }
+    }
 }
