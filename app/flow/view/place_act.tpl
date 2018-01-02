@@ -1,5 +1,6 @@
-{literal}<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+{literal left='{@' right='@}'}
 <head>
     <meta charset="UTF-8">
     <title>创建库所</title>

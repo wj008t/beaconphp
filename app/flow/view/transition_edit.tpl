@@ -1,4 +1,5 @@
-{literal}<!DOCTYPE html>
+{literal left='{@' right='@}'}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -20,11 +21,11 @@
         <form id="placeForm" action="/flow/main_{@$fid@}/edit_transition" method="post" data-display-mode="2" yee-module="ajaxform validate">
             <div class="form-group">
                 <label class="form-label" style="width: 80px">名称:</label>
-                <div class="form-box"><input type="text" value="{@$row.name|html@}" name="name" data-val='{"r":true}' data-val-msg='{"r":"名称必须填写"}' class="form-inp text"></div>
+                <div class="form-box"><input type="text" value="{@$row.name@}" name="name" data-val='{"r":true}' data-val-msg='{"r":"名称必须填写"}' class="form-inp text"></div>
             </div>
             <div class="form-group">
                 <label class="form-label" style="width: 80px">标识符号:</label>
-                <div class="form-box"><input type="text" value="{@$row.code|html@}" name="code" data-val='{"r":true}' data-val-msg='{"r":"标题符号必须填写"}' class="form-inp text"></div>
+                <div class="form-box"><input type="text" value="{@$row.code@}" name="code" data-val='{"r":true}' data-val-msg='{"r":"标题符号必须填写"}' class="form-inp text"></div>
             </div>
             <div class="form-group">
                 <label class="form-label" style="width: 80px">处理URL:</label>

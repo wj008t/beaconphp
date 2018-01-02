@@ -1,4 +1,5 @@
-{literal}<!DOCTYPE html>
+{literal left='{@' right='@}'}
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">

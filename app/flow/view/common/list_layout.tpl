@@ -27,7 +27,7 @@
         </table>
         {block name='pagebar'}
             {if $pdata}
-                <div yee-module="pagebar" data-bind="#list" data-info="{json_encode($pdata)|html}" class="yeeui-pagebar">
+                <div yee-module="pagebar" data-bind="#list" data-info="{json_encode($pdata)}" class="yeeui-pagebar">
                     <div class="pagebar" v-name="bar"></div>
                     <div class="pagebar_info">
                         共有信息：<span v-name="count"></span> 页次：<span v-name="page"></span>/<span v-name="page_count"></span> 每页

@@ -10,18 +10,18 @@
     <script src="/assets/js/yee.js"></script>
 </head>
 <body>
-<div class="yeeui-caption">{$form->caption|defalut:$form->title}</div>
+<div class="yeeui-caption">{$form->caption|default:$form->title}</div>
 <div class="yeeui-content">
     <div class="yeeui-form">
         <form method="post" data-display-mode="2" yee-module="validate ajaxform" data-back="/flow/index" data-back-param="true">
             <div class="form-panel">
                 {foreach from=$form->getViewFields() item=field}
                     {if $field->type=='blend'}
-                        {$field->box()}
+                        {$field->box()|raw}
                     {else}
                         <div class="form-group">
                             <label class="form-label">{$field->label}:</label>
-                            <div class="form-box">{$field->box()}</div>
+                            <div class="form-box">{$field->box()|raw}</div>
                         </div>
                     {/if}
                 {/foreach}
