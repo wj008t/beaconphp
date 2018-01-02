@@ -15,6 +15,6 @@ return [
     'extension' => '.tpl',
     //插件包资源配置
     'plugin_dir' => [
-        '/libs/sdopx/plugins'
+        '/libs/plugin'
     ],
 ];
