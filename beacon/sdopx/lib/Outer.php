@@ -17,7 +17,7 @@ class Outer
 
     public function text($code)
     {
-        if (gettype($code) == 'string') {
+        if (is_string($code)) {
             array_push($this->output, htmlspecialchars($code, ENT_QUOTES));
         } else {
             array_push($this->output, $code);
