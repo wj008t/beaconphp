@@ -264,14 +264,16 @@ class Compiler
             } else {
                 if (method_exists($class, 'block')) {
                     $ikey = isset($params['var']) ? $params['var'] : 'item';
-                    $ikey = trim($ikey, ' \'"');
-                    if (empty($ikey) || !preg_match('@^\w+$@', $ikey)) {
-                        $this->addError("{$name} 标签中 item 属性只能是 字母数字下划线.");
-                    }
                     $pre = $this->getTempPrefix('custom');
-                    $varMap = $this->getVariableMap($pre);
-                    $varMap->add($ikey);
-                    $this->addVariableMap($varMap);
+                    if (isset($params['var'])) {
+                        $ikey = trim($ikey, ' \'"');
+                        if (empty($ikey) || !preg_match('@^\w+$@', $ikey)) {
+                            $this->addError("{$name} 标签中 item 属性只能是 字母数字下划线.");
+                        }
+                        $varMap = $this->getVariableMap($pre);
+                        $varMap->add($ikey);
+                        $this->addVariableMap($varMap);
+                    }
                     $temp = [];
                     foreach ($params as $key => $val) {
                         if ($key == $ikey) {
