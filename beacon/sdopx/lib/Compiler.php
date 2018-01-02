@@ -235,9 +235,9 @@ class Compiler
 
     public function compilePlugin($name, $params = null, $close = false)
     {
-        $tag = $name;
+        $tag = Utils::toCamel($name);
         if ($close) {
-            $tag = Utils::toCamel($name) . 'Close';
+            $tag = $tag . 'Close';
         }
         $class = '\\sdopx\\compiler\\' . $tag . 'Compiler';
         if (class_exists($class) && is_callable($class, 'compile')) {
