@@ -265,6 +265,16 @@ class Compiler
                 if (method_exists($class, 'block')) {
                     $ikey = isset($params['var']) ? $params['var'] : 'item';
                     $pre = $this->getTempPrefix('custom');
+                    $use_vars = [];
+                    foreach ($this->getVarKeys() as $vkey) {
+                        $xvar = $this->getVar($vkey, true);
+                        if (!empty($xvar)) {
+                            $use_vars[] = $xvar;
+                        }
+                    }
+                    $use_vars[] = '$__out';
+                    $use_vars[] = '$_sdopx';
+                    $use = join(',', $use_vars);
                     if (isset($params['var'])) {
                         $ikey = trim($ikey, ' \'"');
                         if (empty($ikey) || !preg_match('@^\w+$@', $ikey)) {
@@ -282,7 +292,7 @@ class Compiler
                         $temp[] = "'{$key}'=>{$val}";
                     }
                     $this->openTag($name, [$pre]);
-                    $code = "$class::block([" . join(',', $temp) . '],function($' . $pre . '_' . $ikey . '=null) use ($__out,$_sdopx){';
+                    $code = "$class::block([" . join(',', $temp) . '],function($' . $pre . '_' . $ikey . '=null) use (' . $use . '){';
                     return $code;
                 }
                 if (method_exists($class, 'execute')) {
