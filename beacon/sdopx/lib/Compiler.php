@@ -281,8 +281,6 @@ class Compiler
                         }
                         $temp[] = "'{$key}'=>{$val}";
                     }
-                    var_dump($temp);
-                    exit;
                     $this->openTag($name, [$pre]);
                     $code = "$class::block([" . join(',', $temp) . '],function($' . $pre . '_' . $ikey . '=null) use ($__out,$_sdopx){';
                     return $code;
