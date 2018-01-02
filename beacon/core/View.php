@@ -16,7 +16,7 @@ class View
     private $_config_vars = [];
 
     /**
-     * @var Sdopx
+     * @var \sdopx\Sdopx
      */
     public $engine = null;
 
