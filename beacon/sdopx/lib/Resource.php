@@ -12,8 +12,6 @@ use sdopx\Sdopx;
 
 class Resource
 {
-    public static $resourceManager = [];
-
     /**
      * 提取类型
      * @param string $tplname
@@ -30,30 +28,16 @@ class Resource
     }
 
     /**
-     * 注册资源
-     * @param string $type
-     * @param BaseResource $instance
-     */
-    public static function registerResource(string $type, BaseResource $instance)
-    {
-        if (gettype($type) !== 'string') {
-            return;
-        }
-        if ($instance == null || !($instance instanceof BaseResource)) {
-            return;
-        }
-        Resource::$resourceManager[$type] = $instance;
-    }
-
-    /**
      * 获取资源
      * @param string $type
      * @return BaseResource
      */
     public static function getResource(string $type): BaseResource
     {
-        if (isset(Resource::$resourceManager[$type])) {
-            return Resource::$resourceManager[$type];
+        $class = '\\sdopx\\lib\\' . Utils::toCamel($type) . 'Resoure';
+        if (class_exists($class)) {
+            $instance = new $class();
+            return $instance;
         }
         return null;
     }
@@ -112,7 +96,4 @@ class Resource
         }
         return null;
     }
-
 }
-
-Resource::registerResource('file', new FileResoure());

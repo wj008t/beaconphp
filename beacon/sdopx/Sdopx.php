@@ -31,6 +31,11 @@ require_once("lib/Template.php");
 /**
  * 注册自动引入路径
  */
+class SdopxException extends \Exception
+{
+
+}
+
 class Sdopx extends \sdopx\lib\Template
 {
     /**
