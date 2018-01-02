@@ -34,7 +34,7 @@ class IncludeCompiler
         }
         $temp = [];
         foreach ($argsMap as $key => $val) {
-            $temp[] = "'{$key}'=>${$val}";
+            $temp[] = "'{$key}'=>{$val}";
         }
         $output .= "\$_sdopx->getSubTemplate({$file},[" . join(',', $temp) . '])';
         if ($is_output) {

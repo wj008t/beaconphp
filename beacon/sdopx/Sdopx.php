@@ -259,25 +259,25 @@ class Sdopx extends \sdopx\lib\Template
             //var_export($class);
             //echo "\n";
             //编译器
-            if (preg_match('@^sdopx\\\\compile\\\\(.+)@', $class, $ma) >= 0) {
+            if (preg_match('@^sdopx\\\\compile\\\\(.+)$@', $class, $m)) {
                 foreach (self::$compiler_dirs as $dirname) {
-                    $path = Utils::path($dirname, "{$ma[1]}.php");
+                    $path = Utils::path($dirname, "{$m[1]}.php");
                     if (file_exists($path)) {
                         @include($path);
                         return;
                     }
                 }
             }
-            if (preg_match('@^sdopx\\\\plugin\\\\(.+)@', $class, $mb) >= 0) {
+            if (preg_match('@^sdopx\\\\plugin\\\\(.+)$@', $class, $m)) {
                 foreach (self::$plugin_dirs as $dirname) {
-                    $path = Utils::path($dirname, "{$mb[1]}.php");
+                    $path = Utils::path($dirname, "{$m[1]}.php");
                     if (file_exists($path)) {
                         @include($path);
                         return;
                     }
                 }
             }
-            if (preg_match('@^sdopx\\\\.+@', $class, $mc) >= 0) {
+            if (preg_match('@^sdopx\\\\.+$@', $class, $mc)) {
                 $path = Utils::path(SDOPX_DIR, "../{$class}.php");
                 if (file_exists($path)) {
                     @include($path);
