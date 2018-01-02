@@ -12,13 +12,13 @@ namespace sdopx\plugin;
 use sdopx\lib\Outer;
 use sdopx\Sdopx;
 
-class HelloPlugin
+class FlowPlugin
 {
     public static function block($param, $func, Outer $out, Sdopx $sdopx)
     {
-        $name = (empty($params['name'])) ? '' : $params['name'];
-        $branch = (empty($params['branch'])) ? '' : $params['branch'];
-        $task = (empty($params['task'])) ? '' : $params['task'];
+        $name = (empty($param['name'])) ? '' : $param['name'];
+        $branch = (empty($param['branch'])) ? '' : $param['branch'];
+        $task = (empty($param['task'])) ? '' : $param['task'];
         $token = \app\flow\lib\Flow::getToken($task, $name, $branch);
         if ($token <= 0) {
             return;
