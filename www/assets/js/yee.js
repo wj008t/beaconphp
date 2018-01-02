@@ -259,6 +259,7 @@
         });
     };
     //解析URL
+
     Yee.parseUrl = function (url) {
         url = url || '';
         var query = url.replace(/&+$/, '');
