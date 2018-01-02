@@ -268,6 +268,15 @@ class Sdopx extends \sdopx\lib\Template
                     }
                 }
             }
+            if (preg_match('@^sdopx\\\\plugin\\\\(.+)@', $class, $data) >= 0) {
+                foreach (self::$plugin_dirs as $dirname) {
+                    $path = Utils::path($dirname, "{$data[1]}.php");
+                    if (file_exists($path)) {
+                        @include($path);
+                        return;
+                    }
+                }
+            }
             if (preg_match('@^sdopx\\\\.+@', $class, $data) >= 0) {
                 $path = Utils::path(SDOPX_DIR, "../{$class}.php");
                 if (file_exists($path)) {
