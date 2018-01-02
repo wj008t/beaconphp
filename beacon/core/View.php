@@ -56,9 +56,11 @@ class View
         $this->engine = new \sdopx\Sdopx();
         $template_dir = Utils::path(ROOT_DIR, Config::get('sdopx.template_dir', 'view'));
         $common_dir = Utils::path(ROOT_DIR, Config::get('sdopx.common_dir', 'view/common'));
+        $runtime_dir = Utils::path(ROOT_DIR, Config::get('sdopx.runtime_dir', 'runtime'));
         $this->engine->setTemplateDir($template_dir);
         $this->engine->addTemplateDir($common_dir, 'common');
-        $plugins_dir = Config::get('sdopx.plugins_dir');
+        $this->engine->setRuntimeDir($runtime_dir);
+        $plugins_dir = Config::get('sdopx.plugin_dir');
         if (!empty($plugins_dir)) {
             if (is_array($plugins_dir)) {
                 foreach ($plugins_dir as &$item) {
@@ -67,17 +69,16 @@ class View
             } elseif (is_string($plugins_dir)) {
                 $plugins_dir = Utils::path(ROOT_DIR, $plugins_dir);
             }
-            $this->engine->addPluginsDir($plugins_dir);
+            $this->engine->addPluginDir($plugins_dir);
         }
         foreach ([
-                     'sdopx.force_compile',
-                     'sdopx.compile_save',
+                     'sdopx.compile_force',
                      'sdopx.compile_check',
-                     'sdopx.compile_format',
+                     'sdopx.runtime_dir',
                      'sdopx.left_delimiter',
                      'sdopx.right_delimiter'
                  ] as $key) {
-            $val = Config::get('sdopx.plugins_dir');
+            $val = Config::get($key);
             if (!empty($val)) {
                 $this->engine->setting($key, $val);
             }
