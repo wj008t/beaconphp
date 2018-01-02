@@ -1,425 +1,277 @@
 <?php
+/**
+ * Created by PhpStorm.
+ * User: wj008
+ * Date: 2017/7/17
+ * Time: 9:33
+ */
+declare(strict_types=1);
 
+namespace sdopx;
 
-namespace sdopx {
+/**
+ * DS 换行符
+ */
+use sdopx\lib\Compiler;
+use sdopx\lib\Utils;
 
-    if (!defined('DS')) {
-        define('DS', DIRECTORY_SEPARATOR);
+if (!defined('DS')) {
+    define('DS', DIRECTORY_SEPARATOR);
+}
+/**
+ * SDOPX 模板引擎目录
+ */
+if (!defined('SDOPX_DIR')) {
+    define('SDOPX_DIR', __DIR__ . DS);
+}
+
+require_once("lib/Utils.php");
+require_once("lib/Template.php");
+
+/**
+ * 注册自动引入路径
+ */
+class Sdopx extends \sdopx\lib\Template
+{
+    /**
+     * 版本信息
+     * @var string
+     */
+    const VERSION = '1.0.0';
+
+    public static $debug = false;
+
+    public static $extension = 'tpl';
+
+    //注册的函数
+    public static $functions = [];
+    //注册的过滤器
+    public static $filters = [];
+    //注册的资源类型
+    public static $resources = [];
+
+    public static $compiler_dirs = [];
+    public static $plugin_dirs = [];
+    //上下文
+    public $context = null;
+    //运行文件目录
+    public $runtime_dir = '';
+    //强行编译
+    public $compile_force = false;
+    //编译检查
+    public $compile_check = true;
+    //左分界符
+    public $left_delimiter = '{';
+    //右分界符
+    public $right_delimiter = '}';
+
+    public $_book = [];
+    public $_config = [];
+    private $template_dirs = [];
+    private $joined = '';
+
+    //函数
+    public $funcMap = [];
+
+    public function __construct($context = null)
+    {
+        parent::__construct();
+        $this->context = $context;
+        if (defined(ROOT_DIR)) {
+            $this->runtime_dir = Utils::path(ROOT_DIR, 'runtime');
+        } else if (isset($_SERVER['DOCUMENT_ROOT'])) {
+            $this->runtime_dir = Utils::path($_SERVER['DOCUMENT_ROOT'], 'runtime');
+        }
     }
 
-    if (!defined('SDOPX_DIR')) {
-        define('SDOPX_DIR', __DIR__ . DS);
+    public function setting($key, $value)
+    {
+        $key = strtolower($key);
+        if (in_array($key, ['compile_force', 'compile_check', 'left_delimiter', 'right_delimiter'])) {
+            $this->$key = $value;
+        }
     }
 
-    if (!defined('ROOT_DIR')) {
-        define('ROOT_DIR', $_SERVER["DOCUMENT_ROOT"] . DS);
+    public function setRuntimeDir($dir_names)
+    {
+        $this->runtime_dir = $dir_names;
     }
-    //注册自动加载类
-    spl_autoload_register(function ($class) {
-        $names = explode('\\', ltrim($class, '\\'));
-        if (count($names) < 2 && $names[0] != 'sdopx') {
+
+    public function setTemplateDir($dir_names)
+    {
+        $this->template_dirs = [];
+        $this->joined = '';
+        if (empty($dir_names)) {
+            return $this;
+        }
+        if (gettype($dir_names) == 'string') {
+            $this->template_dirs[] = $dir_names;
+            return $this;
+        }
+        foreach ($dir_names as $key => $value) {
+            if (gettype($value) != 'string' || empty($value)) {
+                continue;
+            }
+            $this->template_dirs[$key] = $value;
+        }
+        return $this;
+    }
+
+    public function addTemplateDir(...$dir_names)
+    {
+        if (count($dir_names) == 0) {
+            return $this;
+        }
+        foreach ($dir_names as $value) {
+            if (gettype($value) != 'string' || empty($value)) {
+                continue;
+            }
+            $this->template_dirs[] = $value;
+        }
+        return $this;
+    }
+
+    public function getTemplateDir($key = null)
+    {
+        if ($key === null) {
+            return $this->template_dirs;
+        }
+        if (gettype($key) === 'string' || gettype($key) === 'integer') {
+            return isset($this->template_dirs[$key]) ? $this->template_dirs[$key] : null;
+        }
+        return null;
+    }
+
+    public function getTemplateJoined()
+    {
+        if (!empty($this->joined)) {
+            return $this->joined;
+        }
+        $temp = [];
+        foreach ($this->template_dirs as $item) {
+            $temp[] = $item;
+        }
+        $joined = join(";", $temp);
+        if (isset($joined[32])) {
+            $joined = md5($joined);
+        }
+        $this->joined = $joined;
+        return $joined;
+    }
+
+    public function assign($key, $value = null)
+    {
+        if (gettype($key) == 'string') {
+            $this->_book[$key] = $value;
+            return $this;
+        }
+        foreach ($key as $k => $v) {
+            $this->_book[$k] = $v;
+        }
+        return $this;
+    }
+
+    public function assignConfig($key, $value = null)
+    {
+        if (gettype($key) == 'string') {
+            $this->_config[$key] = $value;
+            return $this;
+        }
+        foreach ($key as $k => $v) {
+            $this->_config[$k] = $v;
+        }
+        return $this;
+    }
+
+    //过滤器注册
+    public static function registerFilter(string $type, $func, $file = null)
+    {
+        if (gettype($type) !== 'string') {
             return;
         }
-        array_shift($names);
-        if (preg_match('@^[a-z]+://@i', SDOPX_DIR)) {
-            $file_name = str_replace(['\\', '/'], '/', SDOPX_DIR . join('\\', $names) . '.class.php');
-        } else {
-            $file_name = str_replace(['\\', '/'], DS, SDOPX_DIR . join('\\', $names) . '.class.php');
+        if (!isset(self::$filters[$type])) {
+            self::$filters[$type] = [];
         }
-        if (file_exists($file_name)) {
-            require $file_name;
-        }
-        return false;
-    });
-
-    use \sdopx\libs\{
-        Utils, Template
-    };
-
-    class Sdopx extends Template
-    {
-
-        const SDOPX_VERSION = 'Sdopx-1.3.0';
-
-        /**
-         * 过滤器枚举
-         */
-        const FILTER_POST = 'post';
-        const FILTER_PRE = 'pre';
-        const FILTER_OUTPUT = 'output';
-
-        //<editor-fold defaultstate="collapsed" desc="类属性">
-        /**
-         * 模板目录
-         * @var array
-         */
-        private $template_dir = [];
-
-        /**
-         * 编译文件目录
-         *
-         * @var string
-         */
-        private $compile_dir = null;
-
-        /**
-         * 插件目录
-         * @var array
-         */
-        private $plugins_dir = [];
-
-        /**
-         * 是否强制编译
-         *
-         * @var boolean
-         */
-        public $force_compile = false;
-
-        /**
-         * 调试模式
-         * @var boolean
-         */
-        public $compile_save = true;
-
-        /**
-         * 是否开启编译检查
-         *
-         * @var boolean
-         */
-        public $compile_check = true;
-        public $compile_format = 1;
-
-        /**
-         * 编译ID
-         * @var string
-         */
-        public $compile_id = null;
-
-        /**
-         * 模板分解符开始
-         *
-         * @var string
-         */
-        public $left_delimiter = '{';
-
-        /**
-         * 模板分解符结束
-         *
-         * @var string
-         */
-        public $right_delimiter = '}';
-
-        /**
-         * 模板变量集合
-         * @var array
-         */
-        public $_book = [];
-        /**
-         * 配置变量集合
-         * @var array
-         */
-        public $_config_vars = [];
-        // public static $cache_resource_strings = [];
-
-        /**
-         * 过滤器
-         * @var array
-         */
-        public static $regfilters = [];
-        public static $functions = [];
-
-        //所指向的控制器
-        public $controller = null;
-
-        //</editor-fold>
-
-        /**
-         * 初始化一个 模板
-         */
-        public function __construct()
-        {
-            $this->setTemplateDir(Utils::path(ROOT_DIR, 'view'));
-            $this->setCompileDir(Utils::path(ROOT_DIR, 'runtime'));
-            $this->setPluginsDir(Utils::path(SDOPX_DIR, 'plugins'));
-            $this->sdopx = $this;
-        }
-
-        public function setting($key, $value)
-        {
-            $key = strtolower($key);
-            if (in_array($key, ['force_compile', 'compile_save', 'compile_check', 'compile_format', 'left_delimiter', 'right_delimiter'])) {
-                $this->$key = $value;
+        if (gettype($func) == 'string') {
+            if (empty($file)) {
+                //TODO 输出错误
+                return;
             }
         }
-
-        public function assign($key, $val = null)
-        {
-            if (is_array($key)) {
-                $this->_book = array_replace($this->_book, $key);
-            } else {
-                $this->_book[$key] = $val;
-            }
-        }
-
-        public function fetch($tplname)
-        {
-            if (!isset($this->_book['sdopx'])) {
-                $this->_book['sdopx']['get'] = $_GET;
-                $this->_book['sdopx']['post'] = $_POST;
-                $this->_book['sdopx']['request'] = $_REQUEST;
-                if (session_status() == PHP_SESSION_ACTIVE) {
-                    $this->_book['sdopx']['session'] = $_SESSION;
-                }
-                $this->_book['sdopx']['cookie'] = $_COOKIE;
-                $this->_book['sdopx']['server'] = $_SERVER;
-                $this->_book['sdopx']['config'] = $this->_config_vars;
-            }
-            if ($tplname != $this->tplname) {
-                $this->tplname = $tplname;
-                $this->tplId = $this->createTplId($this->tplname);
-            }
-            return $this->fetchTpl(null);
-        }
-
-
-        public function display($tplname)
-        {
-            echo $this->fetch($tplname);
-        }
-
-        /**
-         * 设置模板目录
-         * @param string $template_dir
-         * @return \sdopx\Sdopx
-         */
-        public function setTemplateDir($template_dir)
-        {
-            $this->template_dir = [];
-            foreach ((array)$template_dir as $k => $v) {
-                $this->template_dir[$k] = Utils::path($v);
-            }
-            return $this;
-        }
-
-        /**
-         * 添加 模板目录
-         * @param type $template_dir
-         * @param type $key
-         * @return \sdopx\Sdopx
-         */
-        public function addTemplateDir($template_dir, $key = null)
-        {
-            $this->template_dir = (array)$this->template_dir;
-            if (is_array($template_dir)) {
-                foreach ($template_dir as $k => $v) {
-                    $v = Utils::path($v);
-                    if (is_int($k)) {
-                        $this->template_dir[] = $v;
-                    } else {
-                        $this->template_dir[$k] = $v;
-                    }
-                }
-            } else {
-                $v = Utils::path($template_dir);
-                if ($key) {
-                    $this->template_dir[$key] = $v;
-                } else {
-                    $this->template_dir[] = $v;
-                }
-            }
-            return $this;
-        }
-
-        /**
-         * 获取模板目录
-         * @param mixd $index
-         * @return array
-         */
-        public function getTemplateDir($key = null)
-        {
-            if ($key != null) {
-                return isset($this->template_dir[$key]) ? $this->template_dir[$key] : NULL;
-            }
-            return (array)$this->template_dir;
-        }
-
-        /**
-         * 设置插件目录
-         * @param string|array $plugins_dir
-         * @return \sdopx\Sdopx
-         */
-        public function setPluginsDir($plugins_dir)
-        {
-            $this->plugins_dir = array();
-            foreach ((array)$plugins_dir as $k => $v) {
-                $this->plugins_dir[$k] = Utils::path($v);
-            }
-            return $this;
-        }
-
-        public function loadPlugin($name, $inc = false)
-        {
-            static $files = [];
-            if (!empty($files[$name])) {
-                if ($inc) {
-                    require $files[$name];
-                }
-                return $files[$name];
-            }
-            $plugin = $this->getPluginsDir();
-            foreach ($plugin as $path) {
-                $file_name = Utils::path($path, $name . '.php');
-                if (file_exists($file_name)) {
-                    $files[$name] = $file_name;
-                    if ($inc) {
-                        require $file_name;
-                    }
-                    if (preg_match('@^phar://@i', $file_name)) {
-                        return $file_name;
-                    }
-                    return $files[$name] = realpath($file_name);
-                }
-            }
-            return false;
-        }
-
-        /**
-         * 添加插件目录
-         * @param string|array $plugins_dir
-         * @return \sdopx\Sdopx
-         */
-        public function addPluginsDir($plugins_dir)
-        {
-            $this->plugins_dir = (array)$this->plugins_dir;
-            if (is_array($plugins_dir)) {
-                foreach ($plugins_dir as $k => $v) {
-                    if (is_int($k)) {
-                        $this->plugins_dir[] = Utils::path($v);
-                    } else {
-                        $this->plugins_dir[$k] = Utils::path($v);
-                    }
-                }
-            } else {
-                $this->plugins_dir[] = Utils::path($plugins_dir);
-            }
-            $this->plugins_dir = array_unique($this->plugins_dir);
-            return $this;
-        }
-
-        /**
-         * 获取插件目录
-         * @return array
-         */
-        public function getPluginsDir()
-        {
-            return (array)$this->plugins_dir;
-        }
-
-        /**
-         * 设置编译目录
-         * @param string $compile_dir
-         * @return \sdopx\Sdopx
-         */
-        public function setCompileDir($compile_dir)
-        {
-            $this->compile_dir = Utils::path($compile_dir);
-            return $this;
-        }
-
-        /**
-         * 获得编译目录
-         * @return string path to compiled templates
-         */
-        public function getCompileDir()
-        {
-            if (!is_dir($this->compile_dir)) {
-                Utils::makeDir($this->compile_dir);
-            }
-            return Utils::path(realpath($this->compile_dir));
-        }
-
-        /**
-         * 获得模板ID
-         * @param type $tplname
-         * @param type $cache_id
-         * @param type $compile_id
-         * @return type
-         */
-        public function getTemplateJoined()
-        {
-            return join(';', $this->template_dir);
-        }
-
-        public function registerResource($type, $sourceobj)
-        {
-            \sdopx\libs\Resource::$resources[$type] = $sourceobj;
-        }
-
-        public function registerFilter($type, $callback)
-        {
-            if (!isset(self::$regfilters[$type])) {
-                self::$regfilters[$type] = [];
-            }
-            self::$regfilters[$type][] = $callback;
-        }
-
-        public function registerFunction($name, $funcname)
-        {
-            if (is_string($funcname)) {
-                self::$functions[$name] = $funcname;
-            }
-        }
-
+        array_push(self::$filters[$type], ['func' => $func, 'file' => $file]);
     }
 
-    class SdopxException extends \Exception
+    //注册函数
+    public static function registerFunction($name, $func, $file = null)
     {
-
-        public static $escape = false;
-
-        public function __toString()
-        {
-            return ' --> Sdopx: ' . (self::$escape ? htmlentities($this->message) : $this->message) . ' <-- ';
+        if (gettype($name) !== 'string') {
+            return;
         }
-
+        if (gettype($func) == 'string') {
+            if (empty($file)) {
+                //TODO 输出错误
+                return;
+            }
+        }
+        self::$functions[$name] = ['func' => $func, 'file' => $file];
     }
 
-    class SdopxCompilerException extends SdopxException
+    //添加插件目录
+    public static function addPluginDir($dirname)
     {
-
-        public function __toString()
-        {
-            return ' --> Sdopx Compiler: ' . $this->message . ' <-- ';
+        if (is_array($dirname)) {
+            foreach ($dirname as $item) {
+                if (is_string($item)) {
+                    $key = md5($item);
+                    self::$plugin_dirs[$key] = $item;
+                }
+            }
+        } elseif (is_string($dirname)) {
+            $key = md5($dirname);
+            self::$plugin_dirs[$key] = $dirname;
         }
-
-        /**
-         * The line number of the template error
-         *
-         * @type int|null
-         */
-        public $line = null;
-
-        /**
-         * The template source snippet relating to the error
-         *
-         * @type string|null
-         */
-        public $source = null;
-
-        /**
-         * The raw text of the error message
-         *
-         * @type string|null
-         */
-        public $desc = null;
-
-        /**
-         * The resource identifier or template name
-         *
-         * @type string|null
-         */
-        public $template = null;
-
     }
 
+    //添加便宜器目录
+    public static function addCompileDir($dirname)
+    {
+        if (is_array($dirname)) {
+            foreach ($dirname as $item) {
+                if (is_string($item)) {
+                    $key = md5($item);
+                    self::$compiler_dirs[$key] = $item;
+                }
+            }
+        } elseif (is_string($dirname)) {
+            $key = md5($dirname);
+            self::$compiler_dirs[$key] = $dirname;
+        }
+    }
+
+    public static function autoload()
+    {
+        spl_autoload_register(function ($class) {
+            //var_export($class);
+            //echo "\n";
+            //编译器
+            if (preg_match('@^sdopx\\\\compile\\\\(.+)@', $class, $data) >= 0) {
+                foreach (self::$compiler_dirs as $dirname) {
+                    $path = Utils::path($dirname, "{$data[1]}.php");
+                    if (file_exists($path)) {
+                        @include($path);
+                        return;
+                    }
+                }
+            }
+            if (preg_match('@^sdopx\\\\.+@', $class, $data) >= 0) {
+                $path = Utils::path(SDOPX_DIR, "../{$class}.php");
+                if (file_exists($path)) {
+                    @include($path);
+                    return;
+                }
+            }
+        });
+    }
 }
+
+Sdopx::autoload();
