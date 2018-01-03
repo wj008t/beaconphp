@@ -7,11 +7,23 @@
  */
 declare(strict_types=1);
 
+
 namespace sdopx;
+
+set_error_handler(function ($severity, $message, $filename, $lineno) {
+    if (error_reporting() == 0) {
+        return FALSE;
+    }
+    if (error_reporting() & $severity) {
+        throw new \ErrorException($message, 0, $severity, $filename, $lineno);
+    }
+    return true;
+});
 
 /**
  * DS 换行符
  */
+
 use sdopx\lib\Compiler;
 use sdopx\lib\Utils;
 
@@ -56,6 +68,11 @@ class SdopxException extends \Exception
         return $this->stack;
     }
 
+    public function __toString()
+    {
+        return $this->stack . "\n" . parent::__toString();
+    }
+
 }
 
 class Sdopx extends \sdopx\lib\Template
@@ -66,7 +83,7 @@ class Sdopx extends \sdopx\lib\Template
      */
     const VERSION = '1.0.0';
 
-    public static $debug = false;
+    public static $debug = true;
 
     public static $extension = 'tpl';
 
@@ -277,9 +294,10 @@ class Sdopx extends \sdopx\lib\Template
 
     public function rethrow($err, int $lineno = null, string $tplname = null)
     {
-        header('Content-Type:text/html;charset=utf-8');
         if (is_string($err)) {
             $err = new SdopxException($err);
+        } elseif ($err instanceof \Exception) {
+            $err = new SdopxException($err->getMessage());
         }
         if ($lineno == null || $tplname == null) {
             throw $err;
@@ -297,8 +315,9 @@ class Sdopx extends \sdopx\lib\Template
         $len = count($lines);
         $start = ($lineno - 3) < 0 ? 0 : $lineno - 3;
         $end = ($lineno + 3) >= $len ? $len - 1 : $lineno + 3;
-        $lines = array_slice($lines, $start, $end - $start);
-        foreach ($lines as $curr => &$line) {
+        $lines = array_slice($lines, $start, $end - $start, true);
+        foreach ($lines as $idx => &$line) {
+            $curr = $idx + 1;
             $line = ($curr == $lineno ? ' >> ' : '    ') . $curr . '| ' . $line;
         }
         $context = join("\n", $lines);

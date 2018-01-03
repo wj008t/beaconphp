@@ -43,9 +43,9 @@ class Outer
         $this->src = $src;
     }
 
-    public function throw($err, $lineno, $filename)
+    public function throw($err)
     {
-        $this->_sdopx->rethrow($err, $lineno, $filename);
+        $this->_sdopx->rethrow($err, $this->line, $this->src);
     }
 
     public function getCode()

@@ -134,7 +134,7 @@ class Template
         $content = $this->createTemplateCodeFrame($content);
         // echo $content;
         try {
-            eval('?>' . $content);
+            @eval('?>' . $content);
             if (isset($_cache['property']) && isset($_cache['unifunc'])) {
                 Template::$complie_cache[$this->tplId] = $_cache;
             }
@@ -161,9 +161,12 @@ class Template
         $output[] = 'if(!isset($_cache)){ $_cache=[]; }';
         $output[] = '$_cache[\'property\'] = ' . var_export($this->property, true) . ';';
         $output[] = '$_cache[\'unifunc\']=function($_sdopx,$__out){';
+        $output[] = 'try{';
         $output[] = $content;
+        $output[] = '} catch (\ErrorException $exception) { $__out->throw($exception);}';
         $output[] = '};';
         return join("\n", $output);
+
     }
 
     public function addDependency(Source $source)
@@ -210,7 +213,11 @@ class Template
     {
         $__out = new Outer($this->sdopx);
         $_sdopx = $this->sdopx;
-        call_user_func($unifunc, $_sdopx, $__out);
+        try {
+            call_user_func($unifunc, $_sdopx, $__out);
+        } catch (\Exception $exception) {
+            $__out->throw($exception);
+        }
         return $__out->getCode();
     }
 
