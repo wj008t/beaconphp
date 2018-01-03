@@ -10,11 +10,11 @@ namespace sdopx\plugin;
 
 
 use sdopx\lib\Outer;
-use sdopx\Sdopx;
+
 
 class FlowPlugin
 {
-    public static function block($param, $func, Outer $out, Sdopx $sdopx)
+    public static function block($param, $func, Outer $out)
     {
         $name = (empty($param['name'])) ? '' : $param['name'];
         $branch = (empty($param['branch'])) ? '' : $param['branch'];
