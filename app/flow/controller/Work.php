@@ -37,16 +37,15 @@ class Work extends Controller
     public function createAction(Request $request)
     {
         try {
-            DB::beginTransaction();
-            DB::insert('@pf_task', ['name' => '测试用例']);
-            $id = DB::lastInsertId();
-            $data = Flow::create($id, '测试工作流程', ['userId' => 1, 'targetId' => 1]);
-            DB::update('@pf_task', ['state' => $data['state']], $id);
-            DB::commit();
+            $this->db->beginTransaction();
+            $this->db->insert('@pf_task', ['name' => '测试用例']);
+            $id = $this->db->lastInsertId();
+            $data = Flow::create($this->context, $id, '测试工作流程', ['userId' => 1, 'targetId' => 1]);
+            $this->db->update('@pf_task', ['state' => $data['state']], $id);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
-            var_export($e);
+            $this->db->rollBack();
             $this->error('执行失败');
         }
     }
@@ -79,17 +78,17 @@ class Work extends Controller
     public function step1Action(Request $request)
     {
         try {
-            DB::beginTransaction();
+            $this->db->beginTransaction();
             $branch = 'step1';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
             Flow::reday($this->context, $tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
-            DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
-            DB::commit();
+            $data = Flow::fire($this->context, $tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $this->db->update('@pf_task', ['state' => $data['state']], $data['taskId']);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             $this->error('执行失败', $e->getMessage());
         }
     }
@@ -97,17 +96,17 @@ class Work extends Controller
     public function step2Action(Request $request)
     {
         try {
-            DB::beginTransaction();
+            $this->db->beginTransaction();
             $branch = 'step2';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
             Flow::reday($this->context, $tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
-            DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
-            DB::commit();
+            $data = Flow::fire($this->context, $tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $this->db->update('@pf_task', ['state' => $data['state']], $data['taskId']);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             $this->error('执行失败', $e->getMessage());
         }
     }
@@ -115,17 +114,17 @@ class Work extends Controller
     public function step3Action(Request $request)
     {
         try {
-            DB::beginTransaction();
+            $this->db->beginTransaction();
             $branch = 'step3';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
             Flow::reday($this->context, $tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
-            DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
-            DB::commit();
+            $data = Flow::fire($this->context, $tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $this->db->update('@pf_task', ['state' => $data['state']], $data['taskId']);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             $this->error('执行失败', $e->getMessage());
         }
     }
@@ -133,17 +132,17 @@ class Work extends Controller
     public function step4Action(Request $request)
     {
         try {
-            DB::beginTransaction();
+            $this->db->beginTransaction();
             $branch = 'step4';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
             Flow::reday($this->context, $tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
-            DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
-            DB::commit();
+            $data = Flow::fire($this->context, $tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $this->db->update('@pf_task', ['state' => $data['state']], $data['taskId']);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             $this->error('执行失败', $e->getMessage());
         }
     }
@@ -151,14 +150,14 @@ class Work extends Controller
     public function deleteAction(Request $request)
     {
         try {
-            DB::beginTransaction();
+            $this->db->beginTransaction();
             $taskId = $request->get('taskId:i', 0);
-            Flow::delete($taskId, '测试工作流程');
-            DB::delete('@pf_task', $taskId);
-            DB::commit();
+            Flow::delete($this->context, $taskId, '测试工作流程');
+            $this->db->delete('@pf_task', $taskId);
+            $this->db->commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             $this->error('执行失败', $e->getMessage());
         }
     }

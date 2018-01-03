@@ -44,9 +44,9 @@ class Timer extends Controller
                         $data = json_decode($body, true);
                         var_export($data);
                         if (isset($data['status']) && $data['status'] === true) {
-                            $row = DB::getRow('select * from @pf_flow_queue where id=?', $queue);
+                            $row = $this->db->getRow('select * from @pf_flow_queue where id=?', $queue);
                             if ($row != null) {
-                                DB::update('@pf_flow_queue', ['tice' => 10], $queue);
+                                $this->db->update('@pf_flow_queue', ['tice' => 10], $queue);
                             }
                         }
                     } catch (\Exception $exception) {
@@ -66,12 +66,12 @@ class Timer extends Controller
             $flows = [];
             $time = time();
             echo $time . "\n";
-            $queue = DB::getList('select * from @pf_flow_queue where timeout<? and tice<5 limit 0,10', $time);
+            $queue = $this->db->getList('select * from @pf_flow_queue where timeout<? and tice<5 limit 0,10', $time);
             foreach ($queue as $item) {
                 $flowId = $item['flowId'];
-                DB::update('@pf_flow_queue', ['tice' => $item['tice'] + 1], $item['id']);
+                $this->db->update('@pf_flow_queue', ['tice' => $item['tice'] + 1], $item['id']);
                 if (!isset($flows[$flowId])) {
-                    $flows[$flowId] = DB::getRow('select * from @pf_flow_list where id=?', $flowId);
+                    $flows[$flowId] = $this->db->getRow('select * from @pf_flow_list where id=?', $flowId);
                 }
                 $flow = $flows[$flowId];
                 if ($flow == null) {

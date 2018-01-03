@@ -22,18 +22,19 @@ namespace app\flow\lib {
     {
 
         //创建任务
-        public static function create(int $taskId, string $name = '', array $data)
+        public static function create(HttpContext $context, int $taskId, string $name = '', array $data)
         {
+            $db = $context->getDataBase();
             self::valid($data);
             try {
-                DB::beginTransaction();
+                $db->beginTransaction();
                 //数据库行锁
-                DB::update('@pf_flow_list', ['name' => DB::sql('name')], 'name=?', $name);
-                $flow = DB::getRow('select * from @pf_flow_list where name=?', $name);
+                $db->update('@pf_flow_list', ['name' => $db->sql('name')], 'name=?', $name);
+                $flow = $db->getRow('select * from @pf_flow_list where name=?', $name);
                 if ($flow == null) {
                     throw new FlowException('没有找到对应的工作流程');
                 }
-                $place = DB::getRow("select * from @pf_flow_place where flowid=? and mode=1", $flow['id']);
+                $place = $db->getRow("select * from @pf_flow_place where flowid=? and mode=1", $flow['id']);
                 if ($place == null) {
                     throw new FlowException('没有找到工作流程的起始库所');
                 }
@@ -50,10 +51,10 @@ namespace app\flow\lib {
                     'addTime' => date('Y-m-d H:i:s'),
                     'updateTime' => date('Y-m-d H:i:s'),
                 ];
-                DB::insert('@pf_flow_token', $token);
-                $tokenId = DB::lastInsertId();
-                self::createTimeout($tokenId);
-                DB::commit();
+                $db->insert('@pf_flow_token', $token);
+                $tokenId = $db->lastInsertId();
+                self::createTimeout($context, $tokenId);
+                $db->commit();
                 $data = array_replace($token['data'], [
                     'tokenId' => $tokenId,
                     'taskId' => $taskId,
@@ -64,10 +65,10 @@ namespace app\flow\lib {
                 ]);
                 return $data;
             } catch (FlowException $e) {
-                DB::rollBack();
+                $db->rollBack();
                 throw $e;
             } catch (\Exception $e) {
-                DB::rollBack();
+                $db->rollBack();
                 var_export($e);
                 throw new FlowException('执行创建错误');
             }
@@ -76,6 +77,7 @@ namespace app\flow\lib {
         //准备处理
         public static function reday(HttpContext $context, int $tokenId, $branch = '', array $args = [])
         {
+            $db = $context->getDataBase();
             if ($tokenId == 0) {
                 throw new FlowException('执行失败，任务Token不存在');
             }
@@ -91,13 +93,13 @@ namespace app\flow\lib {
                 $args['groupId'] = 0;
             }
             //锁任务ID
-            DB::update('@pf_flow_token', ['id' => DB::sql('id')], $tokenId);
+            $db->update('@pf_flow_token', ['id' => $db->sql('id')], $tokenId);
             if ($args['userId'] != 0 || $args['groupId'] != 0) {
-                $token = DB::getRow('select * from @pf_flow_token where id=? and (targetId=? or targetGroupId=?)', [$tokenId, $args['userId'], $args['groupId']]);
+                $token = $db->getRow('select * from @pf_flow_token where id=? and (targetId=? or targetGroupId=?)', [$tokenId, $args['userId'], $args['groupId']]);
             } else if (isset($args['timeout']) && isset($args['condition']) && isset($args['sign']) && $args['timeout'] > 0 && $args['timeout'] < time()) {
-                $token = DB::getRow('select * from @pf_flow_token where id=?', [$tokenId]);
+                $token = $db->getRow('select * from @pf_flow_token where id=?', [$tokenId]);
                 if ($token != null) {
-                    $flow = DB::getRow('select `key` from @pf_flow_list where id=?', $token['flowId']);
+                    $flow = $db->getRow('select `key` from @pf_flow_list where id=?', $token['flowId']);
                     if ($flow == null) {
                         throw new FlowException('执行失败，缺少执行参数');
                     }
@@ -112,17 +114,17 @@ namespace app\flow\lib {
             if ($token == null) {
                 throw new FlowException('执行失败，要求的身份不符');
             }
-            $item = DB::getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  A.target=B.id and B.flowId=A.flowId and B.code=? limit 0,1', [$token['flowId'], 'place', $token['placeId'], $branch]);
+            $item = $db->getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  A.target=B.id and B.flowId=A.flowId and B.code=? limit 0,1', [$token['flowId'], 'place', $token['placeId'], $branch]);
             if ($item == null) {
                 throw new FlowException('执行失败，任务Token没有可发射的事件');
             }
             $temp = [];
-            $conditionList = DB::getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'transition', $item['id']]);
+            $conditionList = $db->getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'transition', $item['id']]);
             if (count($conditionList) == 0) {
                 throw new FlowException('执行失败，并不存在相应的目标分支');
             }
             foreach ($conditionList as $xitem) {
-                $place = DB::getRow('select id,code,name from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $xitem['target']]);
+                $place = $db->getRow('select id,code,name from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $xitem['target']]);
                 if ($place == null) {
                     throw new FlowException('执行失败，业务工作流错误，可能已经删除了对应的库所');
                 }
@@ -147,14 +149,15 @@ namespace app\flow\lib {
         }
 
         //触发分支
-        public static function fire(int $tokenId, $branch = '', $connection, array $data)
+        public static function fire(HttpContext $context, int $tokenId, $branch = '', $connection, array $data)
         {
+            $db = $context->getDataBase();
             self::valid($data);
-            $token = DB::getRow('select * from @pf_flow_token where id=?', $tokenId);
+            $token = $db->getRow('select * from @pf_flow_token where id=?', $tokenId);
             if ($token == null) {
                 throw new FlowException('执行失败，任务Token不存在');
             }
-            $connecList = DB::getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'place', $token['placeId']]);
+            $connecList = $db->getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'place', $token['placeId']]);
             if (count($connecList) == 0) {
                 throw new FlowException('执行错误，任务Token没有可发射的事件');
             }
@@ -162,15 +165,15 @@ namespace app\flow\lib {
             $targetPlace = null;
             if (count($connecList) == 1) {
                 $item = $connecList[0];
-                $transition = DB::getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
+                $transition = $db->getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
                 if ($transition == null) {
                     throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件');
                 }
-                $condition = DB::getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
+                $condition = $db->getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
                 if ($condition == null) {
                     throw new FlowException('执行错误，为找到相对于的条件分支');
                 }
-                $place = DB::getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
+                $place = $db->getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
                 if ($place == null) {
                     throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所');
                 }
@@ -180,18 +183,18 @@ namespace app\flow\lib {
                     throw new FlowException('执行错误，没有指定要执行的分支路径');
                 }
                 foreach ($connecList as $item) {
-                    $transition = DB::getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
+                    $transition = $db->getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
                     if ($transition == null) {
                         throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件');
                     }
                     if ($transition['code'] != $branch) {
                         continue;
                     }
-                    $condition = DB::getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
+                    $condition = $db->getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
                     if ($condition == null) {
                         throw new FlowException('执行错误，为找到相对于的条件分支');
                     }
-                    $place = DB::getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
+                    $place = $db->getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
                     if ($place == null) {
                         throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所');
                     }
@@ -218,11 +221,11 @@ namespace app\flow\lib {
                 'data' => $data,
                 'updateTime' => date('Y-m-d H:i:s'),
             ];
-            DB::update('@pf_flow_token', $vals, $tokenId);
+            $db->update('@pf_flow_token', $vals, $tokenId);
             if ($targetPlace['mode'] != 2) {
-                self::createTimeout($tokenId);
+                self::createTimeout($context, $tokenId);
             } else {
-                DB::delete('@pf_flow_queue', 'tokenId=?', $tokenId);
+                $db->delete('@pf_flow_queue', 'tokenId=?', $tokenId);
             }
             $data = array_replace($vals['data'], [
                 'tokenId' => $tokenId,
@@ -236,27 +239,29 @@ namespace app\flow\lib {
         }
 
         //删除工作流
-        public static function delete(int $taskId, string $name = '')
+        public static function delete(HttpContext $context, int $taskId, string $name = '')
         {
-            $flow = DB::getRow('select * from @pf_flow_list where name=?', $name);
+            $db = $context->getDataBase();
+            $flow = $db->getRow('select * from @pf_flow_list where name=?', $name);
             if ($flow == null) {
                 return;
             }
-            $token = DB::getRow('select * from @pf_flow_token where flowId=? and taskId=?', [$flow['id'], $taskId]);
+            $token = $db->getRow('select * from @pf_flow_token where flowId=? and taskId=?', [$flow['id'], $taskId]);
             if ($token == null) {
                 return;
             }
-            DB::delete('@pf_flow_queue', 'tokenId=?', $token['id']);
-            DB::delete('@pf_flow_token', $token['id']);
+            $db->delete('@pf_flow_queue', 'tokenId=?', $token['id']);
+            $db->delete('@pf_flow_token', $token['id']);
         }
 
         //获取令牌
         public static function getToken(HttpContext $context, int $taskId, string $name = '', $branch = '', array $args = [])
         {
+            $db = $context->getDataBase();
             if (empty($branch)) {
                 return 0;
             }
-            $flow = DB::getRow('select * from @pf_flow_list where name=?', $name);
+            $flow = $db->getRow('select * from @pf_flow_list where name=?', $name);
             if ($flow == null) {
                 return 0;
             }
@@ -268,12 +273,12 @@ namespace app\flow\lib {
             if (empty($args['groupId'])) {
                 $args['groupId'] = 0;
             }
-            $token = DB::getRow('select * from @pf_flow_token where flowId=? and taskId=? and (targetId=? or targetGroupId=?)', [$flow['id'], $taskId, $args['userId'], $args['groupId']]);
+            $token = $db->getRow('select * from @pf_flow_token where flowId=? and taskId=? and (targetId=? or targetGroupId=?)', [$flow['id'], $taskId, $args['userId'], $args['groupId']]);
             if ($token == null) {
                 return 0;
             }
             //是否可发射的Token
-            $item = DB::getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  A.target=B.id and B.flowId=A.flowId and B.code=? limit 0,1', [$flow['id'], 'place', $token['placeId'], $branch]);
+            $item = $db->getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  A.target=B.id and B.flowId=A.flowId and B.code=? limit 0,1', [$flow['id'], 'place', $token['placeId'], $branch]);
             if ($item == null) {
                 return 0;
             }
@@ -301,18 +306,19 @@ namespace app\flow\lib {
          * 创建定时任务
          * @param int $tokenId
          */
-        private static function createTimeout(int $tokenId)
+        private static function createTimeout(HttpContext $context, int $tokenId)
         {
-            DB::delete('@pf_flow_queue', 'tokenId=?', $tokenId);
-            $token = DB::getRow('select * from @pf_flow_token where id=?', $tokenId);
+            $db = $context->getDataBase();
+            $db->delete('@pf_flow_queue', 'tokenId=?', $tokenId);
+            $token = $db->getRow('select * from @pf_flow_token where id=?', $tokenId);
             if ($token == null) {
                 throw new FlowException('执行错误，任务Token不存在');
             }
-            $flow = DB::getRow('select * from @pf_flow_list where id=?', $token['flowId']);
+            $flow = $db->getRow('select * from @pf_flow_list where id=?', $token['flowId']);
             if ($flow == null) {
                 throw new FlowException('执行错误，不存在的工作流');
             }
-            $item = DB::getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  B.timeout >0 and A.target=B.id and B.flowId=A.flowId order by B.timeout asc limit 0,1', [$token['flowId'], 'place', $token['placeId']]);
+            $item = $db->getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  B.timeout >0 and A.target=B.id and B.flowId=A.flowId order by B.timeout asc limit 0,1', [$token['flowId'], 'place', $token['placeId']]);
             if ($item !== null) {
                 $vals = [
                     'tokenId' => $tokenId,
@@ -322,7 +328,7 @@ namespace app\flow\lib {
                     'branch' => $item['code'],
                     'condition' => (($item['timeoutCondition'] === null || $item['timeoutCondition'] === '') ? '' : $item['timeoutCondition']),
                 ];
-                DB::insert('@pf_flow_queue', $vals);
+                $db->insert('@pf_flow_queue', $vals);
             }
         }
 

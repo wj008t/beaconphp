@@ -52,25 +52,25 @@ class Main extends Controller
             $this->error(['code' => '必须填写标识符号']);
         }
         if ($mode == 1) {
-            $row = DB::getRow('select * from @pf_flow_place where mode=1 and flowId=?', $this->fid);
+            $row = $this->db->getRow('select * from @pf_flow_place where mode=1 and flowId=?', $this->fid);
             if ($row != null) {
                 $this->error(['mode' => '只能有一个起始库所']);
             }
         }
         if ($mode == 0) {
-            $row = DB::getRow('select * from @pf_flow_place where mode=1 and flowId=?', $this->fid);
+            $row = $this->db->getRow('select * from @pf_flow_place where mode=1 and flowId=?', $this->fid);
             if ($row == null) {
                 $this->error(['mode' => '还未创建起始库所']);
             }
         }
-        DB::insert('@pf_flow_place', ['name' => $name, 'code' => $code, 'left' => 0, 'top' => 0, 'mode' => $mode, 'state' => $state, 'flowId' => $this->fid]);
-        $id = DB::lastInsertId();
+        $this->db->insert('@pf_flow_place', ['name' => $name, 'code' => $code, 'left' => 0, 'top' => 0, 'mode' => $mode, 'state' => $state, 'flowId' => $this->fid]);
+        $id = $this->db->lastInsertId();
         $this->success('添加成功', ['id' => $id, 'name' => $name, 'code' => $code, 'mode' => $mode, 'state' => $state, 'left' => 0, 'top' => 0]);
     }
 
     public function editPlaceAction(Request $request, int $id = 0)
     {
-        $row = DB::getRow('select * from @pf_flow_place where id=? and flowId=?', [$id, $this->fid]);
+        $row = $this->db->getRow('select * from @pf_flow_place where id=? and flowId=?', [$id, $this->fid]);
         if ($request->isGet()) {
             $this->assign('row', $row);
             return $this->fetch('place_edit.tpl');
@@ -85,7 +85,7 @@ class Main extends Controller
         if ($code == '') {
             $this->error(['code' => '必须填写标识符号']);
         }
-        DB::update('@pf_flow_place', ['name' => $name, 'code' => $code, 'state' => $state], 'id=? and flowId=?', [$id, $this->fid]);
+        $this->db->update('@pf_flow_place', ['name' => $name, 'code' => $code, 'state' => $state], 'id=? and flowId=?', [$id, $this->fid]);
         $this->success('添加成功', ['id' => $id, 'name' => $name, 'code' => $code, 'mode' => $row['mode'], 'state' => $state, 'left' => $row['left'], 'top' => $row['top']]);
     }
 
@@ -109,14 +109,14 @@ class Main extends Controller
         if ($code == '') {
             $this->error(['code' => '必须填写标识符号']);
         }
-        DB::insert('@pf_flow_transition', ['name' => $name, 'code' => $code, 'left' => 0, 'top' => 0, 'url' => $url, 'timeout' => $timeout, 'timeoutCondition' => $timeoutCondition, 'flowId' => $this->fid]);
-        $id = DB::lastInsertId();
+        $this->db->insert('@pf_flow_transition', ['name' => $name, 'code' => $code, 'left' => 0, 'top' => 0, 'url' => $url, 'timeout' => $timeout, 'timeoutCondition' => $timeoutCondition, 'flowId' => $this->fid]);
+        $id = $this->db->lastInsertId();
         $this->success('添加成功', ['id' => $id, 'name' => $name, 'code' => $code, 'left' => 0, 'top' => 0, 'url' => $url, 'timeout' => $timeout]);
     }
 
     public function editTransitionAction(Request $request, int $id = 0)
     {
-        $row = DB::getRow('select * from @pf_flow_transition where id=? and flowId=?', [$id, $this->fid]);
+        $row = $this->db->getRow('select * from @pf_flow_transition where id=? and flowId=?', [$id, $this->fid]);
         if ($request->isGet()) {
             $timeout = $row['timeout'];
             $row['timeout_day'] = intval($timeout / 86400);
@@ -143,21 +143,21 @@ class Main extends Controller
         if ($code == '') {
             $this->error(['code' => '必须填写标识符号']);
         }
-        DB::update('@pf_flow_transition', ['name' => $name, 'code' => $code, 'url' => $url, 'timeout' => $timeout, 'timeoutCondition' => $timeoutCondition], 'id=? and flowId=?', [$id, $this->fid]);
+        $this->db->update('@pf_flow_transition', ['name' => $name, 'code' => $code, 'url' => $url, 'timeout' => $timeout, 'timeoutCondition' => $timeoutCondition], 'id=? and flowId=?', [$id, $this->fid]);
         $this->success('添加成功', ['id' => $id, 'name' => $name, 'code' => $code, 'url' => $url, 'timeout' => $timeout, 'left' => $row['left'], 'top' => $row['top']]);
     }
 
     public function delPlaceAction(Request $request, int $id = 0)
     {
-        DB::delete('@pf_flow_connection', '(source=? and sourceType=? and flowId=? ) or (target=? and targetType=? and flowId=?)', [$id, 'place', $this->fid, $id, 'place', $this->fid]);
-        DB::delete('@pf_flow_place', 'id=? and flowId=?', [$id, $this->fid]);
+        $this->db->delete('@pf_flow_connection', '(source=? and sourceType=? and flowId=? ) or (target=? and targetType=? and flowId=?)', [$id, 'place', $this->fid, $id, 'place', $this->fid]);
+        $this->db->delete('@pf_flow_place', 'id=? and flowId=?', [$id, $this->fid]);
         $this->success('删除成功', ['type' => 'place', 'id' => $id]);
     }
 
     public function delTransitionAction(Request $request, int $id = 0)
     {
-        DB::delete('@pf_flow_connection', '(source=? and sourceType=? and flowId=?) or (target=? and targetType=? and flowId=?)', [$id, 'transition', $this->fid, $id, 'transition', $this->fid]);
-        DB::delete('@pf_flow_transition', 'id=? and flowId=?', [$id, $this->fid]);
+        $this->db->delete('@pf_flow_connection', '(source=? and sourceType=? and flowId=?) or (target=? and targetType=? and flowId=?)', [$id, 'transition', $this->fid, $id, 'transition', $this->fid]);
+        $this->db->delete('@pf_flow_transition', 'id=? and flowId=?', [$id, $this->fid]);
         $this->success('删除成功', ['type' => 'transition', 'id' => $id]);
     }
 
@@ -165,10 +165,10 @@ class Main extends Controller
     {
         $val = ['left' => $left, 'top' => $top];
         if ($type == 'place') {
-            DB::update('@pf_flow_place', $val, $id);
+            $this->db->update('@pf_flow_place', $val, $id);
         }
         if ($type == 'transition') {
-            DB::update('@pf_flow_transition', $val, $id);
+            $this->db->update('@pf_flow_transition', $val, $id);
         }
         $val['id'] = $id;
         $val['type'] = $type;
@@ -182,11 +182,11 @@ class Main extends Controller
         }
         $name = $request->post('name:s', '');
         $condition = $request->post('condition:i', 1);
-        $row = DB::getRow('select * from @pf_flow_connection where source=? and target=? and sourceType=? and targetType=? and flowId=?', [$source, $target, $sourceType, $targetType, $this->fid]);
+        $row = $this->db->getRow('select * from @pf_flow_connection where source=? and target=? and sourceType=? and targetType=? and flowId=?', [$source, $target, $sourceType, $targetType, $this->fid]);
         if ($row) {
             $this->error('连接重复');
         } else {
-            DB::insert('@pf_flow_connection', ['name' => $name, 'condition' => $condition, 'source' => $source, 'target' => $target, 'sourceType' => $sourceType, 'targetType' => $targetType, 'flowId' => $this->fid]);
+            $this->db->insert('@pf_flow_connection', ['name' => $name, 'condition' => $condition, 'source' => $source, 'target' => $target, 'sourceType' => $sourceType, 'targetType' => $targetType, 'flowId' => $this->fid]);
         }
         $this->success('连接成功', ['name' => $name, 'condition' => $condition, 'source' => $source, 'target' => $target, 'sourceType' => $sourceType, 'targetType' => $targetType]);
     }
@@ -194,15 +194,15 @@ class Main extends Controller
     public function detachAction(Request $request, int $source, int $target, string $sourceType = '', string $targetType = '')
     {
         $this->context->setContentType('json');
-        DB::delete('@pf_flow_connection', 'source=? and target=? and sourceType=? and targetType=? and flowId=?', [$source, $target, $sourceType, $targetType, $this->fid]);
+        $this->db->delete('@pf_flow_connection', 'source=? and target=? and sourceType=? and targetType=? and flowId=?', [$source, $target, $sourceType, $targetType, $this->fid]);
         $this->success('删除成功');
     }
 
     public function dataAction(Request $request)
     {
-        $place = DB::getList('select * from @pf_flow_place where flowId=?', $this->fid);
-        $connection = DB::getList('select * from @pf_flow_connection where flowId=?', $this->fid);
-        $transition = DB::getList('select * from @pf_flow_transition where flowId=?', $this->fid);
+        $place = $this->db->getList('select * from @pf_flow_place where flowId=?', $this->fid);
+        $connection = $this->db->getList('select * from @pf_flow_connection where flowId=?', $this->fid);
+        $transition = $this->db->getList('select * from @pf_flow_transition where flowId=?', $this->fid);
         $this->success('获取成功', ['place' => $place, 'connection' => $connection, 'transition' => $transition]);
     }
 

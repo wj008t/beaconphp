@@ -49,7 +49,7 @@ class Index extends Controller
         $vals = $form->autoComplete(function ($errors) {
             $this->error($errors);
         });
-        DB::insert('@pf_flow_list', $vals);
+        $this->db->insert('@pf_flow_list', $vals);
         $this->success("添加成功");
     }
 
@@ -57,7 +57,7 @@ class Index extends Controller
     {
         $form = new FlowForm($this->context);
         if ($request->isGet()) {
-            $row = DB::getRow('select * from @pf_flow_list where id=?', $id);
+            $row = $this->db->getRow('select * from @pf_flow_list where id=?', $id);
             $form->initValues($row);
             $form->addHideBox('id', $id);
             $this->assign('form', $form);
@@ -66,21 +66,21 @@ class Index extends Controller
         $vals = $form->autoComplete(function ($errors) {
             $this->error($errors);
         });
-        DB::update('@pf_flow_list', $vals, $id);
+        $this->db->update('@pf_flow_list', $vals, $id);
         $this->success("编辑成功");
     }
 
     public function deleteAction(int $id)
     {
-        DB::beginTransaction();
+        $this->db->beginTransaction();
         try {
-            DB::delete('@pf_flow_connection', 'flowid=?', $id);
-            DB::delete('@pf_flow_place', 'flowid=?', $id);
-            DB::delete('@pf_flow_transition', 'flowid=?', $id);
-            DB::delete('@pf_flow_list', $id);
-            DB::commit();
+            $this->db->delete('@pf_flow_connection', 'flowid=?', $id);
+            $this->db->delete('@pf_flow_place', 'flowid=?', $id);
+            $this->db->delete('@pf_flow_transition', 'flowid=?', $id);
+            $this->db->delete('@pf_flow_list', $id);
+            $this->db->commit();
         } catch (\Exception $e) {
-            DB::rollBack();
+            $this->db->rollBack();
             // $this->error($e->getMessage());
         }
         $this->success("删除成功");
