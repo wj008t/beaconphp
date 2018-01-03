@@ -10,11 +10,11 @@ namespace sdopx\plugin;
 
 
 use sdopx\lib\Outer;
-use sdopx\Sdopx;
+
 
 class HelloPlugin
 {
-    public static function block($param, $func, Outer $out, Sdopx $sdopx)
+    public static function block($param, $func, Outer $out)
     {
         $out->html('data');
         for ($i = 0; $i < 10; $i++) {

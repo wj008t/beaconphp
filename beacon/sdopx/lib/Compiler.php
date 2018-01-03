@@ -255,7 +255,7 @@ class Compiler
                 if (method_exists($class, 'block')) {
                     list($name, $data) = $this->closeTag([$name]);
                     $this->removeVar($data[0]);
-                    $code = '},$__out,$_sdopx);';
+                    $code = '},$__out);';
                     return $code;
                 } else {
                     $this->addError('插件没有结束函数 close');
@@ -299,7 +299,7 @@ class Compiler
                     foreach ($params as $key => $val) {
                         $temp[] = "'{$key}'=>${$val}";
                     }
-                    return "$class::execute([" . join(',', $temp) . '],$__out,$_sdopx);';
+                    return "$class::execute([" . join(',', $temp) . '],$__out);';
                 }
             }
         }
