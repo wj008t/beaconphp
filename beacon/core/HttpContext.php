@@ -12,8 +12,12 @@ namespace beacon;
 class HttpContext
 {
 
-    public $request = null;
-    public $response = null;
+    public $origin_request = null;
+    public $origin_response = null;
+    /**
+     * @var Request
+     */
+    private $request = null;
     public $header = null;
     public $_get = [];
     public $_post = [];
@@ -28,23 +32,22 @@ class HttpContext
 
     public function __construct($request = null, $response = null)
     {
-        $this->request = $request;
-        $this->response = $response;
-        if ($this->request) {
-            $this->_get = $this->request->get == null ? [] : $this->request->get;
-            $this->_post = $this->request->post == null ? [] : $this->request->post;
+        $this->origin_request = $request;
+        $this->origin_response = $response;
+        if ($this->origin_request) {
+            $this->_get = $this->origin_request->get == null ? [] : $this->origin_request->get;
+            $this->_post = $this->origin_request->post == null ? [] : $this->origin_request->post;
             foreach ($this->_get as $key => $value) {
                 $this->_param[$key] = $value;
             }
             foreach ($this->_post as $key => $value) {
                 $this->_param[$key] = $value;
             }
-            $this->_files = $this->request->files == null ? [] : $this->request->files;
-            $this->_cookie = $this->request->cookie == null ? [] : $this->request->cookie;
-            foreach ($this->request->server as $key => $value) {
+            $this->_files = $this->origin_request->files == null ? [] : $this->origin_request->files;
+            $this->_cookie = $this->origin_request->cookie == null ? [] : $this->origin_request->cookie;
+            foreach ($this->origin_request->server as $key => $value) {
                 $this->_server[strtoupper($key)] = $value;
             }
-
         } else {
             $this->_get = $_GET;
             $this->_post = $_POST;
@@ -53,12 +56,18 @@ class HttpContext
             $this->_cookie = $_COOKIE;
             $this->_server = $_SERVER;
         }
+        $this->request = new Request($this);
+    }
+
+    public function getRequest()
+    {
+        return $this->request;
     }
 
     public function write(string $data)
     {
-        if ($this->response) {
-            $this->response->write($data);
+        if ($this->origin_response) {
+            $this->origin_response->write($data);
             return;
         }
         echo $data;
@@ -66,8 +75,8 @@ class HttpContext
 
     public function end(string $data)
     {
-        if ($this->response) {
-            $this->response->end($data);
+        if ($this->origin_response) {
+            $this->origin_response->end($data);
             return;
         }
         echo $data;
@@ -77,8 +86,8 @@ class HttpContext
     {
         if ($this->header == null) {
             $this->header = [];
-            if ($this->request !== null) {
-                $this->header = $this->request->header;
+            if ($this->origin_request !== null) {
+                $this->header = $this->origin_request->header;
             } else {
                 foreach ($_SERVER as $key => $value) {
                     if ('HTTP_' == substr($key, 0, 5)) {
@@ -97,8 +106,8 @@ class HttpContext
 
     public function setHeader(string $name, string $value, bool $replace = true, $http_response_code = null)
     {
-        if ($this->response !== null) {
-            return $this->response->header($name, $value);
+        if ($this->origin_response !== null) {
+            return $this->origin_response->header($name, $value);
         }
         $string = $name . ':' . $value;
         if ($replace) {
@@ -190,14 +199,14 @@ class HttpContext
     public function setCookie(string $name, $value, $options)
     {
         if ($options == null) {
-            if ($this->response) {
-                return $this->response->cookie($name, $value);
+            if ($this->origin_response) {
+                return $this->origin_response->cookie($name, $value);
             }
             return setcookie($name, $value);
         }
         if (is_integer($options)) {
-            if ($this->response) {
-                return $this->response->cookie($name, $value, $options);
+            if ($this->origin_response) {
+                return $this->origin_response->cookie($name, $value, $options);
             }
             return setcookie($name, $value, $options);
         }
@@ -206,8 +215,8 @@ class HttpContext
         $domain = isset($options['domain']) ? intval($options['domain']) : '';
         $secure = isset($options['secure']) ? intval($options['secure']) : false;
         $httponly = isset($options['httponly ']) ? intval($options['httponly ']) : false;
-        if ($this->response) {
-            return $this->response->cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        if ($this->origin_response) {
+            return $this->origin_response->cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
         }
         return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
 

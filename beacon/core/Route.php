@@ -310,7 +310,7 @@ class Route
     {
         try {
             $context = new HttpContext($request, $response);
-            $request = new Request($context);
+            $request = $context->getRequest();
             if ($request->isAjax()) {
                 $context->setContentType('json');
             } else {

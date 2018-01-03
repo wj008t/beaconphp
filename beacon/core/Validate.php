@@ -17,6 +17,7 @@ class Validate
      */
     private static $default_errors = null;
 
+
     /**
      * 代理短写
      * @var array
@@ -38,6 +39,13 @@ class Validate
     private $remoteFunc = [];
     private $func = [];
     private $def_errors = [];
+
+    public $context = null;
+
+    public function __construct(HttpContext $context)
+    {
+        $this->context = $context;
+    }
 
     /**
      * 字符串格式化输出
@@ -159,12 +167,12 @@ class Validate
         return strval($val) != strval($str);
     }
 
-    public static function test_equalto($val, $key)
+    public static function test_equalto($context, $val, $key)
     {
         if (!empty($key) && preg_match('/^#(\w+)/i', $key, $m) != 0) {
             $name = isset($m[1]) ? $m[1] : '';
             if (!empty($name)) {
-                $str = Request::instance()->param($name . ':s');
+                $str = $context->getRequest()->param($name . ':s');
                 if (!empty($str)) {
                     return strval($val) == $str;
                 }
@@ -321,6 +329,9 @@ class Validate
                 }
                 $xargs = array_slice($args, 0);
                 array_unshift($args, $value);
+                if ($type == 'equalto') {
+                    array_unshift($args, $this->context);
+                }
                 $func = null;
                 if ($type == 'remote') {
                     $func = isset($field->remoteFunc) ? $field->remoteFunc : (isset($this->remoteFunc[$name]) ? $this->remoteFunc[$name] : null);

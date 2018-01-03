@@ -38,7 +38,7 @@ class Form
     private $cacheUsingFields = [];
     protected $hideBox = [];
 
-    protected $context = null;
+    public $context = null;
 
     /**
      * @param string $type
@@ -230,7 +230,7 @@ class Form
         $this->initialize();
         if ($this->viewUseTab && $this->viewTabSplit) {
             if (!empty($this->viewCurrentTabIndex)) {
-                $this->viewCurrentTabIndex = Request::instance()->get('tabIndex:s');
+                $this->viewCurrentTabIndex = $this->context->getRequest()->get('tabIndex:s');
                 return $this->getTabFields($this->viewCurrentTabIndex);
             }
         }
@@ -324,13 +324,14 @@ class Form
                 continue;
             }
             $box = self::getBoxInstance($field->type);
+            $request = $this->context->getRequest();
             if (is_string($method)) {
                 $method = strtolower($method);
-                $data = $_REQUEST;
+                $data = $this->context->_param;
                 if ($method == 'get') {
-                    $data = $_GET;
+                    $data = $this->context->_get;
                 } elseif ($method == 'post') {
-                    $data = $_POST;
+                    $data = $this->context->_post;
                 }
             } elseif (is_array($method)) {
                 $data = $method;
@@ -341,7 +342,6 @@ class Form
                 $box->assign($field, $data);
             } else {
                 $boxName = $field->boxName;
-                $request = Request::instance();
                 switch ($field->varType) {
                     case 'bool':
                     case 'boolean':
@@ -412,7 +412,7 @@ class Form
     public function getValidateInstance()
     {
         if ($this->validate == null) {
-            $this->validate = new Validate();
+            $this->validate = new Validate($this->context);
         }
         return $this->validate;
     }

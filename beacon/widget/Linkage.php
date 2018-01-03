@@ -69,7 +69,7 @@ class Linkage implements BoxInterface
 
     public function assign(Field $field, array $data)
     {
-        $request = Request::instance();
+        $request = $field->getForm()->context->getRequest();
         if ($field->names !== null && is_array($field->names)) {
             $default = isset($field->default) ? $field->default : [];
             $values = [];
