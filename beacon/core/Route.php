@@ -479,6 +479,11 @@ class Route
                 throw new RouteException('不存在的控制器');
             }
         } catch (\Exception $exception) {
+            if (HTTP_SWOOLE) {
+                $response->status(404);
+                $response->end();
+                return;
+            }
             if (IS_CLI) {
                 echo $exception->getMessage();
                 echo "\n";
@@ -489,6 +494,55 @@ class Route
             }
         }
     }
+
+    /**
+     * HTTP_SWOOLE 处理静态资源
+     * @param null $url
+     * @param null $paths
+     */
+    public static function runStatic($url = null, $request = null, $response = null, $paths = null)
+    {
+        if ($url == null) {
+            $url = $request->server['request_uri'];
+        }
+        if ($paths == null) {
+            return false;
+        }
+        $pregs = [];
+        foreach ($paths as $path) {
+            $pregs[] = preg_quote($path, '@');
+        }
+        if (!preg_match('@^/?(' . join('|', $pregs) . ')@', $url, $data)) {
+            return false;
+        }
+        $pathinfo = parse_url($url);
+        if (!empty($pathinfo['path'])) {
+            $filename = Utils::path(ROOT_DIR, 'www', $pathinfo['path']);
+            if (!file_exists($filename)) {
+                $response->status(404);
+                $response->end('');
+                return true;
+            }
+            $last_modified_time = filemtime($filename);
+            if (isset($request->header['if-modified-since'])) {
+                $time = @strtotime($request->header['if-modified-since']);
+                if ($time >= $last_modified_time) {
+                    $response->status(304);
+                    $response->end();
+                    return true;
+                }
+            }
+            $info = pathinfo($filename);
+            $extension = $info['extension'];
+            $context = new HttpContext($request, $response);
+            $context->setContentType($extension);
+            $context->setHeader('Last-Modified', gmdate("D, d M Y H:i:s", $last_modified_time) . " GMT");
+            $context->setHeader('Etag', md5($last_modified_time));
+            $response->end(file_get_contents($filename));
+            return true;
+        }
+    }
+
 
 }
 

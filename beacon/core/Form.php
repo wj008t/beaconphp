@@ -38,6 +38,8 @@ class Form
     private $cacheUsingFields = [];
     protected $hideBox = [];
 
+    protected $context = null;
+
     /**
      * @param string $type
      * @return \widget\BoxInterface
@@ -63,8 +65,9 @@ class Form
         return self::$boxInstance[$type];
     }
 
-    public function __construct($type = '')
+    public function __construct(HttpContext $context, $type = '')
     {
+        $this->context = $context;
         $this->type = $type;
     }
 
