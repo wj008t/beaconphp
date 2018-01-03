@@ -132,14 +132,13 @@ class Template
         $this->property['codeid'] = $this->tplId;
         $_cache = [];
         $content = $this->createTemplateCodeFrame($content);
-        // echo $content;
         try {
             @eval('?>' . $content);
             if (isset($_cache['property']) && isset($_cache['unifunc'])) {
                 Template::$complie_cache[$this->tplId] = $_cache;
             }
         } catch (\Exception $err) {
-            throw  $err;
+            $this->sdopx->rethrow($err);
         }
         $file = Utils::path($this->sdopx->runtime_dir, $this->tplId . '.php');
         file_put_contents($file, $content . ' return $_cache;');
@@ -215,7 +214,7 @@ class Template
         $_sdopx = $this->sdopx;
         try {
             call_user_func($unifunc, $_sdopx, $__out);
-        } catch (\Exception $exception) {
+        } catch (\ErrorException $exception) {
             $__out->throw($exception);
         }
         return $__out->getCode();
