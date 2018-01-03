@@ -75,7 +75,7 @@ class Main extends Controller
             $this->assign('row', $row);
             return $this->fetch('place_edit.tpl');
         }
-        $request->setContentType('json');
+        $this->context->setContentType('json');
         $name = $request->post('name:s', '');
         $code = $request->post('code:s', '');
         $state = $request->post('state:i', 0);
@@ -193,7 +193,7 @@ class Main extends Controller
 
     public function detachAction(Request $request, int $source, int $target, string $sourceType = '', string $targetType = '')
     {
-        $request->setContentType('json');
+        $this->context->setContentType('json');
         DB::delete('@pf_flow_connection', 'source=? and target=? and sourceType=? and targetType=? and flowId=?', [$source, $target, $sourceType, $targetType, $this->fid]);
         $this->success('删除成功');
     }
