@@ -503,6 +503,23 @@ class Route
                 echo '<h1>' . $exception->getMessage() . '</h1>';
                 echo '<pre>' . $exception->getTraceAsString() . '</pre>';
             }
+        } catch (\Error $error) {
+            if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
+                echo $error->getCode() . $error->getMessage();
+                echo "\n";
+                echo $error->getTraceAsString();
+                $res->status(500);
+                $res->end();
+                return;
+            }
+            if (IS_CLI) {
+                echo $error->getMessage();
+                echo "\n";
+                echo $error->getTraceAsString();
+            } else {
+                echo '<h1>' . $error->getMessage() . '</h1>';
+                echo '<pre>' . $error->getTraceAsString() . '</pre>';
+            }
         }
     }
 
