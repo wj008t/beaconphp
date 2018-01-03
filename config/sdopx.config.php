@@ -13,6 +13,7 @@ return [
     'compile_check' => true,
     //默认模板后缀名
     'extension' => '.tpl',
+    'debug' => true,
     //插件包资源配置
     'plugin_dir' => [
         '/libs/plugin'
