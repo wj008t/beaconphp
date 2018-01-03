@@ -19,7 +19,7 @@ class FlowPlugin
         $name = (empty($param['name'])) ? '' : $param['name'];
         $branch = (empty($param['branch'])) ? '' : $param['branch'];
         $task = (empty($param['task'])) ? '' : $param['task'];
-        $token = \app\flow\lib\Flow::getToken($task, $name, $branch);
+        $token = \app\flow\lib\Flow::getToken($out->_sdopx->context, $task, $name, $branch);
         if ($token <= 0) {
             return;
         }
