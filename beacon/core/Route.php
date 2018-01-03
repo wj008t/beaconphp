@@ -482,7 +482,9 @@ class Route
                 throw new RouteEndError('不存在的控制器');
             }
         } catch (RouteEndError $exception) {
-            $res->end();
+            if ($res !== null) {
+                $res->end('');
+            }
             return;
         } catch (\Exception $exception) {
             if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
@@ -509,10 +511,10 @@ class Route
      * @param null $url
      * @param null $paths
      */
-    public static function runStatic($url = null, $request = null, $response = null, $paths = null)
+    public static function runStatic($url = null, \swoole_http_request $req = null, \swoole_http_response $res = null, $paths = null)
     {
         if ($url == null) {
-            $url = $request->server['request_uri'];
+            $url = $req->server['request_uri'];
         }
         if ($paths == null) {
             return false;
@@ -524,30 +526,30 @@ class Route
         if (!preg_match('@^/?(' . join('|', $pregs) . ')@', $url, $data)) {
             return false;
         }
-        $pathinfo = parse_url($url);
-        if (!empty($pathinfo['path'])) {
-            $filename = Utils::path(ROOT_DIR, 'www', $pathinfo['path']);
+        $parse = parse_url($url);
+        if (!empty($parse['path'])) {
+            $filename = Utils::path(ROOT_DIR, 'www', $parse['path']);
             if (!file_exists($filename)) {
-                $response->status(404);
-                $response->end('');
+                $res->status(404);
+                $res->end('');
                 return true;
             }
             $last_modified_time = filemtime($filename);
-            if (isset($request->header['if-modified-since'])) {
-                $time = @strtotime($request->header['if-modified-since']);
+            if (isset($req->header['if-modified-since'])) {
+                $time = @strtotime($res->header['if-modified-since']);
                 if ($time >= $last_modified_time) {
-                    $response->status(304);
-                    $response->end();
+                    $res->status(304);
+                    $res->end('');
                     return true;
                 }
             }
             $info = pathinfo($filename);
             $extension = $info['extension'];
-            $context = new HttpContext($request, $response);
+            $context = new HttpContext($req, $res);
             $context->setContentType($extension);
             $context->setHeader('Last-Modified', gmdate("D, d M Y H:i:s", $last_modified_time) . " GMT");
             $context->setHeader('Etag', md5($last_modified_time));
-            $response->end(file_get_contents($filename));
+            $res->end(file_get_contents($filename));
             return true;
         }
     }
