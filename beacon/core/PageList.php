@@ -12,6 +12,7 @@ use PDO as PDO;
 class Pagelist
 {
 
+    private $context;
     private $sql;
     private $page; //当前页面
     private $records_count;  //记录数
@@ -31,8 +32,9 @@ class Pagelist
      * @param string $pagekey 分页的URL名称$_GET['?']
      * @param int $count 直接给定记录数可以提高查询效率，例如使用缓存的记录数或者参数给回的记录数。
      */
-    function __construct($sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
+    function __construct(HttpContext $context, $sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
     {
+        $this->context = $context;
         $this->sql = $sql;
         $this->page_size = intval($size);
         $this->key = $pagekey;
@@ -75,7 +77,7 @@ class Pagelist
         if ($this->info != NULL) {
             return $this->info;
         }
-        $url = $_SERVER['REQUEST_URI'];
+        $url = $this->context->_server['REQUEST_URI'];
         $Idx = strpos($url, '?');
         $query = '';
         if ($Idx !== false) {

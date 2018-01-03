@@ -11,72 +11,50 @@ namespace beacon;
 
 class Request
 {
-    private static $instance = null;
-    private $header = null;
-    private $content_type = 'text/html; charset=utf-8';
 
-    public static function instance()
+    /**
+     * @var HttpContext
+     */
+    public $context = null;
+
+    public function __construct(HttpContext $context)
     {
-        if (self::$instance == null) {
-            self::$instance = new Request();
-        }
-        return self::$instance;
+        $this->context = $context;
     }
 
     public function get(string $name = null, $def = null)
     {
-        return $this->req($_GET, $name, $def);
+        return $this->req($this->context->_get, $name, $def);
     }
 
     public function post(string $name = null, $def = null)
     {
-        return $this->req($_POST, $name, $def);
+        return $this->req($this->context->_post, $name, $def);
     }
 
     public function param(string $name = null, $def = null)
     {
-        return $this->req($_REQUEST, $name, $def);
-    }
-
-    public function getSession(string $name = null)
-    {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-        if (empty($name)) {
-            return $_SESSION;
-        }
-        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
-    }
-
-    public function setSession(string $name, $value)
-    {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-        $_SESSION[$name] = $value;
+        return $this->req($this->context->_param, $name, $def);
     }
 
     public function getCookie(string $name)
     {
-        return isset($_COOKIE["name"]) ? $_COOKIE["name"] : null;
+        return $this->context->getCookie($name);
     }
 
     public function setCookie(string $name, $value, $options)
     {
-        if ($options == null) {
-            return setcookie($name, $value);
-        }
-        if (is_integer($options)) {
-            return setcookie($name, $value, $options);
-        }
-        $expire = isset($options['expire']) ? intval($options['expire']) : 0;
-        $path = isset($options['path']) ? intval($options['path']) : '';
-        $domain = isset($options['domain']) ? intval($options['domain']) : '';
-        $secure = isset($options['secure']) ? intval($options['secure']) : false;
-        $httponly = isset($options['httponly ']) ? intval($options['httponly ']) : false;
-        return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        return $this->context->setCookie($name, $value, $options);
+    }
 
+    public function getSession(string $name = null)
+    {
+        return $this->context->getSession($name);
+    }
+
+    public function setSession(string $name, $value)
+    {
+        return $this->context->setSession($name, $value);
     }
 
     public function req(array $data, string $name = null, $def = null)
@@ -153,60 +131,14 @@ class Request
     public function file(string $name = null)
     {
         if (empty($name)) {
-            return $_FILES;
+            return $this->context->_files;
         }
-        return isset($_FILES[$name]) ? $_FILES[$name] : null;
+        return isset($this->context->_files[$name]) ? $this->context->_files[$name] : null;
     }
 
     public function route(string $name = null, $def = null)
     {
-        $route = Route::get();
-        if (empty($name)) {
-            return $route;
-        }
-        if ($route == null) {
-            return $def;
-        }
-        if (isset($route[$name])) {
-            return $route[$name];
-        }
-        return $def;
-    }
-
-    public function getHeader(string $name = null)
-    {
-        if ($this->header == null) {
-            $this->header = [];
-            foreach ($_SERVER as $key => $value) {
-                if ('HTTP_' == substr($key, 0, 5)) {
-                    $key = strtolower(str_replace('_', '-', substr($key, 5)));
-                    $this->header[$key] = $value;
-                }
-            }
-        }
-        if (empty($name)) {
-            return $this->header;
-        }
-        $name = strtolower(str_replace('_', '-', $name));
-        return isset($this->header[$name]) ? $this->header[$name] : '';
-    }
-
-    public function setHeader(string $name, string $value, bool $replace = true, $http_response_code = null)
-    {
-        $string = $name . ':' . $value;
-        if ($replace) {
-            if ($http_response_code == null) {
-                header($string);
-            } else {
-                header($string, $replace, $http_response_code);
-            }
-        } else {
-            if ($http_response_code == null) {
-                header($string, false);
-            } else {
-                header($string, false, $http_response_code);
-            }
-        }
+        return $this->context->route($name, $def);
     }
 
     public function getIP(bool $proxy = false, bool $forward = false)
@@ -214,7 +146,7 @@ class Request
         $ip = '';
         if ($proxy) {
             if ($forward) {
-                $forwardIP = $this->getHeader('x-forwarded-for');
+                $forwardIP = $this->context->getHeader('x-forwarded-for');
                 if (!empty($forwardIP)) {
                     $temps = explode(',', $forwardIP);
                     foreach ($temps as $item) {
@@ -224,11 +156,11 @@ class Request
                         }
                     }
                 }
-                $ip = $this->getHeader('x-real-ip');
+                $ip = $this->context->getHeader('x-real-ip');
             }
         } else {
-            if (isset($_SERVER['REMOTE_ADDR'])) {
-                $ip = $_SERVER['REMOTE_ADDR'];
+            if (isset($this->context->_server['REMOTE_ADDR'])) {
+                $ip = $this->context->_server['REMOTE_ADDR'];
             }
         }
         if (empty($ip)) {
@@ -237,76 +169,6 @@ class Request
         return $ip;
     }
 
-    public function getContentType($whole = false)
-    {
-        if ($whole) {
-            return $this->content_type;
-        }
-        $temp = explode(';', $this->content_type);
-        return $temp[0];
-    }
-
-    public function setContentType($type, $encoding = 'utf-8')
-    {
-        if (strpos($type, '/') === false) {
-            $mime_types = [
-                'txt' => 'text/plain',
-                'htm' => 'text/html',
-                'html' => 'text/html',
-                'php' => 'text/html',
-                'css' => 'text/css',
-                'js' => 'application/javascript',
-                'json' => 'text/json',
-                'xml' => 'application/xml',
-                'swf' => 'application/x-shockwave-flash',
-                'flv' => 'video/x-flv',
-                // images
-                'png' => 'image/png',
-                'jpe' => 'image/jpeg',
-                'jpeg' => 'image/jpeg',
-                'jpg' => 'image/jpeg',
-                'gif' => 'image/gif',
-                'bmp' => 'image/bmp',
-                'ico' => 'image/vnd.microsoft.icon',
-                'tiff' => 'image/tiff',
-                'tif' => 'image/tiff',
-                'svg' => 'image/svg+xml',
-                'svgz' => 'image/svg+xml',
-                // archives
-                'zip' => 'application/zip',
-                'rar' => 'application/x-rar-compressed',
-                'exe' => 'application/x-msdownload',
-                'msi' => 'application/x-msdownload',
-                'cab' => 'application/vnd.ms-cab-compressed',
-                // audio/video
-                'mp3' => 'audio/mpeg',
-                'qt' => 'video/quicktime',
-                'mov' => 'video/quicktime',
-                // adobe
-                'pdf' => 'application/pdf',
-                'psd' => 'image/vnd.adobe.photoshop',
-                'ai' => 'application/postscript',
-                'eps' => 'application/postscript',
-                'ps' => 'application/postscript',
-                // ms office
-                'doc' => 'application/msword',
-                'rtf' => 'application/rtf',
-                'xls' => 'application/vnd.ms-excel',
-                'ppt' => 'application/vnd.ms-powerpoint',
-                // open office
-                'odt' => 'application/vnd.oasis.opendocument.text',
-                'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-            ];
-            $type = isset($mime_types[$type]) ? $mime_types[$type] : 'application/octet-stream';
-        }
-        $this->content_type = $type . '; charset=' . $encoding;
-        $this->setHeader('Content-Type', $this->content_type);
-    }
-
-    protected function config($name, $def = null)
-    {
-        return Config::get($name, $def);
-    }
 
     public function isGet()
     {
@@ -315,12 +177,12 @@ class Request
 
     public function isMethod($method)
     {
-        return strtolower($_SERVER['REQUEST_METHOD']) == strtolower($method) ? true : false;
+        return strtolower($this->context->_server['REQUEST_METHOD']) == strtolower($method) ? true : false;
     }
 
     public function getMethod()
     {
-        return strtolower($_SERVER['REQUEST_METHOD']);
+        return strtolower($this->context->_server['REQUEST_METHOD']);
     }
 
     public function isPost()
@@ -330,19 +192,15 @@ class Request
 
     public function isAjax()
     {
-        if (isset($_SERVER['DOCUMENT_URI']) && preg_match('@\.json$@i', $_SERVER['DOCUMENT_URI'])) {
+        if (isset($this->context->_server['DOCUMENT_URI']) && preg_match('@\.json$@i', $this->context->_server['DOCUMENT_URI'])) {
             return true;
         }
-        return strtolower($this->getHeader('x-requested-with')) === 'xmlhttprequest';
+        return strtolower($this->context->getHeader('x-requested-with')) === 'xmlhttprequest';
     }
 
     public function getReferrer()
     {
-        $referer = Request::instance()->getHeader('referer');
-        if (empty($referer)) {
-            $referer = Request::instance()->getHeader('referrer');
-        }
-        return $referer;
+        return $this->context->getReferrer();
     }
 
 }

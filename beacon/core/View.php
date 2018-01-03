@@ -19,15 +19,11 @@ class View
      * @var \sdopx\Sdopx
      */
     public $engine = null;
+    public $context = null;
 
-    private static $instance = null;
-
-    public static function instance()
+    public function __construct(HttpContext $context)
     {
-        if (self::$instance == null) {
-            self::$instance = new View();
-        }
-        return self::$instance;
+        $this->context = $context;
     }
 
     public function assign($key, $val = null)
@@ -56,7 +52,7 @@ class View
         if (Config::get('sdopx.debug')) {
             \sdopx\Sdopx::$debug = true;
         }
-        $this->engine = new \sdopx\Sdopx();
+        $this->engine = new \sdopx\Sdopx($this->context);
         $template_dir = Utils::path(ROOT_DIR, Config::get('sdopx.template_dir', 'view'));
         $common_dir = Utils::path(ROOT_DIR, Config::get('sdopx.common_dir', 'view/common'));
         $runtime_dir = Utils::path(ROOT_DIR, Config::get('sdopx.runtime_dir', 'runtime'));

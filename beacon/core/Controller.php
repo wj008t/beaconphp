@@ -11,31 +11,54 @@ namespace beacon;
 
 abstract class Controller
 {
+    /**
+     * @var View
+     */
+    protected $view = null;
+    /**
+     * @var HttpContext
+     */
+    protected $context = null;
+
+    public function __construct(HttpContext $context)
+    {
+        $this->context = $context;
+    }
+
+    protected function view()
+    {
+        if ($this->view == null) {
+            $this->view = new View($this->context);
+        }
+        return $this->view;
+    }
+
     protected function engine()
     {
-        View::instance()->initialize();
-        return View::instance()->engine;
+        $view = $this->view();
+        $view->initialize();
+        return $view->engine;
     }
 
     protected function assign($key, $val = null)
     {
-        View::instance()->assign($key, $val);
+        return $this->view()->assign($key, $val);
     }
 
     protected function display($tplname)
     {
-        return View::instance()->display($tplname);
+        return $this->view()->display($tplname);
     }
 
     protected function fetch($tplname)
     {
-        return View::instance()->fetch($tplname);
+        return $this->view()->fetch($tplname);
     }
 
     protected function redirect($url)
     {
         $url = empty($url) ? '/' : $url;
-        Request::instance()->setHeader('Location', $url);
+        $this->context->setHeader('Location', $url);
         $this->exit();
     }
 
@@ -55,12 +78,12 @@ abstract class Controller
         } else {
             $out['error'] = $error;
         }
-        if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
-            echo json_encode($out);
+        if ($this->context->getContentType() == 'application/json' || $this->context->getContentType() == 'text/json') {
+            $this->context->write(json_encode($out));
             $this->exit();
         } else {
             if (empty($jump)) {
-                $jump = Request::instance()->getReferrer();
+                $jump = $this->context->getReferrer();
             }
             if (empty($jump)) {
                 $jump = '#';
@@ -81,22 +104,22 @@ abstract class Controller
         if ($jump != null) {
             $out['jump'] = $jump;
         }
-        if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
-            echo json_encode($out);
+        if ($this->context->getContentType() == 'application/json' || $this->context->getContentType() == 'text/json') {
+            $this->context->write(json_encode($out));
             $this->exit();
         } else {
             if (empty($jump)) {
-                $jump = Request::instance()->param('__BACK__');
+                $jump = $this->context->param('__BACK__');
             }
             if (empty($jump)) {
-                $jump = Request::instance()->getReferrer();
+                $jump = $this->context->getReferrer();
             }
             if (empty($jump)) {
                 $jump = '#';
             }
             $out['jump'] = $jump;
             $this->assign('info', $out);
-            $this->display('@success.tpl');
+            $this->context->write($this->fetch('@success.tpl'));
             $this->exit();
         }
     }
@@ -107,7 +130,7 @@ abstract class Controller
     public function exit()
     {
         if (IS_CLI) {
-            throw new \beacon\ExitException('exit');
+            throw new \beacon\RouteException('exit');
         } else {
             exit;
         }
