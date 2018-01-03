@@ -20,7 +20,7 @@ class Work extends Controller
     public function indexAction(Request $request)
     {
         $request->setSession('userId', 1);
-        $pagelist = new Pagelist('select * from @pf_task order by id desc');
+        $pagelist = new Pagelist($this->context, 'select * from @pf_task order by id desc');
         $list = $pagelist->getList();
         $pinfo = $pagelist->getInfo();
         $this->assign('list', $list);
@@ -65,10 +65,10 @@ class Work extends Controller
         } else {
             //手动执行
             $userId = $request->getSession('userId');
-            $taskId = $request->param('taskId');
+            $taskId = $request->param('taskId:i', 0);
             $args['userId'] = $userId;
             $args['condition'] = $request->param('condition:i', 1);
-            $tokenId = Flow::getToken($taskId, '测试工作流程', $branch, $args);
+            $tokenId = Flow::getToken($this->context, $taskId, '测试工作流程', $branch, $args);
         }
         if ($tokenId == 0) {
             $this->error('业务流程已过期，请刷新页面');
@@ -83,7 +83,7 @@ class Work extends Controller
             $branch = 'step1';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
+            Flow::reday($this->context, $tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
@@ -101,7 +101,7 @@ class Work extends Controller
             $branch = 'step2';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
+            Flow::reday($this->context, $tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
@@ -119,7 +119,7 @@ class Work extends Controller
             $branch = 'step3';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
+            Flow::reday($this->context, $tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
@@ -137,7 +137,7 @@ class Work extends Controller
             $branch = 'step4';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
+            Flow::reday($this->context, $tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();

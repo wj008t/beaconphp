@@ -27,7 +27,7 @@ class Index extends Controller
     {
         $pagelist = new Pagelist('select * from @pf_flow_list order by id desc');
         $list = $pagelist->getList();
-        $pinfo = $pagelist->getInfo();
+        $pinfo = $pagelist->getInfo($this->context);
         $this->assign('list', $list);
         $this->assign('pdata', $pinfo);
         if ($request->isAjax()) {

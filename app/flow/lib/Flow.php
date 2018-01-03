@@ -9,6 +9,7 @@
 namespace app\flow\lib {
 
     use beacon\DB;
+    use beacon\HttpContext;
     use beacon\Request;
     use beacon\Utils;
 
@@ -73,7 +74,7 @@ namespace app\flow\lib {
         }
 
         //准备处理
-        public static function reday(int $tokenId, $branch = '', array $args = [])
+        public static function reday(HttpContext $context, int $tokenId, $branch = '', array $args = [])
         {
             if ($tokenId == 0) {
                 throw new FlowException('执行失败，任务Token不存在');
@@ -81,11 +82,11 @@ namespace app\flow\lib {
             if (empty($branch)) {
                 throw new FlowException('执行失败，没有指定执行的分支');
             }
-            $args['userId'] = isset($args['userId']) ? $args['userId'] : Request::instance()->getSession('userId');
+            $args['userId'] = isset($args['userId']) ? $args['userId'] : $context->getSession('userId');
             if (empty($args['userId'])) {
                 $args['userId'] = 0;
             }
-            $args['groupId'] = isset($args['groupId']) ? $args['groupId'] : Request::instance()->getSession('groupId');
+            $args['groupId'] = isset($args['groupId']) ? $args['groupId'] : $context->getSession('groupId');
             if (empty($args['groupId'])) {
                 $args['groupId'] = 0;
             }
@@ -250,7 +251,7 @@ namespace app\flow\lib {
         }
 
         //获取令牌
-        public static function getToken(int $taskId, string $name = '', $branch = '', array $args = [])
+        public static function getToken(HttpContext $context, int $taskId, string $name = '', $branch = '', array $args = [])
         {
             if (empty($branch)) {
                 return 0;
@@ -259,11 +260,11 @@ namespace app\flow\lib {
             if ($flow == null) {
                 return 0;
             }
-            $args['userId'] = isset($args['userId']) ? $args['userId'] : Request::instance()->getSession('userId');
+            $args['userId'] = isset($args['userId']) ? $args['userId'] : $context->getSession('userId');
             if (empty($args['userId'])) {
                 $args['userId'] = 0;
             }
-            $args['groupId'] = isset($args['groupId']) ? $args['groupId'] : Request::instance()->getSession('groupId');
+            $args['groupId'] = isset($args['groupId']) ? $args['groupId'] : $context->getSession('groupId');
             if (empty($args['groupId'])) {
                 $args['groupId'] = 0;
             }

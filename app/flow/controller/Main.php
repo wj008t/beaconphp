@@ -21,7 +21,7 @@ class Main extends Controller
     {
         $request = Request::instance();
         if ($request->isAjax()) {
-            $request->setContentType('json');
+            $this->context->setContentType('json');
         }
         $this->fid = $request->get('fid:i', 0);
         if ($this->fid == 0) {
