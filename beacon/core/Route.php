@@ -480,6 +480,9 @@ class Route
             }
         } catch (\Exception $exception) {
             if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
+                echo $exception->getCode() . $exception->getMessage();
+                echo "\n";
+                echo $exception->getTraceAsString();
                 $response->status(404);
                 $response->end();
                 return;
@@ -489,8 +492,8 @@ class Route
                 echo "\n";
                 echo $exception->getTraceAsString();
             } else {
-                echo $exception->getMessage();
-                echo $exception->getTraceAsString();
+                echo '<h1>' . $exception->getMessage() . '</h1>';
+                echo '<pre>' . $exception->getTraceAsString() . '</pre>';
             }
         }
     }

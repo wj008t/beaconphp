@@ -31,131 +31,191 @@ namespace beacon {
 
     class Mysql
     {
-        private static $instance = null;
-        private $prefix = '';
-        private $medoo = null;
         /**
          * @var \PDO|null
          */
-        private $pdo = null;
+        private $conn = null;
+
         private $transactionCounter = 0;
+        private $host = '127.0.0.1', $port = 3306, $name = '', $user = '', $pass = '', $prefix = '';
+        private $retry = 0;
 
         public function __construct($host, $port = 3306, $name = '', $user = '', $pass = '', $prefix = '')
         {
+            $this->host = $host;
+            $this->port = $port;
+            $this->name = $name;
+            $this->user = $user;
+            $this->pass = $pass;
             $this->prefix = $prefix;
-            if ($host instanceof \Medoo\Medoo) {
-                $this->medoo = $host;
-                $this->pdo = $host->pdo;
-                return;
-            }
-            if (!empty($name)) {
-                $link = 'mysql:host=' . $host . ';port=' . $port . ';dbname=' . $name;
-            } else {
-                $link = 'mysql:host=' . $host . ';port=' . $port . ';';
-            }
-            try {
-                $this->pdo = new PDO($link, $user, $pass, [PDO::ATTR_PERSISTENT => true, PDO::ATTR_TIMEOUT => 120, PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"]);
-            } catch (PDOException $exc) {
-                throw $exc;
-            }
         }
 
-        public function getMedoo()
+        public function init()
         {
-            return $this->medoo;
-        }
 
-        public static function instance()
-        {
-            if (self::$instance == null) {
+            if ($this->conn === null) {
+                /*
                 $host = Config::get('db.db_host', '127.0.0.1');
                 $port = Config::get('db.db_port', 3306);
                 $name = Config::get('db.db_name', '');
                 $user = Config::get('db.db_user', '');
                 $pass = Config::get('db.db_pwd', '');
                 $prefix = Config::get('db.db_prefix', 'sl_');
-                if (Config::get('db.use_medoo', false)) {
-                    $medoo = new \Medoo\Medoo([
-                        'database_type' => 'mysql',
-                        'database_name' => $name,
-                        'server' => $host,
-                        'username' => $user,
-                        'password' => $pass,
-                        'port' => $port,
-                        'charset' => 'utf8',
-                        'prefix' => $prefix,
-                        'option' => [PDO::ATTR_PERSISTENT => true, PDO::ATTR_TIMEOUT => 120, PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"]
-                    ]);
-                    self::$instance = new Mysql($medoo, null, null, null, null, $prefix);
-                    return self::$instance;
+                */
+                $this->transactionCounter = 0;
+                if (!empty($this->name)) {
+                    $link = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name;
+                } else {
+                    $link = 'mysql:host=' . $this->host . ';port=' . $this->port . ';';
                 }
-                self::$instance = new Mysql($host, $port, $name, $user, $pass, $prefix);
+                try {
+                    $this->conn = new PDO($link, $this->user, $this->pass, [PDO::ATTR_PERSISTENT => true, PDO::ATTR_TIMEOUT => 120, PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8"]);
+                } catch (PDOException $exc) {
+                    throw $exc;
+                }
             }
-            return self::$instance;
+            return $this;
+        }
+
+        public function close()
+        {
+            $this->conn = null;
         }
 
         public function beginTransaction()
         {
-            if (!$this->transactionCounter++) {
-                return $this->pdo->beginTransaction();
+            $this->init();
+            try {
+                if (!$this->transactionCounter++) {
+                    return $this->conn->beginTransaction();
+                }
+                $this->conn->exec('SAVEPOINT trans' . $this->transactionCounter);
+                return $this->transactionCounter >= 0;
+            } catch (\ErrorException $exception) {
+                throw $exception;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 beginTransaction");
             }
-            $this->pdo->exec('SAVEPOINT trans' . $this->transactionCounter);
-            return $this->transactionCounter >= 0;
         }
 
         public function commit()
         {
-            if (!--$this->transactionCounter) {
-                return $this->pdo->commit();
+            $this->init();
+            try {
+                if (!--$this->transactionCounter) {
+                    return $this->conn->commit();
+                }
+                return $this->transactionCounter >= 0;
+            } catch (\ErrorException $exception) {
+                throw $exception;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 commit");
             }
-            return $this->transactionCounter >= 0;
         }
 
         public function rollBack()
         {
-            if (--$this->transactionCounter) {
-                $this->exec('ROLLBACK TO trans' . ($this->transactionCounter + 1));
-                return true;
+            $this->init();
+            try {
+                if (--$this->transactionCounter) {
+                    $this->exec('ROLLBACK TO trans' . ($this->transactionCounter + 1));
+                    return true;
+                }
+                return $this->conn->rollBack();
+            } catch (\ErrorException $exception) {
+                throw $exception;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 rollBack");
             }
-            return $this->pdo->rollBack();
         }
 
         public function exec(string $sql)
         {
-            $sql = str_replace('@pf_', $this->prefix, $sql);
-            return $this->pdo->exec($sql);
+            $this->init();
+            $esql = str_replace('@pf_', $this->prefix, $sql);
+            try {
+                $data = $this->conn->exec($esql);
+                $this->retry = 0;
+                return $data;
+            } catch (\ErrorException $exception) {
+                $temp = $exception->getMessage();
+                if ($this->retry < 3 && preg_match('@MySQL\s+server\s+has\s+gone\s+away@i', $temp)) {
+                    $this->conn = null;
+                    $this->retry++;
+                    $this->init();
+                    return $this->exec($sql);
+                }
+                throw $exception;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 exec");
+            }
         }
 
         public function lastInsertId($name = null)
         {
-            return $this->pdo->lastInsertId($name);
+            $this->init();
+            try {
+                $data = $this->conn->lastInsertId($name);
+                $this->retry = 0;
+                return $data;
+            } catch (\ErrorException $exception) {
+                $temp = $exception->getMessage();
+                if ($this->retry < 3 && preg_match('@MySQL\s+server\s+has\s+gone\s+away@i', $temp)) {
+                    $this->conn = null;
+                    $this->retry++;
+                    $this->init();
+                    return $this->lastInsertId($name);
+                }
+                throw $exception;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 lastInsertId");
+            }
         }
 
         public function execute(string $sql, $args = null)
         {
-            $sql = str_replace('@pf_', $this->prefix, $sql);
-            if ($args !== null && !is_array($args)) {
-                $args = [$args];
+            $this->init();
+            $esql = str_replace('@pf_', $this->prefix, $sql);
+            $eargs = $args;
+            if ($eargs !== null && !is_array($eargs)) {
+                $eargs = [$eargs];
             }
-            if ($args !== null && preg_match('@\?@', $sql) && preg_match('@:(\w+)@', $sql)) {
+            if ($eargs !== null && preg_match('@\?@', $esql) && preg_match('@:(\w+)@', $esql)) {
                 $index = 0;
-                $sql = preg_replace_callback('@\?@', function ($match) use (&$args, &$index) {
+                $esql = preg_replace_callback('@\?@', function ($match) use (&$eargs, &$index) {
                     $key = ':beacon_temp_index_' . $index;
-                    if (!isset($args[$index])) {
-                        throw new Exception("参数不足，" . print_r($args, true));
+                    if (!isset($eargs[$index])) {
+                        throw new Exception("参数不足，" . print_r($eargs, true));
                     }
-                    $args[$key] = $args[$index];
-                    unset($args[$index]);
+                    $eargs[$key] = $eargs[$index];
+                    unset($eargs[$index]);
                     $index++;
                     return $key;
-                }, $sql);
+                }, $esql);
             }
-            $sth = $this->pdo->prepare($sql);
-            if ($sth->execute($args) === FALSE) {
-                $str = print_r($sth->errorInfo(), true);
-                throw new Exception("执行语句错误\n{$str}");
+            try {
+                $sth = $this->conn->prepare($esql);
+                $ret = $sth->execute($eargs);
+                if ($ret === FALSE) {
+                    $str = print_r($sth->errorInfo(), true);
+                    throw new Exception("执行语句错误 execute\n{$str}");
+                }
+                $this->retry = 0;
+                return $sth;
+            } catch (\PDOException $exception) {
+                throw new Exception("执行语句错误 execute");
+            } catch (\ErrorException $exception) {
+                $temp = $exception->getMessage();
+                if ($this->retry < 3 && preg_match('@MySQL\s+server\s+has\s+gone\s+away@i', $temp)) {
+                    $this->conn = null;
+                    $this->retry++;
+                    $this->init();
+                    return $this->execute($sql, $args);
+                }
+                throw $exception;
+            } catch (\Exception $exception) {
+                throw $exception;
             }
-            return $sth;
         }
 
         /**
@@ -172,6 +232,7 @@ namespace beacon {
                 $fetch_style = PDO::FETCH_ASSOC;
             }
             $stm = $this->execute($sql, $args);
+
             if ($fetch_style !== null && $fetch_argument !== null && $ctor_args !== null) {
                 $rows = $stm->fetchAll($fetch_style, $fetch_argument, $ctor_args);
             } elseif ($fetch_style !== null && $fetch_argument !== null) {
