@@ -12,11 +12,11 @@
 <form action="/index/save" method="post" data-display-mode="2" yee-module="validate">
     {foreach from=$form->getViewFields() item=field}
         {if $field->type=='blend'}
-            {$field->box()}
+            {$field->box()|raw}
         {else}
             <div class="form-group">
-                <label class="form-label">{$field->label}:</label>
-                <div class="form-box">{$field->box()}</div>
+                <label class="form-label">{$field->label|raw}:</label>
+                <div class="form-box">{$field->box()|raw}</div>
             </div>
         {/if}
     {/foreach}

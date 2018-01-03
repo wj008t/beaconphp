@@ -33,10 +33,18 @@
             <td>{$rs.name}</td>
             <td align="center">{$rs.state}</td>
             <td align="right" class="opt-btns">
-                {flow name='测试工作流程' branch='step1' task=$rs.id attr=['href'=>"/flow/work/step1?taskId=`$rs.id`",'yee-module'=>'ajaxlink','class'=>'yee-btn small edit reload'] text='<i class="icofont icofont-edit"></i>流程1'}
-                {flow name='测试工作流程' branch='step2' task=$rs.id attr=['href'=>"/flow/work/step2?taskId=`$rs.id`",'yee-module'=>'ajaxlink','class'=>'yee-btn small edit reload'] text='<i class="icofont icofont-edit"></i>流程2'}
-                {flow name='测试工作流程' branch='step3' task=$rs.id attr=['href'=>"/flow/work/step3?taskId=`$rs.id`",'yee-module'=>'ajaxlink','class'=>'yee-btn small edit reload'] text='<i class="icofont icofont-edit"></i>流程3'}
-                {flow name='测试工作流程' branch='step4' task=$rs.id attr=['href'=>"/flow/work/step4?taskId=`$rs.id`",'yee-module'=>'ajaxlink','class'=>'yee-btn small edit reload'] text='<i class="icofont icofont-edit"></i>流程4'}
+                {flow name='测试工作流程' branch='step1' task=$rs.id}
+                    <a href="/flow/work/step1?taskId={$rs.id}" yee-module="ajaxlink" class="yee-btn small edit reload"><i class="icofont icofont-edit"></i>流程1</a>
+                {/flow}
+                {flow name='测试工作流程' branch='step2' task=$rs.id}
+                    <a href="/flow/work/step2?taskId={$rs.id}" yee-module="ajaxlink" class="yee-btn small edit reload"><i class="icofont icofont-edit"></i>流程2</a>
+                {/flow}
+                {flow name='测试工作流程' branch='step3' task=$rs.id}
+                    <a href="/flow/work/step3?taskId={$rs.id}" yee-module="ajaxlink" class="yee-btn small edit reload"><i class="icofont icofont-edit"></i>流程3</a>
+                {/flow}
+                {flow name='测试工作流程' branch='step4' task=$rs.id}
+                    <a href="/flow/work/step4?taskId={$rs.id}" yee-module="ajaxlink" class="yee-btn small edit reload"><i class="icofont icofont-edit"></i>流程4</a>
+                {/flow}
                 <a href="/flow/work/delete?taskId={$rs.id}" yee-module="confirm ajaxlink" data-confirm="确定要删除该账号了吗？" class="yee-btn small del reload"><i class="icofont icofont-ui-lock"></i>删除</a>
             </td>
         </tr>
