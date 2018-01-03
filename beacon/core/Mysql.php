@@ -29,6 +29,7 @@ namespace beacon {
         }
     }
 
+
     class Mysql
     {
         /**
@@ -36,9 +37,11 @@ namespace beacon {
          */
         private $conn = null;
 
+
         private $transactionCounter = 0;
         private $host = '127.0.0.1', $port = 3306, $name = '', $user = '', $pass = '', $prefix = '';
         private $retry = 0;
+
 
         public function __construct($host, $port = 3306, $name = '', $user = '', $pass = '', $prefix = '')
         {
@@ -77,7 +80,7 @@ namespace beacon {
             return $this;
         }
 
-        public function close()
+        public function __destruct()
         {
             $this->conn = null;
         }

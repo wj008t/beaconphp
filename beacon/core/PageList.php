@@ -86,9 +86,9 @@ class PageList
         if ($this->records_count == -1) {
             if (strripos($this->sql, ' from ') === stripos($this->sql, ' from ')) {
                 $sql = preg_replace('@^select\s+(distinct\s+[a-z][a-z0-9]+\s*,)?(.*)\s+from\s+@', 'select $1count(1) from ', $this->sql);
-                $row = DB::getRow($sql, $this->args, PDO::FETCH_NUM);
+                $row = $this->context->getDataBase()->getRow($sql, $this->args, PDO::FETCH_NUM);
             } else {
-                $row = DB::getRow('select count(1) from (' . $this->sql . ') MyTempTable', $this->args, PDO::FETCH_NUM);
+                $row = $this->context->getDataBase()->getRow('select count(1) from (' . $this->sql . ') MyTempTable', $this->args, PDO::FETCH_NUM);
             }
             $this->records_count = $row[0];
         }
@@ -115,7 +115,6 @@ class PageList
             'only_count' => $this->only_count,
             'page_size' => $this->page_size,
         );
-
         return $this->info;
     }
 
@@ -134,12 +133,12 @@ class PageList
             $start = 0;
         }
         $sql = $this->sql . ' limit ' . $start . ' , ' . $this->page_size;
-        return DB::getList($sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
+        return $this->context->getDataBase()->getList($sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
     }
 
     public function getAll($fetch_style = null, $fetch_argument = null, array $ctor_args = null)
     {
-        return DB::getList($this->sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
+        return $this->context->getDataBase()->getList($this->sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
     }
 
 }

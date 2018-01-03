@@ -7,6 +7,9 @@
  */
 
 namespace beacon;
+
+use Throwable;
+
 if (!defined('IS_CGI')) {
     define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
 }
@@ -17,9 +20,9 @@ if (!defined('IS_WIN')) {
     define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
 }
 
-class RouteException extends \Exception
+class RouteEndError extends \Error implements \Throwable
 {
-
+//让路由结束退出的错误
 }
 
 class Route
@@ -306,10 +309,10 @@ class Route
     }
 
 
-    public static function run($url = null, $request = null, $response = null)
+    public static function run($url = null, \swoole_http_request $req = null, \swoole_http_response $res = null)
     {
         try {
-            $context = new HttpContext($request, $response);
+            $context = new HttpContext($req, $res);
             $request = $context->getRequest();
             if ($request->isAjax()) {
                 $context->setContentType('json');
@@ -344,16 +347,16 @@ class Route
                 self::parse($context, $url);
             }
             if ($context->_route == null) {
-                throw new RouteException('未初始化路由参数');
+                throw new RouteEndError('未初始化路由参数');
             }
             if (empty($context->_route['app'])) {
-                throw new RouteException('不存在的路径');
+                throw new RouteEndError('不存在的路径');
             }
             if (empty($context->_route['ctl'])) {
-                throw new RouteException('不存在的控制器');
+                throw new RouteEndError('不存在的控制器');
             }
             if (empty($context->_route['act'])) {
-                throw new RouteException('不存在的控制器方法');
+                throw new RouteEndError('不存在的控制器方法');
             }
             $app = $context->_route['app'];
             $ctl = Utils::toCamel($context->_route['ctl']);
@@ -361,7 +364,7 @@ class Route
             $act = lcfirst($act);
             $data = isset(self::$routeMap[$app]) ? self::$routeMap[$app] : [];
             if (empty($data['path'])) {
-                throw new RouteException('没有设置应用目录');
+                throw new RouteEndError('没有设置应用目录');
             }
             $config = Utils::path(ROOT_DIR, $data['path'], 'config.php');
             if (file_exists($config)) {
@@ -458,7 +461,7 @@ class Route
                         }
                         $example = new $class($context);
                         if (method_exists($example, 'initialize')) {
-                            $example->initialize();
+                            $example->initialize($request);
                         }
                         $out = $method->invokeArgs($example, $args);
                         if ($context->getContentType() == 'application/json' || $context->getContentType() == 'text/json') {
@@ -476,15 +479,18 @@ class Route
                     throw $e;
                 }
             } else {
-                throw new RouteException('不存在的控制器');
+                throw new RouteEndError('不存在的控制器');
             }
+        } catch (RouteEndError $exception) {
+            $res->end();
+            return;
         } catch (\Exception $exception) {
             if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
                 echo $exception->getCode() . $exception->getMessage();
                 echo "\n";
                 echo $exception->getTraceAsString();
-                $response->status(404);
-                $response->end();
+                $res->status(404);
+                $res->end();
                 return;
             }
             if (IS_CLI) {

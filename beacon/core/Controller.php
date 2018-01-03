@@ -20,9 +20,15 @@ abstract class Controller
      */
     protected $context = null;
 
+    /**
+     * @var Mysql
+     */
+    public $db = null;
+
     public function __construct(HttpContext $context)
     {
         $this->context = $context;
+        $this->db = $this->context->getDataBase();
     }
 
     protected function view()
@@ -90,7 +96,7 @@ abstract class Controller
             }
             $out['jump'] = $jump;
             $this->assign('info', $out);
-            $this->display('@fail.tpl');
+            $this->context->write($this->fetch('@fail.tpl'));
             $this->exit();
         }
     }
@@ -130,7 +136,7 @@ abstract class Controller
     public function exit()
     {
         if (IS_CLI) {
-            throw new \beacon\RouteException('exit');
+            throw new \beacon\RouteEndError('exit');
         } else {
             exit;
         }
