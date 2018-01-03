@@ -19,7 +19,7 @@ class Main extends Controller
 
     public function initialize()
     {
-        $request = Request::instance();
+        $request = new Request($this->context);
         if ($request->isAjax()) {
             $this->context->setContentType('json');
         }

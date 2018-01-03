@@ -10,17 +10,18 @@ namespace app\flow\form;
 
 use beacon\DB;
 use beacon\Form;
+use beacon\HttpContext;
 
 class FlowForm extends Form
 {
     public $title = '添加流程';
 
-    public function __construct(string $type = '')
+    public function __construct(HttpContext $context, string $type = '')
     {
         if ($type == 'edit') {
             $this->title = '编辑流程';
         }
-        parent::__construct($type);
+        parent::__construct($context, $type);
     }
 
     protected function load()

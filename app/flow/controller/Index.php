@@ -25,9 +25,9 @@ class Index extends Controller
      */
     public function indexAction(Request $request)
     {
-        $pagelist = new Pagelist('select * from @pf_flow_list order by id desc');
+        $pagelist = new Pagelist($this->context, 'select * from @pf_flow_list order by id desc');
         $list = $pagelist->getList();
-        $pinfo = $pagelist->getInfo($this->context);
+        $pinfo = $pagelist->getInfo();
         $this->assign('list', $list);
         $this->assign('pdata', $pinfo);
         if ($request->isAjax()) {
@@ -41,7 +41,7 @@ class Index extends Controller
 
     public function addAction(Request $request)
     {
-        $form = new FlowForm();
+        $form = new FlowForm($this->context);
         if ($request->isGet()) {
             $this->assign('form', $form);
             return $this->fetch('flow_act.tpl');
@@ -55,7 +55,7 @@ class Index extends Controller
 
     public function editAction(Request $request, int $id)
     {
-        $form = new FlowForm();
+        $form = new FlowForm($this->context);
         if ($request->isGet()) {
             $row = DB::getRow('select * from @pf_flow_list where id=?', $id);
             $form->initValues($row);
