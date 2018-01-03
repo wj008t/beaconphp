@@ -22,7 +22,7 @@ class Index extends Controller
         // }
         // $v = DB::rollBack();
         // $row = DB::getList('select * from sl_building');
-        $form = new UserForm('add');
+        $form = new UserForm($this->context, 'add');
         // $box = \beacon\Form::getBoxInstance('text');
         $this->assign('data', '1');
         $this->assign('form', $form);
