@@ -20,6 +20,7 @@ set_error_handler(function ($severity, $message, $filename, $lineno) {
     return true;
 });
 
+
 /**
  * DS 换行符
  */
@@ -238,7 +239,6 @@ class Sdopx extends \sdopx\lib\Template
         }
         if (gettype($func) == 'string') {
             if (empty($file)) {
-                //TODO 输出错误
                 return;
             }
         }
@@ -253,7 +253,6 @@ class Sdopx extends \sdopx\lib\Template
         }
         if (gettype($func) == 'string') {
             if (empty($file)) {
-                //TODO 输出错误
                 return;
             }
         }
