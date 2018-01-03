@@ -479,7 +479,7 @@ class Route
                 throw new RouteException('不存在的控制器');
             }
         } catch (\Exception $exception) {
-            if (HTTP_SWOOLE) {
+            if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
                 $response->status(404);
                 $response->end();
                 return;
@@ -489,8 +489,8 @@ class Route
                 echo "\n";
                 echo $exception->getTraceAsString();
             } else {
-                //echo $exception->getMessage();
-                //echo $exception->getTraceAsString();
+                echo $exception->getMessage();
+                echo $exception->getTraceAsString();
             }
         }
     }

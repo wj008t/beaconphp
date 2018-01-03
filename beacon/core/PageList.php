@@ -9,7 +9,7 @@ use PDO as PDO;
  *
  * @author WJ008
  */
-class Pagelist
+class PageList
 {
 
     private $context;
@@ -32,7 +32,7 @@ class Pagelist
      * @param string $pagekey 分页的URL名称$_GET['?']
      * @param int $count 直接给定记录数可以提高查询效率，例如使用缓存的记录数或者参数给回的记录数。
      */
-    function __construct(HttpContext $context, $sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
+    public function __construct(HttpContext $context, $sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
     {
         $this->context = $context;
         $this->sql = $sql;

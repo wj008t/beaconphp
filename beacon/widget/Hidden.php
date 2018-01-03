@@ -23,7 +23,6 @@ class Hidden implements BoxInterface
 
     public function assign(Field $field, array $data)
     {
-        var_export($data);
         $boxName = $field->boxName;
         $request = $field->getForm()->context->getRequest();
         switch ($field->varType) {

@@ -12,7 +12,7 @@ namespace widget;
 use beacon\Field;
 use beacon\Validate;
 
-class DateTime extends Hidden
+class Datetime extends Hidden
 {
     public function code(Field $field, $args)
     {

@@ -12,7 +12,7 @@ use app\flow\form\FlowForm;
 use app\flow\lib\Flow;
 use beacon\Controller;
 use beacon\DB;
-use beacon\Pagelist;
+use beacon\PageList;
 use beacon\Request;
 use beacon\Utils;
 
@@ -25,7 +25,7 @@ class Index extends Controller
      */
     public function indexAction(Request $request)
     {
-        $pagelist = new Pagelist($this->context, 'select * from @pf_flow_list order by id desc');
+        $pagelist = new PageList($this->context, 'select * from @pf_flow_list order by id desc');
         $list = $pagelist->getList();
         $pinfo = $pagelist->getInfo();
         $this->assign('list', $list);

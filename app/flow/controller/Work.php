@@ -13,14 +13,14 @@ use app\flow\lib\Flow;
 use beacon\Controller;
 use beacon\DB;
 use beacon\Request;
-use beacon\Pagelist;
+use beacon\PageList;
 
 class Work extends Controller
 {
     public function indexAction(Request $request)
     {
         $request->setSession('userId', 1);
-        $pagelist = new Pagelist($this->context, 'select * from @pf_task order by id desc');
+        $pagelist = new PageList($this->context, 'select * from @pf_task order by id desc');
         $list = $pagelist->getList();
         $pinfo = $pagelist->getInfo();
         $this->assign('list', $list);
