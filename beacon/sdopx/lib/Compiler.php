@@ -72,8 +72,7 @@ class Compiler
     public function addError($err, $offset = 0)
     {
         $info = $this->source->getInfo($offset);
-        throw new \Error($err);
-        //$this->sdopx->rethrow($err, $info['src'], $info['line']);
+        $this->sdopx->rethrow($err, $info['line'], $info['src']);
     }
 
     private function loop(&$output)
@@ -259,7 +258,7 @@ class Compiler
                     $code = '},$__out,$_sdopx);';
                     return $code;
                 } else {
-                    throw new \Exception('插件没有结束函数 close');
+                    $this->addError('插件没有结束函数 close');
                 }
             } else {
                 if (method_exists($class, 'block')) {
@@ -304,6 +303,7 @@ class Compiler
                 }
             }
         }
+        $this->addError("没有找到插件" . $name . '.');
         return '';
     }
 

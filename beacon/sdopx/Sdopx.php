@@ -34,6 +34,28 @@ require_once("lib/Template.php");
 class SdopxException extends \Exception
 {
 
+    protected $stack = '';
+
+    public function setFile(string $file)
+    {
+        $this->file = $file;
+    }
+
+    public function setLine(int $line)
+    {
+        $this->line = $line;
+    }
+
+    public function setStack(string $stack)
+    {
+        $this->stack = $stack;
+    }
+
+    public function getStack()
+    {
+        return $this->stack;
+    }
+
 }
 
 class Sdopx extends \sdopx\lib\Template
@@ -251,6 +273,38 @@ class Sdopx extends \sdopx\lib\Template
             $key = md5($dirname);
             self::$compiler_dirs[$key] = $dirname;
         }
+    }
+
+    public function rethrow($err, int $lineno = null, string $tplname = null)
+    {
+        header('Content-Type:text/html;charset=utf-8');
+        if (is_string($err)) {
+            $err = new SdopxException($err);
+        }
+        if ($lineno == null || $tplname == null) {
+            throw $err;
+        }
+        list($name, $type) = \sdopx\lib\Resource::parseResourceName($tplname);
+        $instance = \sdopx\lib\Resource::getResource($type);
+        $err->setLine($lineno);
+        if (!$instance) {
+            $err->setFile($tplname);
+            $err->setStack($tplname . ':' . $lineno . $err->getStack());
+        }
+        $temp = $instance->fetch($tplname, $this);
+        $content = $temp['content'];
+        $lines = explode("\n", $content);
+        $len = count($lines);
+        $start = ($lineno - 3) < 0 ? 0 : $lineno - 3;
+        $end = ($lineno + 3) >= $len ? $len - 1 : $lineno + 3;
+        $lines = array_slice($lines, $start, $end - $start);
+        foreach ($lines as $curr => &$line) {
+            $line = ($curr == $lineno ? ' >> ' : '    ') . $curr . '| ' . $line;
+        }
+        $context = join("\n", $lines);
+        $err->setFile($name);
+        $err->setStack($tplname . ':' . $lineno . "\n" . $context . "\n" . $err->getStack());
+        throw $err;
     }
 
     public static function autoload()

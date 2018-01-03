@@ -208,7 +208,7 @@ class Template
 
     private function run($unifunc)
     {
-        $__out = new Outer();
+        $__out = new Outer($this->sdopx);
         $_sdopx = $this->sdopx;
         call_user_func($unifunc, $_sdopx, $__out);
         return $__out->getCode();

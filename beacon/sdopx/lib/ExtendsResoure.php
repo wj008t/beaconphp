@@ -23,7 +23,7 @@ class ExtendsResoure implements BaseResource
     {
         $names = explode('|', $tplname);
         if (count($names) < 2) {
-            throw new \sdopx\SdopxException("Sdopx 解析母版继承错误{$tplname} .");
+            $sdopx->rethrow("Sdopx 解析母版继承错误{$tplname} .");
         }
         $tplchild = array_pop($names);
         $extends = join('|', $names);
@@ -43,7 +43,7 @@ class ExtendsResoure implements BaseResource
     {
         $names = explode('|', $tplname);
         if (count($names) < 2) {
-            throw new \sdopx\SdopxException("Sdopx 解析母版继承错误{$tplname} .");
+            $sdopx->rethrow("Sdopx 解析母版继承错误{$tplname} .");
         }
         $tplchild = array_pop($names);
         $extends = join('|', $names);

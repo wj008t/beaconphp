@@ -9,11 +9,19 @@
 namespace sdopx\lib;
 
 
+use sdopx\Sdopx;
+
 class Outer
 {
     private $output = [];
     private $line = 0;
     private $src = '';
+    public $_sdopx = null;
+
+    public function __construct(Sdopx $_sdopx)
+    {
+        $this->_sdopx = $_sdopx;
+    }
 
     public function text($code)
     {
@@ -37,7 +45,7 @@ class Outer
 
     public function throw($err, $lineno, $filename)
     {
-        throw new \Error($err);
+        $this->_sdopx->rethrow($err, $lineno, $filename);
     }
 
     public function getCode()
