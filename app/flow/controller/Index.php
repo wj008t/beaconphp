@@ -11,7 +11,6 @@ namespace app\flow\controller;
 use app\flow\form\FlowForm;
 use app\flow\lib\Flow;
 use beacon\Controller;
-use beacon\DB;
 use beacon\PageList;
 use beacon\Request;
 use beacon\Utils;

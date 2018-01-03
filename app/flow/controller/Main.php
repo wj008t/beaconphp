@@ -10,7 +10,6 @@ namespace app\flow\controller;
 
 
 use beacon\Controller;
-use beacon\DB;
 use beacon\Request;
 
 class Main extends Controller

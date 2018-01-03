@@ -10,7 +10,6 @@ namespace app\flow\controller;
 
 
 use beacon\Controller;
-use beacon\DB;
 use beacon\Utils;
 
 class Timer extends Controller

@@ -11,9 +11,8 @@ namespace app\flow\controller;
 
 use app\flow\lib\Flow;
 use beacon\Controller;
-use beacon\DB;
-use beacon\Request;
 use beacon\PageList;
+use beacon\Request;
 
 class Work extends Controller
 {
