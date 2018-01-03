@@ -53,6 +53,9 @@ class View
         if ($this->engine != null) {
             return;
         }
+        if (Config::get('sdopx.debug')) {
+            \sdopx\Sdopx::$debug = true;
+        }
         $this->engine = new \sdopx\Sdopx();
         $template_dir = Utils::path(ROOT_DIR, Config::get('sdopx.template_dir', 'view'));
         $common_dir = Utils::path(ROOT_DIR, Config::get('sdopx.common_dir', 'view/common'));

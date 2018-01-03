@@ -83,7 +83,7 @@ class Sdopx extends \sdopx\lib\Template
      */
     const VERSION = '1.0.0';
 
-    public static $debug = true;
+    public static $debug = false;
 
     public static $extension = 'tpl';
 
@@ -298,6 +298,9 @@ class Sdopx extends \sdopx\lib\Template
             $err = new SdopxException($err);
         } elseif ($err instanceof \Exception) {
             $err = new SdopxException($err->getMessage());
+        }
+        if (!Sdopx::$debug) {
+            throw $err;
         }
         if ($lineno == null || $tplname == null) {
             throw $err;
