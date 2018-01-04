@@ -55,16 +55,7 @@ namespace beacon {
 
         public function init()
         {
-
             if ($this->conn === null) {
-                /*
-                $host = Config::get('db.db_host', '127.0.0.1');
-                $port = Config::get('db.db_port', 3306);
-                $name = Config::get('db.db_name', '');
-                $user = Config::get('db.db_user', '');
-                $pass = Config::get('db.db_pwd', '');
-                $prefix = Config::get('db.db_prefix', 'sl_');
-                */
                 $this->transactionCounter = 0;
                 if (!empty($this->name)) {
                     $link = 'mysql:host=' . $this->host . ';port=' . $this->port . ';dbname=' . $this->name;
