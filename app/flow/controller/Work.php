@@ -46,7 +46,6 @@ class Work extends Controller
             $this->success('执行成功');
         } catch (\Exception $e) {
             DB::rollBack();
-            var_export($e);
             $this->error('执行失败');
         }
     }
