@@ -17,10 +17,6 @@ if (!defined('IS_WIN')) {
     define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
 }
 
-class ExitException extends \Exception
-{
-
-}
 
 class Route
 {
