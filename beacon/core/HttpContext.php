@@ -73,28 +73,39 @@ class HttpContext
 
     public function __destruct()
     {
-        if ($this->_ssid === null) {
-            return;
+        if (IS_CLI && HTTP_SWOOLE) {
+            if ($this->_ssid === null) {
+                return;
+            }
+            if (self::$session === null) {
+                $size = Config::get('session.size', 1024);
+                $length = Config::get('session.length', 200);
+                self::$session = new \swoole_table($size);
+                self::$session->column('expire', \swoole_table::TYPE_INT, 4);
+                self::$session->column('data', \swoole_table::TYPE_STRING, $length);
+                self::$session->create();
+            }
+            $item = self::$session->get($this->_ssid);
+            if ($item == null && $this->_session === null) {
+                return;
+            }
+            if (!is_array($item)) {
+                $item = [];
+            }
+            $timeout = Config::get('session.timeout', 3600);
+            $item['expire'] = time() + $timeout;
+            if ($this->_session !== null) {
+                if (!empty($item['data'])) {
+                    $data = unserialize($item['data']);
+                    $data = array_merge($data, $this->_session);
+                    $item['data'] = serialize($data);
+                } else {
+                    $item['data'] = serialize($this->_session);
+                }
+            }
+            self::$session->set($this->_ssid, $item);
+            $this->_session = null;
         }
-        if (self::$session === null) {
-            self::$session = new \swoole_table(10240);
-            self::$session->column('expire', \swoole_table::TYPE_INT, 4);
-            self::$session->column('data', \swoole_table::TYPE_STRING, 1000);
-            self::$session->create();
-        }
-        $item = self::$session->get($this->_ssid);
-        if ($item == null && $this->_session === null) {
-            return;
-        }
-        if (!is_array($item)) {
-            $item = [];
-        }
-        $item['expire'] = time() + 3600;
-        if ($this->_session !== null) {
-            $item['data'] = serialize($this->_session);
-        }
-        self::$session->set($this->_ssid, $item);
-        $this->_session = null;
     }
 
     public function getDataBase()
