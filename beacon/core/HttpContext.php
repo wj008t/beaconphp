@@ -12,8 +12,8 @@ namespace beacon;
 class HttpContext
 {
 
-    public $origin_request = null;
-    public $origin_response = null;
+    public $req = null;
+    public $res = null;
     /**
      * @var Request
      */
@@ -25,8 +25,11 @@ class HttpContext
     public $_files = [];
     public $_cookie = [];
     public $_server = [];
+    public $_session = null;
+    public $_ssid = null;
     public $_route = null;
-    public static $session = [];
+    private $_out = [];
+    private static $session = null;
     /**
      * @var Mysql
      */
@@ -35,20 +38,20 @@ class HttpContext
 
     public function __construct($request = null, $response = null)
     {
-        $this->origin_request = $request;
-        $this->origin_response = $response;
-        if ($this->origin_request) {
-            $this->_get = $this->origin_request->get == null ? [] : $this->origin_request->get;
-            $this->_post = $this->origin_request->post == null ? [] : $this->origin_request->post;
+        $this->req = $request;
+        $this->res = $response;
+        if ($this->req) {
+            $this->_get = $this->req->get == null ? [] : $this->req->get;
+            $this->_post = $this->req->post == null ? [] : $this->req->post;
             foreach ($this->_get as $key => $value) {
                 $this->_param[$key] = $value;
             }
             foreach ($this->_post as $key => $value) {
                 $this->_param[$key] = $value;
             }
-            $this->_files = $this->origin_request->files == null ? [] : $this->origin_request->files;
-            $this->_cookie = $this->origin_request->cookie == null ? [] : $this->origin_request->cookie;
-            foreach ($this->origin_request->server as $key => $value) {
+            $this->_files = $this->req->files == null ? [] : $this->req->files;
+            $this->_cookie = $this->req->cookie == null ? [] : $this->req->cookie;
+            foreach ($this->req->server as $key => $value) {
                 $this->_server[strtoupper($key)] = $value;
             }
         } else {
@@ -60,7 +63,38 @@ class HttpContext
             $this->_server = $_SERVER;
         }
         $this->request = new Request($this);
+        if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
+            $cookie = $this->getCookie('BEACON_SESSION');
+            if (!empty($cookie)) {
+                $this->_ssid = md5($cookie);
+            }
+        }
+    }
 
+    public function __destruct()
+    {
+        if ($this->_ssid === null) {
+            return;
+        }
+        if (self::$session === null) {
+            self::$session = new \swoole_table(10240);
+            self::$session->column('expire', \swoole_table::TYPE_INT, 4);
+            self::$session->column('data', \swoole_table::TYPE_STRING, 1000);
+            self::$session->create();
+        }
+        $item = self::$session->get($this->_ssid);
+        if ($item == null && $this->_session === null) {
+            return;
+        }
+        if (!is_array($item)) {
+            $item = [];
+        }
+        $item['expire'] = time() + 3600;
+        if ($this->_session !== null) {
+            $item['data'] = serialize($this->_session);
+        }
+        self::$session->set($this->_ssid, $item);
+        $this->_session = null;
     }
 
     public function getDataBase()
@@ -86,19 +120,30 @@ class HttpContext
         return $this->request;
     }
 
-    public function write(string $data)
+    public function write(string $data = null)
     {
-        if ($this->origin_response) {
-            $this->origin_response->write($data);
+        if ($this->res) {
+            if ($data === null) {
+                return;
+            } else {
+                $this->_out[] = $data;
+            }
             return;
         }
         echo $data;
     }
 
-    public function end(string $data)
+    public function end(string $data = null)
     {
-        if ($this->origin_response) {
-            $this->origin_response->end($data);
+        if ($this->res) {
+            foreach ($this->_out as $item) {
+                $this->res->write($item);
+            }
+            if ($data === null) {
+                $this->res->end();
+            } else {
+                $this->res->end($data);
+            }
             return;
         }
         echo $data;
@@ -108,8 +153,8 @@ class HttpContext
     {
         if ($this->header == null) {
             $this->header = [];
-            if ($this->origin_request !== null) {
-                $this->header = $this->origin_request->header;
+            if ($this->req !== null) {
+                $this->header = $this->req->header;
             } else {
                 foreach ($_SERVER as $key => $value) {
                     if ('HTTP_' == substr($key, 0, 5)) {
@@ -128,8 +173,8 @@ class HttpContext
 
     public function setHeader(string $name, string $value, bool $replace = true, $http_response_code = null)
     {
-        if ($this->origin_response !== null) {
-            return $this->origin_response->header($name, $value);
+        if ($this->res !== null) {
+            return $this->res->header($name, $value);
         }
         $string = $name . ':' . $value;
         if ($replace) {
@@ -215,52 +260,94 @@ class HttpContext
 
     public function getCookie(string $name)
     {
-        return isset($this->_cookie["name"]) ? $this->_cookie["name"] : null;
+        return isset($this->_cookie[$name]) ? $this->_cookie[$name] : null;
     }
 
-    public function setCookie(string $name, $value, $options)
+    public function setCookie(string $name, $value, $options = null)
     {
-        if ($options == null) {
-            if ($this->origin_response) {
-                return $this->origin_response->cookie($name, $value);
+        if ($options === null) {
+            if ($this->res) {
+                return $this->res->cookie($name, $value);
             }
             return setcookie($name, $value);
         }
         if (is_integer($options)) {
-            if ($this->origin_response) {
-                return $this->origin_response->cookie($name, $value, $options);
+            if ($this->res) {
+                return $this->res->cookie($name, $value, $options);
             }
             return setcookie($name, $value, $options);
         }
         $expire = isset($options['expire']) ? intval($options['expire']) : 0;
-        $path = isset($options['path']) ? intval($options['path']) : '';
-        $domain = isset($options['domain']) ? intval($options['domain']) : '';
-        $secure = isset($options['secure']) ? intval($options['secure']) : false;
-        $httponly = isset($options['httponly ']) ? intval($options['httponly ']) : false;
-        if ($this->origin_response) {
-            return $this->origin_response->cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
+        $path = isset($options['path']) ? $options['path'] : '/';
+        $domain = isset($options['domain']) ? $options['domain'] : '';
+        $secure = isset($options['secure']) ? boolval($options['secure']) : false;
+        $httponly = isset($options['httponly ']) ? boolval($options['httponly ']) : false;
+        if ($this->res) {
+            return $this->res->cookie($name, $value, $expire, $path, $domain, $secure, $httponly);
         }
+
         return setcookie($name, $value, $expire, $path, $domain, $secure, $httponly);
 
     }
 
     public function getSession(string $name = null)
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+        if (IS_CLI && defined('HTTP_SWOOLE') && HTTP_SWOOLE) {
+            if ($this->_session === null) {
+                if (self::$session === null) {
+                    return null;
+                }
+                if ($this->_ssid === null) {
+                    return null;
+                }
+                $item = self::$session->get($this->_ssid);
+                if (!is_array($item)) {
+                    return null;
+                }
+                if ($item['expire'] < time()) {
+                    self::$session->del($this->_ssid);
+                    return null;
+                }
+                $data = unserialize($item['data']);
+                if (!is_array($data)) {
+                    return null;
+                }
+                $this->_session = $data;
+            }
+            if (empty($name)) {
+                return $this->_session;
+            }
+            return isset($this->_session[$name]) ? $this->_session[$name] : null;
+        } else {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
+            if (empty($name)) {
+                return $_SESSION;
+            }
+            return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
         }
-        if (empty($name)) {
-            return $_SESSION;
-        }
-        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
     }
 
     public function setSession(string $name, $value)
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+        if (IS_CLI && HTTP_SWOOLE) {
+            if ($this->_ssid === null) {
+                $cookie = Utils::randWord(20);
+                $this->setCookie('BEACON_SESSION', $cookie, ['path' => '/']);
+                $this->_ssid = md5($cookie);
+            }
+            if ($this->_session === null) {
+                $this->_session = [];
+            }
+            $this->_session[$name] = $value;
+            return;
+        } else {
+            if (session_status() !== PHP_SESSION_ACTIVE) {
+                session_start();
+            }
+            $_SESSION[$name] = $value;
         }
-        $_SESSION[$name] = $value;
     }
 
     public function getReferrer()

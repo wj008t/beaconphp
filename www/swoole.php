@@ -23,7 +23,9 @@ $http->on('request', function ($request, $response) {
     if (Route::runStatic($url, $request, $response, ['static/', 'assets/', 'upfiles/', 'favicon.ico'])) {
         return;
     }
+    $starttime = microtime(true);
     Route::run($url, $request, $response);
+    echo $url, (microtime(true) - $starttime) * 1000, "\n";
 });
 $http->start();
 

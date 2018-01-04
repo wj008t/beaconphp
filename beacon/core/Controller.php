@@ -31,6 +31,12 @@ abstract class Controller
         $this->db = $this->context->getDataBase();
     }
 
+    public function __destruct()
+    {
+        $this->context->__destruct();
+        $this->context = null;
+    }
+
     protected function view()
     {
         if ($this->view == null) {

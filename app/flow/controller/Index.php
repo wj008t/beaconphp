@@ -24,6 +24,7 @@ class Index extends Controller
      */
     public function indexAction(Request $request)
     {
+        $request->setSession('may', '12345');
         $pagelist = new PageList($this->context, 'select * from @pf_flow_list order by id desc');
         $list = $pagelist->getList();
         $pinfo = $pagelist->getInfo();

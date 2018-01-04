@@ -42,7 +42,7 @@ class Request
         return $this->context->getCookie($name);
     }
 
-    public function setCookie(string $name, $value, $options)
+    public function setCookie(string $name, $value, $options = null)
     {
         return $this->context->setCookie($name, $value, $options);
     }

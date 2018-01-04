@@ -13,7 +13,7 @@ Route::register('home');
 Route::register('service');
 Route::register('flow');
 Route::register('admin');
-
-Route::run();
-
-
+$url = $_SERVER['PATH_INFO'];
+$starttime = microtime(true);
+Route::run($url);
+echo $url, (microtime(true) - $starttime) * 1000, "\n";

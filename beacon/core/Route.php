@@ -8,17 +8,11 @@
 
 namespace beacon;
 
-use Throwable;
+defined('IS_CGI') or define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? true : false);
+defined('IS_CLI') or define('IS_CLI', PHP_SAPI == 'cli' ? true : false);
+defined('IS_WIN') or define('IS_WIN', strstr(PHP_OS, 'WIN') ? true : false);
+defined('HTTP_SWOOLE') or define('HTTP_SWOOLE', false);
 
-if (!defined('IS_CGI')) {
-    define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
-}
-if (!defined('IS_CLI')) {
-    define('IS_CLI', PHP_SAPI == 'cli' ? TRUE : FALSE);
-}
-if (!defined('IS_WIN')) {
-    define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
-}
 
 class RouteEndError extends \Error implements \Throwable
 {
@@ -465,13 +459,16 @@ class Route
                         }
                         $out = $method->invokeArgs($example, $args);
                         if ($context->getContentType() == 'application/json' || $context->getContentType() == 'text/json') {
-                            return $context->end(json_encode($out));
+                            $context->write(json_encode($out));
+                            return $context->end();
                         } else {
                             if (is_array($out)) {
                                 $context->setContentType('json');
-                                return $context->end(json_encode($out));
+                                $context->write(json_encode($out));
+                                return $context->end();
                             } else {
-                                return $context->end($out);
+                                $context->write($out);
+                                return $context->end();
                             }
                         }
                     }
@@ -520,6 +517,8 @@ class Route
                 echo '<h1>' . $error->getMessage() . '</h1>';
                 echo '<pre>' . $error->getTraceAsString() . '</pre>';
             }
+        } finally {
+            $context = null;
         }
     }
 
@@ -553,7 +552,8 @@ class Route
             }
             $last_modified_time = filemtime($filename);
             if (isset($req->header['if-modified-since'])) {
-                $time = @strtotime($res->header['if-modified-since']);
+                $time = @strtotime($req->header['if-modified-since']);
+                //var_export($req->header['if-modified-since'] . '|' . $time . '|' . $last_modified_time);
                 if ($time >= $last_modified_time) {
                     $res->status(304);
                     $res->end('');

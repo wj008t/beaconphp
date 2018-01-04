@@ -11,7 +11,10 @@ class Index extends Controller
 {
     public function indexAction(Request $request, string $name = 'wj008', int $t = 2)
     {
-
+        // $request->setCookie('aaaaa', 'bbbbb');
+        // $this->context->setCookie('bbbxxxxxx', 'xxx');
+        $this->context->write(var_export($request->getSession(), true));
+        //$request->setSession('aaa', 'xxx');
         // $row = DB::getList('select 1 as temp;');
         // $v = DB::beginTransaction();
         //$row = DB::getMedoo()->update('building', ['name' => '荣昌大厦2wqw23'], ['id' => 1]);

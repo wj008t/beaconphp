@@ -34,12 +34,13 @@ class PageList
      */
     public function __construct(HttpContext $context, $sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
     {
+        $req = $context->getRequest();
         $this->context = $context;
         $this->sql = $sql;
         $this->page_size = intval($size);
         $this->key = $pagekey;
         $this->args = $args;
-        $this->page = intval(isset($_REQUEST[$pagekey]) ? $_REQUEST[$pagekey] : '1');
+        $this->page = $req->param($pagekey . ':i', 1);
         $this->page_count = -1;
         $this->records_count = $count;
         $this->only_count = $only_count;
