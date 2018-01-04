@@ -11,10 +11,7 @@ class Index extends Controller
 {
     public function indexAction(Request $request, string $name = 'wj008', int $t = 2)
     {
-        // $request->setCookie('aaaaa', 'bbbbb');
-        // $this->context->setCookie('bbbxxxxxx', 'xxx');
-        $this->context->write(var_export($request->getSession(), true));
-        //$request->setSession('aaa', 'xxx');
+
         // $row = DB::getList('select 1 as temp;');
         // $v = DB::beginTransaction();
         //$row = DB::getMedoo()->update('building', ['name' => '荣昌大厦2wqw23'], ['id' => 1]);
@@ -25,7 +22,7 @@ class Index extends Controller
         // }
         // $v = DB::rollBack();
         // $row = DB::getList('select * from sl_building');
-        $form = new UserForm($this->context, 'add');
+        $form = new UserForm('add');
         // $box = \beacon\Form::getBoxInstance('text');
         $this->assign('data', '1');
         $this->assign('form', $form);

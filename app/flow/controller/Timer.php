@@ -10,6 +10,7 @@ namespace app\flow\controller;
 
 
 use beacon\Controller;
+use beacon\DB;
 use beacon\Utils;
 
 class Timer extends Controller
@@ -43,9 +44,9 @@ class Timer extends Controller
                         $data = json_decode($body, true);
                         var_export($data);
                         if (isset($data['status']) && $data['status'] === true) {
-                            $row = $this->db->getRow('select * from @pf_flow_queue where id=?', $queue);
+                            $row = DB::getRow('select * from @pf_flow_queue where id=?', $queue);
                             if ($row != null) {
-                                $this->db->update('@pf_flow_queue', ['tice' => 10], $queue);
+                                DB::update('@pf_flow_queue', ['tice' => 10], $queue);
                             }
                         }
                     } catch (\Exception $exception) {
@@ -65,12 +66,12 @@ class Timer extends Controller
             $flows = [];
             $time = time();
             echo $time . "\n";
-            $queue = $this->db->getList('select * from @pf_flow_queue where timeout<? and tice<5 limit 0,10', $time);
+            $queue = DB::getList('select * from @pf_flow_queue where timeout<? and tice<5 limit 0,10', $time);
             foreach ($queue as $item) {
                 $flowId = $item['flowId'];
-                $this->db->update('@pf_flow_queue', ['tice' => $item['tice'] + 1], $item['id']);
+                DB::update('@pf_flow_queue', ['tice' => $item['tice'] + 1], $item['id']);
                 if (!isset($flows[$flowId])) {
-                    $flows[$flowId] = $this->db->getRow('select * from @pf_flow_list where id=?', $flowId);
+                    $flows[$flowId] = DB::getRow('select * from @pf_flow_list where id=?', $flowId);
                 }
                 $flow = $flows[$flowId];
                 if ($flow == null) {

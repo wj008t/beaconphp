@@ -11,7 +11,8 @@ namespace app\flow\controller;
 use app\flow\form\FlowForm;
 use app\flow\lib\Flow;
 use beacon\Controller;
-use beacon\PageList;
+use beacon\DB;
+use beacon\Pagelist;
 use beacon\Request;
 use beacon\Utils;
 
@@ -24,8 +25,7 @@ class Index extends Controller
      */
     public function indexAction(Request $request)
     {
-        $request->setSession('may', '12345');
-        $pagelist = new PageList($this->context, 'select * from @pf_flow_list order by id desc');
+        $pagelist = new PageList('select * from @pf_flow_list order by id desc');
         $list = $pagelist->getList();
         $pinfo = $pagelist->getInfo();
         $this->assign('list', $list);
@@ -41,7 +41,7 @@ class Index extends Controller
 
     public function addAction(Request $request)
     {
-        $form = new FlowForm($this->context);
+        $form = new FlowForm();
         if ($request->isGet()) {
             $this->assign('form', $form);
             return $this->fetch('flow_act.tpl');
@@ -49,15 +49,15 @@ class Index extends Controller
         $vals = $form->autoComplete(function ($errors) {
             $this->error($errors);
         });
-        $this->db->insert('@pf_flow_list', $vals);
+        DB::insert('@pf_flow_list', $vals);
         $this->success("添加成功");
     }
 
     public function editAction(Request $request, int $id)
     {
-        $form = new FlowForm($this->context);
+        $form = new FlowForm();
         if ($request->isGet()) {
-            $row = $this->db->getRow('select * from @pf_flow_list where id=?', $id);
+            $row = DB::getRow('select * from @pf_flow_list where id=?', $id);
             $form->initValues($row);
             $form->addHideBox('id', $id);
             $this->assign('form', $form);
@@ -66,21 +66,21 @@ class Index extends Controller
         $vals = $form->autoComplete(function ($errors) {
             $this->error($errors);
         });
-        $this->db->update('@pf_flow_list', $vals, $id);
+        DB::update('@pf_flow_list', $vals, $id);
         $this->success("编辑成功");
     }
 
     public function deleteAction(int $id)
     {
-        $this->db->beginTransaction();
+        DB::beginTransaction();
         try {
-            $this->db->delete('@pf_flow_connection', 'flowid=?', $id);
-            $this->db->delete('@pf_flow_place', 'flowid=?', $id);
-            $this->db->delete('@pf_flow_transition', 'flowid=?', $id);
-            $this->db->delete('@pf_flow_list', $id);
-            $this->db->commit();
+            DB::delete('@pf_flow_connection', 'flowid=?', $id);
+            DB::delete('@pf_flow_place', 'flowid=?', $id);
+            DB::delete('@pf_flow_transition', 'flowid=?', $id);
+            DB::delete('@pf_flow_list', $id);
+            DB::commit();
         } catch (\Exception $e) {
-            $this->db->rollBack();
+            DB::rollBack();
             // $this->error($e->getMessage());
         }
         $this->success("删除成功");

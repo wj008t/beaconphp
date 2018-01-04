@@ -38,8 +38,6 @@ class Form
     private $cacheUsingFields = [];
     protected $hideBox = [];
 
-    public $context = null;
-
     /**
      * @param string $type
      * @return \widget\BoxInterface
@@ -65,9 +63,8 @@ class Form
         return self::$boxInstance[$type];
     }
 
-    public function __construct(HttpContext $context, $type = '')
+    public function __construct($type = '')
     {
-        $this->context = $context;
         $this->type = $type;
     }
 
@@ -230,7 +227,7 @@ class Form
         $this->initialize();
         if ($this->viewUseTab && $this->viewTabSplit) {
             if (!empty($this->viewCurrentTabIndex)) {
-                $this->viewCurrentTabIndex = $this->context->getRequest()->get('tabIndex:s');
+                $this->viewCurrentTabIndex = Request::instance()->get('tabIndex:s');
                 return $this->getTabFields($this->viewCurrentTabIndex);
             }
         }
@@ -324,14 +321,13 @@ class Form
                 continue;
             }
             $box = self::getBoxInstance($field->type);
-            $request = $this->context->getRequest();
             if (is_string($method)) {
                 $method = strtolower($method);
-                $data = $this->context->_param;
+                $data = $_REQUEST;
                 if ($method == 'get') {
-                    $data = $this->context->_get;
+                    $data = $_GET;
                 } elseif ($method == 'post') {
-                    $data = $this->context->_post;
+                    $data = $_POST;
                 }
             } elseif (is_array($method)) {
                 $data = $method;
@@ -342,6 +338,7 @@ class Form
                 $box->assign($field, $data);
             } else {
                 $boxName = $field->boxName;
+                $request = Request::instance();
                 switch ($field->varType) {
                     case 'bool':
                     case 'boolean':
@@ -412,7 +409,7 @@ class Form
     public function getValidateInstance()
     {
         if ($this->validate == null) {
-            $this->validate = new Validate($this->context);
+            $this->validate = new Validate();
         }
         return $this->validate;
     }

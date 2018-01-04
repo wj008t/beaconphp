@@ -100,7 +100,7 @@ namespace widget {
         public function assign(Field $field, array $data)
         {
             $boxName = $field->boxName;
-            $request = $field->getForm()->context->getRequest();
+            $request = Request::instance();
             $fdata = $request->req($data, $boxName . ':a', $field->default);
             $class = $field->plugForm;
             if (empty($class) || !class_exists($field->plugForm)) {

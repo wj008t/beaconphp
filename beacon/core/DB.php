@@ -22,15 +22,14 @@ class DB
         }
         $driver = Config::get('db.db_driver', 'Mysql');
         if ($driver == 'Mysql') {
-            $host = Config::get('db.db_host', '127.0.0.1');
-            $port = Config::get('db.db_port', 3306);
-            $name = Config::get('db.db_name', '');
-            $user = Config::get('db.db_user', '');
-            $pass = Config::get('db.db_pwd', '');
-            $prefix = Config::get('db.db_prefix', 'sl_');
-            self::$engine = new Mysql($host, $port, $name, $user, $pass, $prefix);
+            self::$engine = Mysql::instance();
             return self::$engine;
         }
+    }
+
+    public static function getMedoo()
+    {
+        return self::engine()->getMedoo();
     }
 
     public static function beginTransaction()

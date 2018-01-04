@@ -12,7 +12,6 @@ use PDO as PDO;
 class PageList
 {
 
-    private $context;
     private $sql;
     private $page; //当前页面
     private $records_count;  //记录数
@@ -32,15 +31,13 @@ class PageList
      * @param string $pagekey 分页的URL名称$_GET['?']
      * @param int $count 直接给定记录数可以提高查询效率，例如使用缓存的记录数或者参数给回的记录数。
      */
-    public function __construct(HttpContext $context, $sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
+    function __construct($sql, $args = array(), $size = 20, $pagekey = 'page', $count = -1, $only_count = -1)
     {
-        $req = $context->getRequest();
-        $this->context = $context;
         $this->sql = $sql;
         $this->page_size = intval($size);
         $this->key = $pagekey;
         $this->args = $args;
-        $this->page = $req->param($pagekey . ':i', 1);
+        $this->page = intval(isset($_REQUEST[$pagekey]) ? $_REQUEST[$pagekey] : '1');
         $this->page_count = -1;
         $this->records_count = $count;
         $this->only_count = $only_count;
@@ -78,7 +75,7 @@ class PageList
         if ($this->info != NULL) {
             return $this->info;
         }
-        $url = $this->context->_server['REQUEST_URI'];
+        $url = $_SERVER['REQUEST_URI'];
         $Idx = strpos($url, '?');
         $query = '';
         if ($Idx !== false) {
@@ -87,9 +84,9 @@ class PageList
         if ($this->records_count == -1) {
             if (strripos($this->sql, ' from ') === stripos($this->sql, ' from ')) {
                 $sql = preg_replace('@^select\s+(distinct\s+[a-z][a-z0-9]+\s*,)?(.*)\s+from\s+@', 'select $1count(1) from ', $this->sql);
-                $row = $this->context->getDataBase()->getRow($sql, $this->args, PDO::FETCH_NUM);
+                $row = DB::getRow($sql, $this->args, PDO::FETCH_NUM);
             } else {
-                $row = $this->context->getDataBase()->getRow('select count(1) from (' . $this->sql . ') MyTempTable', $this->args, PDO::FETCH_NUM);
+                $row = DB::getRow('select count(1) from (' . $this->sql . ') MyTempTable', $this->args, PDO::FETCH_NUM);
             }
             $this->records_count = $row[0];
         }
@@ -116,6 +113,7 @@ class PageList
             'only_count' => $this->only_count,
             'page_size' => $this->page_size,
         );
+
         return $this->info;
     }
 
@@ -134,12 +132,12 @@ class PageList
             $start = 0;
         }
         $sql = $this->sql . ' limit ' . $start . ' , ' . $this->page_size;
-        return $this->context->getDataBase()->getList($sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
+        return DB::getList($sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
     }
 
     public function getAll($fetch_style = null, $fetch_argument = null, array $ctor_args = null)
     {
-        return $this->context->getDataBase()->getList($this->sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
+        return DB::getList($this->sql, $this->args, $fetch_style, $fetch_argument, $ctor_args);
     }
 
 }

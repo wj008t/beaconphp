@@ -24,7 +24,7 @@ class Hidden implements BoxInterface
     public function assign(Field $field, array $data)
     {
         $boxName = $field->boxName;
-        $request = $field->getForm()->context->getRequest();
+        $request = Request::instance();
         switch ($field->varType) {
             case 'bool':
             case 'boolean':

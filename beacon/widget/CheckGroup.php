@@ -146,7 +146,7 @@ class CheckGroup implements BoxInterface
 
     public function assign(Field $field, array $data)
     {
-        $request = $field->getForm()->context->getRequest();
+        $request = Request::instance();
         $default = [];
         if (is_array($field->default)) {
             $default = $field->default;
