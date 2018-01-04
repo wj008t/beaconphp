@@ -38,7 +38,7 @@ class Request
         return $this->req($_REQUEST, $name, $def);
     }
 
-    public function getSession(string $name = null)
+    public function getSession(string $name = null, $def = null)
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
@@ -46,7 +46,7 @@ class Request
         if (empty($name)) {
             return $_SESSION;
         }
-        return isset($_SESSION[$name]) ? $_SESSION[$name] : null;
+        return isset($_SESSION[$name]) ? $_SESSION[$name] : $def;
     }
 
     public function setSession(string $name, $value)
@@ -57,9 +57,9 @@ class Request
         $_SESSION[$name] = $value;
     }
 
-    public function getCookie(string $name)
+    public function getCookie(string $name, $def = null)
     {
-        return isset($_COOKIE["name"]) ? $_COOKIE["name"] : null;
+        return isset($_COOKIE["name"]) ? $_COOKIE["name"] : $def;
     }
 
     public function setCookie(string $name, $value, $options)
@@ -303,7 +303,7 @@ class Request
         $this->setHeader('Content-Type', $this->content_type);
     }
 
-    protected function config($name, $def = null)
+    public function config(string $name, $def = null)
     {
         return Config::get($name, $def);
     }
@@ -313,7 +313,7 @@ class Request
         return $this->isMethod('get');
     }
 
-    public function isMethod($method)
+    public function isMethod(string $method)
     {
         return strtolower($_SERVER['REQUEST_METHOD']) == strtolower($method) ? true : false;
     }

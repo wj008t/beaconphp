@@ -393,7 +393,6 @@ class Route
                     $params = $method->getParameters();
                     $args = [];
                     if (count($params) > 0) {
-                        $request = Request::instance();
                         foreach ($params as $param) {
                             $name = $param->getName();
                             $type = 'any';
@@ -468,15 +467,15 @@ class Route
                     }
                     $example = new $class();
                     if (method_exists($example, 'initialize')) {
-                        $example->initialize();
+                        $example->initialize($request);
                     }
                     $out = $method->invokeArgs($example, $args);
-                    if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
+                    if ($request->getContentType() == 'application/json' || $request->getContentType() == 'text/json') {
                         echo json_encode($out);
                         exit;
                     } else {
                         if (is_array($out)) {
-                            Request::instance()->setContentType('json');
+                            $request->setContentType('json');
                             echo json_encode($out);
                             exit;
                         } else {
