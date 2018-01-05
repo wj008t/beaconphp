@@ -14,7 +14,14 @@ namespace app\flow\lib {
 
     class FlowException extends \Exception
     {
-
+        const ERROR = 1; //执行错误
+        const NOT_FOUND_FLOW = 2; //缺少工作流
+        const NOT_FOUND_PLACE = 3; //缺失库所
+        const NOT_FOUND_TOKEN = 4; //丢失TOKEN
+        const NOT_FOUND_BRANCH = 5; //丢失分支
+        const SIGN_FAILED = 6; //签名失败
+        const ARGS_MISSING = 7; //缺少参数
+        const AUTH_FAILED = 8; //授权失败
     }
 
     class Flow
@@ -30,11 +37,11 @@ namespace app\flow\lib {
                 DB::update('@pf_flow_list', ['name' => DB::sql('name')], 'name=?', $name);
                 $flow = DB::getRow('select * from @pf_flow_list where name=?', $name);
                 if ($flow == null) {
-                    throw new FlowException('没有找到对应的工作流程');
+                    throw new FlowException('没有找到对应的工作流程', FlowException::NOT_FOUND_FLOW);
                 }
                 $place = DB::getRow("select * from @pf_flow_place where flowid=? and mode=1", $flow['id']);
                 if ($place == null) {
-                    throw new FlowException('没有找到工作流程的起始库所');
+                    throw new FlowException('没有找到工作流程的起始库所', FlowException::NOT_FOUND_PLACE);
                 }
                 $token = [
                     'flowId' => $flow['id'],
@@ -68,7 +75,7 @@ namespace app\flow\lib {
             } catch (\Exception $e) {
                 DB::rollBack();
                 var_export($e);
-                throw new FlowException('执行创建错误');
+                throw new FlowException('执行创建错误', FlowException::ERROR);
             }
         }
 
@@ -76,10 +83,10 @@ namespace app\flow\lib {
         public static function reday(int $tokenId, $branch = '', array $args = [])
         {
             if ($tokenId == 0) {
-                throw new FlowException('执行失败，任务Token不存在');
+                throw new FlowException('执行失败，任务Token不存在', FlowException::NOT_FOUND_TOKEN);
             }
             if (empty($branch)) {
-                throw new FlowException('执行失败，没有指定执行的分支');
+                throw new FlowException('执行失败，没有指定执行的分支', FlowException::NOT_FOUND_BRANCH);
             }
             $args['userId'] = isset($args['userId']) ? $args['userId'] : Request::instance()->getSession('userId');
             if (empty($args['userId'])) {
@@ -98,32 +105,32 @@ namespace app\flow\lib {
                 if ($token != null) {
                     $flow = DB::getRow('select `key` from @pf_flow_list where id=?', $token['flowId']);
                     if ($flow == null) {
-                        throw new FlowException('执行失败，缺少执行参数');
+                        throw new FlowException('执行失败，缺少执行参数', FlowException::NOT_FOUND_FLOW);
                     }
                     $sign = md5(md5($flow['key']) . md5($args['condition'] . '|' . $tokenId . '|' . $args['timeout'] . '|' . $branch));
                     if ($sign != $args['sign']) {
-                        throw new FlowException('执行失败，签名校验失败');
+                        throw new FlowException('执行失败，签名校验失败', FlowException::SIGN_FAILED);
                     }
                 }
             } else {
-                throw new FlowException('执行失败，缺少执行参数' . var_export($args, true));
+                throw new FlowException('执行失败，缺少执行参数' . var_export($args, true), FlowException::ARGS_MISSING);
             }
             if ($token == null) {
-                throw new FlowException('执行失败，要求的身份不符');
+                throw new FlowException('执行失败，要求的身份不符', FlowException::AUTH_FAILED);
             }
             $item = DB::getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  A.target=B.id and B.flowId=A.flowId and B.code=? limit 0,1', [$token['flowId'], 'place', $token['placeId'], $branch]);
             if ($item == null) {
-                throw new FlowException('执行失败，任务Token没有可发射的事件');
+                throw new FlowException('执行失败，任务Token没有可发射的事件', FlowException::NOT_FOUND_BRANCH);
             }
             $temp = [];
             $conditionList = DB::getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'transition', $item['id']]);
             if (count($conditionList) == 0) {
-                throw new FlowException('执行失败，并不存在相应的目标分支');
+                throw new FlowException('执行失败，并不存在相应的目标分支', FlowException::NOT_FOUND_BRANCH);
             }
             foreach ($conditionList as $xitem) {
                 $place = DB::getRow('select id,code,name from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $xitem['target']]);
                 if ($place == null) {
-                    throw new FlowException('执行失败，业务工作流错误，可能已经删除了对应的库所');
+                    throw new FlowException('执行失败，业务工作流错误，可能已经删除了对应的库所', FlowException::NOT_FOUND_PLACE);
                 }
                 $temp[$xitem['condition']] = ['placeId' => $place['id'], 'placeName' => $place['name'], 'placeCode' => $place['code']];
             }
@@ -151,11 +158,11 @@ namespace app\flow\lib {
             self::valid($data);
             $token = DB::getRow('select * from @pf_flow_token where id=?', $tokenId);
             if ($token == null) {
-                throw new FlowException('执行失败，任务Token不存在');
+                throw new FlowException('执行失败，任务Token不存在', FlowException::NOT_FOUND_TOKEN);
             }
             $connecList = DB::getList('select * from @pf_flow_connection where flowId=? and sourceType=? and source=?', [$token['flowId'], 'place', $token['placeId']]);
             if (count($connecList) == 0) {
-                throw new FlowException('执行错误，任务Token没有可发射的事件');
+                throw new FlowException('执行错误，任务Token没有可发射的事件', FlowException::NOT_FOUND_BRANCH);
             }
             //目标库所
             $targetPlace = null;
@@ -163,42 +170,42 @@ namespace app\flow\lib {
                 $item = $connecList[0];
                 $transition = DB::getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
                 if ($transition == null) {
-                    throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件');
+                    throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件', FlowException::NOT_FOUND_BRANCH);
                 }
                 $condition = DB::getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
                 if ($condition == null) {
-                    throw new FlowException('执行错误，为找到相对于的条件分支');
+                    throw new FlowException('执行错误，为找到相对于的条件分支', FlowException::NOT_FOUND_BRANCH);
                 }
                 $place = DB::getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
                 if ($place == null) {
-                    throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所');
+                    throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所', FlowException::NOT_FOUND_PLACE);
                 }
                 $targetPlace = $place;
             } else {
                 if (empty($branch)) {
-                    throw new FlowException('执行错误，没有指定要执行的分支路径');
+                    throw new FlowException('执行错误，没有指定要执行的分支路径', FlowException::NOT_FOUND_BRANCH);
                 }
                 foreach ($connecList as $item) {
                     $transition = DB::getRow('select id,code from @pf_flow_transition where flowId=? and id=?', [$token['flowId'], $item['target']]);
                     if ($transition == null) {
-                        throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件');
+                        throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的业务事件', FlowException::NOT_FOUND_BRANCH);
                     }
                     if ($transition['code'] != $branch) {
                         continue;
                     }
                     $condition = DB::getRow('select * from @pf_flow_connection where flowId=? and sourceType=? and source=? and `condition`=?', [$token['flowId'], 'transition', $transition['id'], $connection]);
                     if ($condition == null) {
-                        throw new FlowException('执行错误，为找到相对于的条件分支');
+                        throw new FlowException('执行错误，为找到相对于的条件分支', FlowException::NOT_FOUND_BRANCH);
                     }
                     $place = DB::getRow('select id,state,code,`name`,mode from @pf_flow_place where flowId=? and id=?', [$token['flowId'], $condition['target']]);
                     if ($place == null) {
-                        throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所');
+                        throw new FlowException('执行错误，业务工作流错误，可能已经删除了对应的库所', FlowException::NOT_FOUND_PLACE);
                     }
                     $targetPlace = $place;
                 }
             }
             if ($targetPlace === null) {
-                throw new FlowException('执行错误，没有找到对应条件的库所');
+                throw new FlowException('执行错误，没有找到对应条件的库所', FlowException::NOT_FOUND_PLACE);
             }
             if (is_string($token['data']) && Utils::isJsonString($token['data'])) {
                 $token['data'] = json_decode($token['data'], true);
@@ -283,10 +290,10 @@ namespace app\flow\lib {
         private static function valid(&$data)
         {
             if (!isset($data['userId'])) {
-                throw new FlowException('数据必须指定发起者用户ID {userId}');
+                throw new FlowException('数据必须指定发起者用户ID {userId}', FlowException::AUTH_FAILED);
             }
             if (!isset($data['targetId']) && !isset($data['targetGroupId'])) {
-                throw new FlowException('数据必须指定触发者用户ID {targetId} 或者分组id {targetGroupId}');
+                throw new FlowException('数据必须指定触发者用户ID {targetId} 或者分组id {targetGroupId}', FlowException::AUTH_FAILED);
             }
             if (!isset($data['targetGroupId'])) {
                 $data['targetGroupId'] = 0;
@@ -305,11 +312,11 @@ namespace app\flow\lib {
             DB::delete('@pf_flow_queue', 'tokenId=?', $tokenId);
             $token = DB::getRow('select * from @pf_flow_token where id=?', $tokenId);
             if ($token == null) {
-                throw new FlowException('执行错误，任务Token不存在');
+                throw new FlowException('执行错误，任务Token不存在', FlowException::NOT_FOUND_TOKEN);
             }
             $flow = DB::getRow('select * from @pf_flow_list where id=?', $token['flowId']);
             if ($flow == null) {
-                throw new FlowException('执行错误，不存在的工作流');
+                throw new FlowException('执行错误，不存在的工作流', FlowException::NOT_FOUND_FLOW);
             }
             $item = DB::getRow('select B.id,B.code,B.timeout,B.url,B.timeoutCondition from @pf_flow_connection A,@pf_flow_transition B where A.flowId=? and A.sourceType=? and A.source=? and  B.timeout >0 and A.target=B.id and B.flowId=A.flowId order by B.timeout asc limit 0,1', [$token['flowId'], 'place', $token['placeId']]);
             if ($item !== null) {
