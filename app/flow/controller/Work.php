@@ -50,7 +50,7 @@ class Work extends Controller
         }
     }
 
-    public function param(Request $request, $branch)
+    public function getArgs(Request $request, $branch)
     {
         $args = [];
         if ($request->post('timeout:i', 0) > 0) {
@@ -80,12 +80,11 @@ class Work extends Controller
         try {
             DB::beginTransaction();
             $branch = 'step1';
-            list($tokenId, $args) = $this->param($request, $branch);
+            list($tokenId, $args) = $this->getArgs($request, $branch);
             //处理自动执行
 
             $reday = Flow::reday($tokenId, $branch, $args);
             //TODO
-
 
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
@@ -102,7 +101,7 @@ class Work extends Controller
         try {
             DB::beginTransaction();
             $branch = 'step2';
-            list($tokenId, $args) = $this->param($request, $branch);
+            list($tokenId, $args) = $this->getArgs($request, $branch);
             //处理自动执行
             Flow::reday($tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
@@ -120,7 +119,7 @@ class Work extends Controller
         try {
             DB::beginTransaction();
             $branch = 'step3';
-            list($tokenId, $args) = $this->param($request, $branch);
+            list($tokenId, $args) = $this->getArgs($request, $branch);
             //处理自动执行
             Flow::reday($tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
@@ -138,7 +137,7 @@ class Work extends Controller
         try {
             DB::beginTransaction();
             $branch = 'step4';
-            list($tokenId, $args) = $this->param($request, $branch);
+            list($tokenId, $args) = $this->getArgs($request, $branch);
             //处理自动执行
             Flow::reday($tokenId, $branch, $args);
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
