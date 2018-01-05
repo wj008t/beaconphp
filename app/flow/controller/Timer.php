@@ -79,11 +79,12 @@ class Timer extends Controller
                 }
                 //echo "令牌：" . $item['tokenId'] . "\n";
                 $post = [];
+                $post['exeType'] = 'timeout';
                 $post['condition'] = $item['condition'];
                 $post['tokenId'] = $item['tokenId'];
                 $post['timeout'] = $item['timeout'];
                 $post['branch'] = $item['branch'];
-                $post['sign'] = md5(md5($flow['key']) . md5($post['condition'] . '|' . $post['tokenId'] . '|' . $post['timeout'] . '|' . $post['branch']));
+                $post['sign'] = md5(md5($flow['key']) . '|' . $post['exeType'] . '|' . md5($post['condition'] . '|' . $post['tokenId'] . '|' . $post['timeout'] . '|' . $post['branch']));
                 $this->send($item['url'], $post, $item['id']);
             }
         });

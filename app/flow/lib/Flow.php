@@ -27,6 +27,7 @@ namespace app\flow\lib {
         const MISSING_ARGS = 11; //缺少参数
         const FAILED_SIGN = 12; //签名失败
         const FAILED_AUTH = 13; //授权失败
+        const FAILED_TIMEOUT = 14; //未设置超时时间
     }
 
     class Flow
@@ -85,21 +86,39 @@ namespace app\flow\lib {
         }
 
         //准备处理
-        public static function reday(int $tokenId, $branch = '', array $args = [])
+        public static function reday(int $taskId = 0, string $name = '', $branch = '', $userId = 0, $groupId = 0)
         {
+            $request = Request::instance();
+            $args = [];
+            $exeType = $request->post('exeType:s', 'hander');
+            //超时执行
+            if ($exeType == 'timeout') {
+                $args['timeout'] = $request->post('timeout:i', 0);
+                if ($args['timeout'] <= 0) {
+                    throw new FlowException('执行失败，延时未设置', FlowException::FAILED_TIMEOUT);
+                }
+                $args['condition'] = $request->post('condition:i', 0);
+                $args['sign'] = $request->post('sign:s', '');
+                $tokenId = $request->post('tokenId:i', 0);
+                $branch = $request->post('branch:s', '');
+                $args['userId'] = 0;
+                $args['groupId'] = 0;
+            } else {
+                //手动执行
+                $taskId = $request->param('taskId');
+                $args['userId'] = $userId;
+                $args['groupId'] = $groupId;
+                $args['condition'] = $request->param('condition:i', 1);
+                $tokenId = Flow::getToken($taskId, $name, $branch, $args);
+                $exeType = 'hander';
+            }
+
             if ($tokenId == 0) {
                 throw new FlowException('执行失败，任务Token不存在', FlowException::MISSING_TOKEN);
             }
+
             if (empty($branch)) {
                 throw new FlowException('执行失败，没有指定执行的分支', FlowException::MISSING_BRANCH);
-            }
-            $args['userId'] = isset($args['userId']) ? $args['userId'] : Request::instance()->getSession('userId');
-            if (empty($args['userId'])) {
-                $args['userId'] = 0;
-            }
-            $args['groupId'] = isset($args['groupId']) ? $args['groupId'] : Request::instance()->getSession('groupId');
-            if (empty($args['groupId'])) {
-                $args['groupId'] = 0;
             }
             //锁任务ID
             DB::update('@pf_flow_token', ['id' => DB::sql('id')], $tokenId);
@@ -119,7 +138,7 @@ namespace app\flow\lib {
                 if ($flow == null) {
                     throw new FlowException('执行失败，对应的工作流可能已被删除', FlowException::NOT_FOUND_FLOW);
                 }
-                $sign = md5(md5($flow['key']) . md5($args['condition'] . '|' . $tokenId . '|' . $args['timeout'] . '|' . $branch));
+                $sign = md5(md5($flow['key']) . '|' . $exeType . '|' . md5($args['condition'] . '|' . $tokenId . '|' . $args['timeout'] . '|' . $branch));
                 if ($sign != $args['sign']) {
                     throw new FlowException('执行失败，签名校验失败', FlowException::FAILED_SIGN);
                 }
@@ -151,13 +170,15 @@ namespace app\flow\lib {
                 $token['data'] = [];
             }
             $data = array_replace($token['data'], [
+                'exeType' => $exeType,
                 'tokenId' => $tokenId,
                 'taskId' => $token['taskId'],
                 'state' => $token['state'],
                 'userId' => $token['userId'],
                 'targetId' => $token['targetId'],
                 'targetGroupId' => $token['targetGroupId'],
-                'condition' => $temp,
+                'conditionItems' => $temp,
+                'condition' => $args['condition'],
             ]);
             return $data;
         }

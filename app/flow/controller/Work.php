@@ -10,6 +10,7 @@ namespace app\flow\controller;
 
 
 use app\flow\lib\Flow;
+use beacon\Console;
 use beacon\Controller;
 use beacon\DB;
 use beacon\Request;
@@ -50,49 +51,23 @@ class Work extends Controller
         }
     }
 
-    public function getArgs(Request $request, $branch)
-    {
-        $args = [];
-        if ($request->post('timeout:i', 0) > 0) {
-            $args['timeout'] = $request->post('timeout:i', 0);
-            $args['condition'] = $request->post('condition:i', 0);
-            $args['sign'] = $request->post('sign:s', '');
-            $tokenId = $request->post('tokenId:i', 0);
-            if ($request->post('branch:s', '') != $branch) {
-                $this->error('执行失败');
-            }
-        } else {
-            //手动执行
-            $userId = $request->getSession('userId');
-            $taskId = $request->param('taskId');
-            $args['userId'] = $userId;
-            $args['condition'] = $request->param('condition:i', 1);
-            $tokenId = Flow::getToken($taskId, '测试工作流程', $branch, $args);
-        }
-        if ($tokenId == 0) {
-            $this->error('业务流程已过期，请刷新页面');
-        }
-        return [$tokenId, $args];
-    }
-
     public function step1Action(Request $request)
     {
         try {
             DB::beginTransaction();
+            $taskId = $request->param('taskId');
             $branch = 'step1';
-            list($tokenId, $args) = $this->getArgs($request, $branch);
-            //处理自动执行
-
-            $reday = Flow::reday($tokenId, $branch, $args);
+            $reday = Flow::reday($taskId, '测试工作流程', $branch, 1);
             //TODO
-
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            Console::log($reday);
+            $tokenId = $reday['tokenId'];
+            $data = Flow::fire($tokenId, $branch, $reday['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('执行失败', $e->getMessage());
+            $this->error($e->getMessage());
         }
     }
 
@@ -100,17 +75,19 @@ class Work extends Controller
     {
         try {
             DB::beginTransaction();
+            $taskId = $request->get('taskId:i', 0);
             $branch = 'step2';
-            list($tokenId, $args) = $this->getArgs($request, $branch);
-            //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $reday = Flow::reday($taskId, '测试工作流程', $branch, 1);
+            //TODO
+            Console::log($reday);
+            $tokenId = $reday['tokenId'];
+            $data = Flow::fire($tokenId, $branch, $reday['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('执行失败', $e->getMessage());
+            $this->error($e->getMessage());
         }
     }
 
@@ -118,17 +95,19 @@ class Work extends Controller
     {
         try {
             DB::beginTransaction();
+            $taskId = $request->get('taskId:i', 0);
             $branch = 'step3';
-            list($tokenId, $args) = $this->getArgs($request, $branch);
-            //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $reday = Flow::reday($taskId, '测试工作流程', $branch, 1);
+            //TODO
+            Console::log($reday);
+            $tokenId = $reday['tokenId'];
+            $data = Flow::fire($tokenId, $branch, $reday['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('执行失败', $e->getMessage());
+            $this->error($e->getMessage());
         }
     }
 
@@ -136,17 +115,19 @@ class Work extends Controller
     {
         try {
             DB::beginTransaction();
+            $taskId = $request->get('taskId:i', 0);
             $branch = 'step4';
-            list($tokenId, $args) = $this->getArgs($request, $branch);
-            //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
-            $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
+            $reday = Flow::reday($taskId, '测试工作流程', $branch, 1);
+            //TODO
+            Console::log($reday);
+            $tokenId = $reday['tokenId'];
+            $data = Flow::fire($tokenId, $branch, $reday['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();
             $this->success('执行成功');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('执行失败', $e->getMessage());
+            $this->error($e->getMessage());
         }
     }
 
