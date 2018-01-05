@@ -162,16 +162,12 @@ class Sdopx extends \sdopx\lib\Template
         return $this;
     }
 
-    public function addTemplateDir(...$dir_names)
+    public function addTemplateDir(string $name, string $key = null)
     {
-        if (count($dir_names) == 0) {
-            return $this;
-        }
-        foreach ($dir_names as $value) {
-            if (gettype($value) != 'string' || empty($value)) {
-                continue;
-            }
-            $this->template_dirs[] = $value;
+        if ($key === null) {
+            $this->template_dirs[] = $name;
+        } else {
+            $this->template_dirs[$key] = $name;
         }
         return $this;
     }

@@ -71,19 +71,18 @@ class Resource
         if ($tplname[0] == '@') {
             $dirName = $sdopx->getTemplateDir('common');
             if (empty($dirName)) {
-                //TODO 抛出异常
-                return null;
+                $sdopx->rethrow('没有找到 common 公共目录');
             }
             $tplname = substr($tplname, 1);
             $filePath = Utils::path($dirName, $tplname);
             if ($filePath != '' && file_exists($filePath)) {
                 return $filePath;
             }
-            return null;
+            $sdopx->rethrow('没有找到 模板文件 ' . $tplname);
         }
         $tplDirs = $sdopx->getTemplateDir();
         if ($tplDirs == null) {
-            return null;
+            $sdopx->rethrow('没有找到 模板目录为设置 ');
         }
         foreach ($tplDirs as $key => $dirName) {
             if ($key === 'common') {
@@ -94,6 +93,6 @@ class Resource
                 return $filePath;
             }
         }
-        return null;
+        $sdopx->rethrow('没有找到 模板文件 ' . $tplname);
     }
 }

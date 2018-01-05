@@ -17,6 +17,7 @@ class Password extends Hidden
     public function code(Field $field, $args)
     {
         $args['type'] = 'password';
+        $args['value'] = null;
         $field->explodeAttr($attr, $args);
         $field->explodeData($attr, $args);
         return '<input ' . join(' ', $attr) . ' />';

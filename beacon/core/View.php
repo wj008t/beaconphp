@@ -57,7 +57,15 @@ class View
             \sdopx\Sdopx::$debug = true;
         }
         $this->engine = new \sdopx\Sdopx();
-        $template_dir = Utils::path(ROOT_DIR, Config::get('sdopx.template_dir', 'view'));
+
+        $template_dir = Config::get('sdopx.template_dir', 'view');
+        if (is_array($template_dir)) {
+            foreach ($template_dir as &$dir) {
+                $dir = Utils::path(ROOT_DIR, $dir);
+            }
+        } else {
+            $template_dir = Utils::path(ROOT_DIR, $template_dir);
+        }
         $common_dir = Utils::path(ROOT_DIR, Config::get('sdopx.common_dir', 'view/common'));
         $runtime_dir = Utils::path(ROOT_DIR, Config::get('sdopx.runtime_dir', 'runtime'));
         $this->engine->setTemplateDir($template_dir);
@@ -92,7 +100,8 @@ class View
     {
         $this->initialize();
         $this->engine->_book = $this->_book;
-        return $this->engine->display($tplname);
+        $this->engine->_config = Config::get();
+        echo $this->engine->fetch($tplname);
     }
 
     public function fetch($tplname)

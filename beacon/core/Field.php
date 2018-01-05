@@ -44,7 +44,7 @@ class Field
     public $dataVal = null;
     public $dataValMsg = null;
 
-    public function __construct(Form $form, array $field = [])
+    public function __construct(Form $form = null, array $field = [])
     {
         if ($field == null) {
             $field = [];

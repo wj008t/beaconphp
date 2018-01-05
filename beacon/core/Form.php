@@ -92,12 +92,12 @@ class Form
 
     public function isAdd()
     {
-        return $this->type = 'add';
+        return $this->type === 'add';
     }
 
     public function isEdit()
     {
-        return $this->type = 'edit';
+        return $this->type === 'edit';
     }
 
     public function addField(string $name, $field, string $before = null)

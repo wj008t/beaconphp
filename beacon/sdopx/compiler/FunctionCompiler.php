@@ -2,11 +2,11 @@
 
 namespace sdopx\compiler {
 
-    use \sdopx\lib\Compiler;
+    use sdopx\lib\Compiler;
 
     class FunctionCompiler
     {
-        function sdopx_compiler_function(Compiler $compiler, string $name, array $args)
+        public static function compile(Compiler $compiler, string $name, array $args)
         {
             $fn = isset($args['fn']) ? $args['fn'] : null;
             if (empty($fn)) {
@@ -41,7 +41,7 @@ namespace sdopx\compiler {
 
     class FunctionCloseCompiler
     {
-        function sdopx_compiler_function_close(Compiler $compiler, string $name)
+        public static function compile(Compiler $compiler, string $name)
         {
             list($name, $data) = $compiler->closeTag(['function']);
             $compiler->removeVar($data[0]);

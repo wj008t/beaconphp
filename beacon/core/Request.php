@@ -57,6 +57,15 @@ class Request
         $_SESSION[$name] = $value;
     }
 
+    public function delSession()
+    {
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
+        }
+        session_unset();
+        session_destroy();
+    }
+
     public function getCookie(string $name, $def = null)
     {
         return isset($_COOKIE["name"]) ? $_COOKIE["name"] : $def;
@@ -330,7 +339,7 @@ class Request
 
     public function isAjax()
     {
-        if (isset($_SERVER['DOCUMENT_URI']) && preg_match('@\.json$@i', $_SERVER['DOCUMENT_URI'])) {
+        if (isset($_SERVER['REQUEST_AJAX']) && $_SERVER['REQUEST_AJAX'] == true) {
             return true;
         }
         return strtolower($this->getHeader('x-requested-with')) === 'xmlhttprequest';

@@ -7,16 +7,16 @@
  */
 
 namespace beacon;
-if (!defined('IS_CGI')) {
-    define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? TRUE : FALSE);
-}
-if (!defined('IS_CLI')) {
-    define('IS_CLI', PHP_SAPI == 'cli' ? TRUE : FALSE);
-}
-if (!defined('IS_WIN')) {
-    define('IS_WIN', strstr(PHP_OS, 'WIN') ? TRUE : FALSE);
-}
 
+defined('DEV_DEBUG') or define('DEV_DEBUG', false);
+defined('IS_CGI') or define('IS_CGI', substr(PHP_SAPI, 0, 3) == 'cgi' ? true : false);
+defined('IS_CLI') or define('IS_CLI', PHP_SAPI == 'cli' ? true : false);
+defined('IS_WIN') or define('IS_WIN', strstr(PHP_OS, 'WIN') ? true : false);
+
+class RouteEndError extends \Error implements \Throwable
+{
+//让路由结束退出的错误
+}
 
 class Route
 {
@@ -144,6 +144,10 @@ class Route
     {
         $url_temp = parse_url($url);
         $url = $url_temp['path'];
+        if (preg_match('@\.json$@i', $url)) {
+            $_SERVER['REQUEST_AJAX'] = true;
+            $url = preg_replace('@\.json$@i', '', $url);
+        }
         $idata = self::matchUrl($url);
         if ($idata == null) {
             return null;
@@ -320,174 +324,232 @@ class Route
         return $temp_url;
     }
 
+    /**
+     * ~/ctl/act
+     * ^/admin/ctl/act
+     * @param string $url
+     */
+    public static function url(string $url = '', array $query = [])
+    {
+        if (!(isset($url[1]) && ($url[0] == '~' || $url[0] == '^') && $url[1] == '/')) {
+            if ($query == null || count($query) == 0) {
+                return $url;
+            }
+        }
+        $info = parse_url($url);
+        $path = isset($info['path']) ? $info['path'] : '';
+        $str_query = isset($info['query']) ? $info['query'] : '';
+        $query = is_array($query) ? $query : [];
+        if (!empty($str_query)) {
+            $temp = [];
+            parse_str($str_query, $temp);
+            $query = array_merge($temp, $query);
+        }
+
+        if (!(isset($url[1]) && ($url[0] == '~' || $url[0] == '^') && $url[1] == '/')) {
+            $str_query = http_build_query($query);
+            if (!empty($str_query)) {
+                return $path . '?' . $str_query;
+            }
+            return $path;
+        }
+        if ($url[0] == '~') {
+            $app = self::get('app');
+            $path = substr($path, 1);
+            return self::resolve($app, $path, $query);
+        }
+        if (!preg_match('@^\^/(\w+)((?:/\w+){1,2})?$@', $path, $data)) {
+            return $url;
+        }
+        $app = isset($data[1]) ? $data[1] : self::get('app');
+        $path = isset($data[2]) ? $data[2] : self::get('path');
+        return self::resolve($app, $path, $query);
+    }
+
 
     public static function run($url = null)
     {
-        $request = Request::instance();
-        if ($request->isAjax()) {
-            $request->setContentType('json');
-        } else {
-            $request->setContentType('html');
-        }
-        if ($url === null) {
-            if (IS_CLI) {
-                if (isset($_SERVER['argv']) && !empty($_SERVER['argv'][1])) {
-                    $_SERVER['REQUEST_URI'] = $_SERVER['argv'][1];
-                    self::parse($_SERVER['argv'][1]);
-                    $data = parse_url($_SERVER['REQUEST_URI']);
-                    if (isset($data['query'])) {
-                        parse_str($data['query'], $args);
-                        foreach ($args as $key => $val) {
-                            $_GET[$key] = $val;
-                            $_REQUEST[$key] = $val;
+        try {
+            $request = Request::instance();
+            if ($url === null) {
+                if (IS_CLI) {
+                    if (isset($_SERVER['argv']) && !empty($_SERVER['argv'][1])) {
+                        $_SERVER['REQUEST_URI'] = $_SERVER['argv'][1];
+                        self::parse($_SERVER['argv'][1]);
+                        $data = parse_url($_SERVER['REQUEST_URI']);
+                        if (isset($data['query'])) {
+                            parse_str($data['query'], $args);
+                            foreach ($args as $key => $val) {
+                                $_GET[$key] = $val;
+                                $_REQUEST[$key] = $val;
+                            }
                         }
+                    } else {
+                        $_SERVER['REQUEST_URI'] = '/';
+                        self::parse('/');
                     }
                 } else {
-                    $_SERVER['REQUEST_URI'] = '/';
-                    self::parse('/');
+                    if (isset($_SERVER['PATH_INFO'])) {
+                        self::parse($_SERVER['PATH_INFO']);
+                    } else {
+                        self::parse($_SERVER['REQUEST_URI']);
+                    }
                 }
             } else {
-                if (isset($_SERVER['PATH_INFO'])) {
-                    self::parse($_SERVER['PATH_INFO']);
-                } else {
-                    self::parse($_SERVER['REQUEST_URI']);
+                self::parse($url);
+            }
+            if (self::$route == null) {
+                throw new RouteEndError('未初始化路由参数');
+            }
+            if (empty(self::$route['app'])) {
+                throw new RouteEndError('不存在的路径');
+            }
+            if (empty(self::$route['ctl'])) {
+                throw new RouteEndError('不存在的控制器');
+            }
+            if (empty(self::$route['act'])) {
+                throw new RouteEndError('不存在的控制器方法');
+            }
+            $app = self::$route['app'];
+            $ctl = Utils::toCamel(self::$route['ctl']);
+            $act = Utils::toCamel(self::$route['act']);
+            $act = lcfirst($act);
+            $data = isset(self::$routeMap[$app]) ? self::$routeMap[$app] : [];
+            if (empty($data['path'])) {
+                throw new RouteEndError('没有设置应用目录');
+            }
+            $config = Utils::path(ROOT_DIR, $data['path'], 'config.php');
+            if (file_exists($config)) {
+                $cfgData = Config::loadFile($config);
+                foreach ($cfgData as $key => $val) {
+                    Config::set($key, $val);
                 }
             }
-        } else {
-            self::parse($url);
-        }
-        if (self::$route == null) {
-            throw new \Exception('未初始化路由参数');
-        }
-        if (empty(self::$route['app'])) {
-            throw new \Exception('不存在的路径');
-        }
-        if (empty(self::$route['ctl'])) {
-            throw new \Exception('不存在的控制器');
-        }
-        if (empty(self::$route['act'])) {
-            throw new \Exception('不存在的控制器方法');
-        }
-        $app = self::$route['app'];
-        $ctl = Utils::toCamel(self::$route['ctl']);
-        $act = Utils::toCamel(self::$route['act']);
-        $act = lcfirst($act);
-        $data = isset(self::$routeMap[$app]) ? self::$routeMap[$app] : [];
-        if (empty($data['path'])) {
-            throw new \Exception('没有设置应用目录');
-        }
-        $config = Utils::path(ROOT_DIR, $data['path'], 'config.php');
-        if (file_exists($config)) {
-            $cfgData = Config::loadFile($config);
-            foreach ($cfgData as $key => $val) {
-                Config::set($key, $val);
-            }
-        }
-        $namespace = isset($data['namespace']) ? $data['namespace'] : $data['path'];
-        $class = trim(str_replace(['/', '\\'], '\\', $namespace), '\\') . '\\controller\\' . $ctl;
-        if (class_exists($class)) {
-            try {
-                $oReflectionClass = new \ReflectionClass($class);
-                $method = $oReflectionClass->getMethod($act . 'Action');
-                if ($method->isPublic()) {
-                    $params = $method->getParameters();
-                    $args = [];
-                    if (count($params) > 0) {
-                        foreach ($params as $param) {
-                            $name = $param->getName();
-                            $type = 'any';
-                            if (is_callable([$param, 'hasType'])) {
-                                if ($param->hasType()) {
-                                    $refType = $param->getType();
-                                    if ($refType != null) {
-                                        if (is_callable([$refType, 'getName'])) {
-                                            $type = $refType->getName();
-                                        } else {
-                                            $type = strval($refType);
+            $namespace = isset($data['namespace']) ? $data['namespace'] : $data['path'];
+            $class = trim(str_replace(['/', '\\'], '\\', $namespace), '\\') . '\\controller\\' . $ctl;
+            if (class_exists($class)) {
+                try {
+                    $oReflectionClass = new \ReflectionClass($class);
+                    $method = $oReflectionClass->getMethod($act . 'Action');
+                    if ($method->isPublic()) {
+                        $params = $method->getParameters();
+                        $args = [];
+                        if (count($params) > 0) {
+                            foreach ($params as $param) {
+                                $name = $param->getName();
+                                $type = 'any';
+                                if (is_callable([$param, 'hasType'])) {
+                                    if ($param->hasType()) {
+                                        $refType = $param->getType();
+                                        if ($refType != null) {
+                                            if (is_callable([$refType, 'getName'])) {
+                                                $type = $refType->getName();
+                                            } else {
+                                                $type = strval($refType);
+                                            }
+                                            $type = empty($type) ? 'any' : $type;
                                         }
-                                        $type = empty($type) ? 'any' : $type;
                                     }
                                 }
-                            }
-                            if ($type == 'any') {
-                                if (is_callable([$param, 'getClass'])) {
-                                    $refType = $param->getClass();
-                                    if ($refType != null) {
-                                        if (is_callable([$refType, 'getName'])) {
-                                            $type = $refType->getName();
-                                        } else {
-                                            $type = strval($refType);
-                                        }
-                                        $type = empty($type) ? 'any' : $type;
-                                    }
-                                }
-                            }
-                            $def = null;
-                            //如果有默认值
-                            if ($param->isOptional()) {
-                                $def = $param->getDefaultValue();
                                 if ($type == 'any') {
-                                    $type = gettype($def);
-                                }
-                            }
-
-                            switch ($type) {
-                                case 'bool':
-                                case 'boolean':
-                                    $args[] = $request->param($name . ':b', $def);
-                                    break;
-                                case 'int':
-                                case 'integer':
-                                    $val = $request->param($name . ':s', $def);
-                                    if (preg_match('@[+-]?\d*\.\d+@', $val)) {
-                                        $args[] = $request->param($name . ':f', $def);
-                                    } else {
-                                        $args[] = $request->param($name . ':i', $def);
+                                    if (is_callable([$param, 'getClass'])) {
+                                        $refType = $param->getClass();
+                                        if ($refType != null) {
+                                            if (is_callable([$refType, 'getName'])) {
+                                                $type = $refType->getName();
+                                            } else {
+                                                $type = strval($refType);
+                                            }
+                                            $type = empty($type) ? 'any' : $type;
+                                        }
                                     }
-                                    break;
-                                case 'double':
-                                case 'float':
-                                    $args[] = $request->param($name . ':f', $def);
-                                    break;
-                                case 'string':
-                                    $args[] = $request->param($name . ':s', $def);
-                                    break;
-                                case 'array':
-                                    $args[] = $request->param($name . ':a', $def);
-                                    break;
-                                case '\beacon\Request':
-                                case 'beacon\Request':
-                                    $args[] = $request;
-                                    break;
-                                default :
-                                    $args[] = $request->param($name, $def);
-                                    break;
+                                }
+                                $def = null;
+                                //如果有默认值
+                                if ($param->isOptional()) {
+                                    $def = $param->getDefaultValue();
+                                    if ($type == 'any') {
+                                        $type = gettype($def);
+                                    }
+                                }
+
+                                switch ($type) {
+                                    case 'bool':
+                                    case 'boolean':
+                                        $args[] = $request->param($name . ':b', $def);
+                                        break;
+                                    case 'int':
+                                    case 'integer':
+                                        $val = $request->param($name . ':s', $def);
+                                        if (preg_match('@[+-]?\d*\.\d+@', $val)) {
+                                            $args[] = $request->param($name . ':f', $def);
+                                        } else {
+                                            $args[] = $request->param($name . ':i', $def);
+                                        }
+                                        break;
+                                    case 'double':
+                                    case 'float':
+                                        $args[] = $request->param($name . ':f', $def);
+                                        break;
+                                    case 'string':
+                                        $args[] = $request->param($name . ':s', $def);
+                                        break;
+                                    case 'array':
+                                        $args[] = $request->param($name . ':a', $def);
+                                        break;
+                                    case '\beacon\Request':
+                                    case 'beacon\Request':
+                                        $args[] = $request;
+                                        break;
+                                    default :
+                                        $args[] = $request->param($name, $def);
+                                        break;
+                                }
                             }
                         }
-                    }
-                    $example = new $class();
-                    if (method_exists($example, 'initialize')) {
-                        $example->initialize($request);
-                    }
-                    $out = $method->invokeArgs($example, $args);
-                    if ($request->getContentType() == 'application/json' || $request->getContentType() == 'text/json') {
-                        echo json_encode($out);
-                        exit;
-                    } else {
-                        if (is_array($out)) {
+                        $example = new $class();
+                        if ($request->isAjax()) {
                             $request->setContentType('json');
+                        } else {
+                            $request->setContentType('html');
+                        }
+                        if (method_exists($example, 'initialize')) {
+                            $example->initialize($request);
+                        }
+                        $out = $method->invokeArgs($example, $args);
+                        if ($request->getContentType() == 'application/json' || $request->getContentType() == 'text/json') {
                             echo json_encode($out);
                             exit;
                         } else {
-                            echo $out;
+                            if (is_array($out)) {
+                                $request->setContentType('json');
+                                echo json_encode($out);
+                                exit;
+                            } else {
+                                if (!empty($out)) {
+                                    echo $out;
+                                }
+                            }
                         }
                     }
+                } catch (\Exception $e) {
+                    throw $e;
                 }
-            } catch (\Exception $e) {
-                throw $e;
+            } else {
+                throw new RouteEndError('不存在的控制器');
             }
-        } else {
-            throw new \Exception('不存在的控制器');
+        } catch (RouteEndError $exception) {
+            return;
+        } catch (\sdopx\SdopxException  $exception) {
+            Console::error('Sdopx Exception: ' . $exception->getMessage());
+            Console::info($exception->getStack());
+            Console::info($exception->getTraceAsString());
+        } catch (\Exception $exception) {
+            Console::error('BeaconPHP Exception: ' . $exception->getMessage());
+            Console::info($exception->getTraceAsString());
+        } catch (\Error $error) {
+            Console::error('BeaconPHP Error: ' . $error->getMessage());
+            Console::info($error->getTraceAsString());
         }
     }
 

@@ -11,7 +11,7 @@ namespace beacon;
 
 abstract class Controller
 {
-    public function initialize(Request $request = null)
+    public function initialize()
     {
     }
 
@@ -26,19 +26,29 @@ abstract class Controller
         View::instance()->assign($key, $val);
     }
 
-    protected function display($tplname)
+    protected function display(string $tplname, string $parent = null)
     {
+        $this->assign('this', $this);
+        $this->setContentType('html');
+        if ($parent !== null) {
+            return View::instance()->fetch('extends:' . $parent . '|' . $tplname);
+        }
         return View::instance()->display($tplname);
     }
 
-    protected function fetch($tplname)
+    protected function fetch(string $tplname, string $parent = null)
     {
+        $this->assign('this', $this);
+        if ($parent !== null) {
+            return View::instance()->fetch('extends:' . $parent . '|' . $tplname);
+        }
         return View::instance()->fetch($tplname);
     }
 
-    protected function redirect($url)
+    protected function redirect(string $url, array $query = [])
     {
         $url = empty($url) ? '/' : $url;
+        $url = Route::url($url, $query);
         Request::instance()->setHeader('Location', $url);
         exit;
     }
@@ -59,19 +69,20 @@ abstract class Controller
         } else {
             $out['error'] = $error;
         }
-        if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
+
+        if ($this->getContentType() == 'application/json' || $this->getContentType() == 'text/json') {
             echo json_encode($out);
             exit;
         } else {
             if (empty($jump)) {
-                $jump = Request::instance()->getReferrer();
+                $jump = $this->getReferrer();
             }
             if (empty($jump)) {
                 $jump = '#';
             }
             $out['jump'] = $jump;
             $this->assign('info', $out);
-            $this->display('@fail.tpl');
+            $this->display('@error.tpl');
             exit;
         }
     }
@@ -85,15 +96,15 @@ abstract class Controller
         if ($jump != null) {
             $out['jump'] = $jump;
         }
-        if (Request::instance()->getContentType() == 'application/json' || Request::instance()->getContentType() == 'text/json') {
+        if ($this->getContentType() == 'application/json' || $this->getContentType() == 'text/json') {
             echo json_encode($out);
             exit;
         } else {
             if (empty($jump)) {
-                $jump = Request::instance()->param('__BACK__');
+                $jump = $this->param('__BACK__');
             }
             if (empty($jump)) {
-                $jump = Request::instance()->getReferrer();
+                $jump = $this->getReferrer();
             }
             if (empty($jump)) {
                 $jump = '#';
@@ -105,22 +116,22 @@ abstract class Controller
         }
     }
 
-    protected function get(string $name = null, $def = null)
+    public function get(string $name = null, $def = null)
     {
         return Request::instance()->get($name, $def);
     }
 
-    protected function post(string $name = null, $def = null)
+    public function post(string $name = null, $def = null)
     {
         return Request::instance()->post($name, $def);
     }
 
-    protected function param(string $name = null, $def = null)
+    public function param(string $name = null, $def = null)
     {
         return Request::instance()->param($name, $def);
     }
 
-    protected function getSession(string $name = null, $def = null)
+    public function getSession(string $name = null, $def = null)
     {
         return Request::instance()->getSession($name, $def);
     }
@@ -130,7 +141,12 @@ abstract class Controller
         return Request::instance()->setSession($name, $value);
     }
 
-    protected function getCookie(string $name, $def = null)
+    protected function delSession()
+    {
+        return Request::instance()->delSession();
+    }
+
+    public function getCookie(string $name, $def = null)
     {
         return Request::instance()->getCookie($name, $def);
     }
@@ -146,12 +162,12 @@ abstract class Controller
         return Request::instance()->file($name);
     }
 
-    protected function route(string $name = null, $def = null)
+    public function route(string $name = null, $def = null)
     {
         return Request::instance()->route($name, $def);
     }
 
-    protected function getHeader(string $name = null)
+    public function getHeader(string $name = null)
     {
         return Request::instance()->getHeader($name);
     }
@@ -161,7 +177,7 @@ abstract class Controller
         return Request::instance()->setHeader($name, $value, $replace, $http_response_code);
     }
 
-    protected function getIP(bool $proxy = false, bool $forward = false)
+    public function getIP(bool $proxy = false, bool $forward = false)
     {
         return Request::instance()->getIP($proxy, $forward);
     }
@@ -181,34 +197,35 @@ abstract class Controller
         return Request::instance()->config($name, $def);
     }
 
-    protected function isGet()
+    public function isGet()
     {
         return Request::instance()->isGet();
     }
 
-    protected function isMethod(string $method)
+    public function isMethod(string $method)
     {
         return Request::instance()->isMethod($method);
     }
 
-    protected function getMethod()
+    public function getMethod()
     {
         return Request::instance()->getMethod();
     }
 
-    protected function isPost()
+    public function isPost()
     {
         return Request::instance()->isPost();
     }
 
-    protected function isAjax()
+    public function isAjax()
     {
         return Request::instance()->isAjax();
     }
 
-    protected function getReferrer()
+    public function getReferrer()
     {
         return Request::instance()->getReferrer();
     }
+
 
 }

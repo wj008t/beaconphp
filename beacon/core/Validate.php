@@ -303,7 +303,7 @@ class Validate
         $rules = $tempRules;
         $value = $field->value;
         //验证非空
-        if ($rules['required']) {
+        if (isset($rules['required']) && $rules['required']) {
             $func = isset($this->func['required']) ? $this->func['required'] : Validate::getFunc('required');
             $r = call_user_func_array($func, [$value]);
             if (!$r) {
@@ -313,7 +313,7 @@ class Validate
             }
             unset($rules['required']);
         }
-        if (strlen($value) > 0 || $rules['force']) {
+        if (strlen($value) > 0 || (isset($rules['force']) && $rules['force'])) {
             unset($rules['force']);
             foreach ($rules as $type => $args) {
                 if (!is_array($args)) {

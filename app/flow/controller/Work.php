@@ -82,7 +82,11 @@ class Work extends Controller
             $branch = 'step1';
             list($tokenId, $args) = $this->param($request, $branch);
             //处理自动执行
-            Flow::reday($tokenId, $branch, $args);
+
+            $reday = Flow::reday($tokenId, $branch, $args);
+            //TODO
+
+
             $data = Flow::fire($tokenId, $branch, $args['condition'], ['userId' => 1, 'targetId' => 1]);
             DB::update('@pf_task', ['state' => $data['state']], $data['taskId']);
             DB::commit();

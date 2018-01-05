@@ -9,6 +9,7 @@
 namespace sdopx\lib;
 
 
+use beacon\Console;
 use sdopx\Sdopx;
 
 
@@ -54,6 +55,8 @@ class Compiler
     public $temp_vars = [];
 
     public $temp_prefixs = [];
+
+    public $debugTemp = ['line' => -1, 'src' => ''];
 
     public function __construct(Sdopx $sdopx, Template $tpl)
     {
@@ -105,7 +108,11 @@ class Compiler
             }
             if (Sdopx::$debug && isset($tpl_item['info'])) {
                 $debug = $tpl_item['info'];
-                array_push($output, '$__out->debug(' . $debug['line'] . ',' . var_export($debug['src'], true) . ');');
+                if ($debug['line'] !== $this->debugTemp['line'] || $debug['src'] != $this->debugTemp['src']) {
+                    $this->debugTemp['line'] = $debug['line'];
+                    $this->debugTemp['src'] = $debug['src'];
+                    array_push($output, '$__out->debug(' . $debug['line'] . ',' . var_export($debug['src'], true) . ');');
+                }
             }
             switch ($tpl_item['map']) {
                 case Parser::CODE_EXPRESS:
@@ -120,11 +127,15 @@ class Compiler
                     break;
                 case  Parser::CODE_TAG:
                     $code = $this->compilePlugin($tpl_item['name'], $tpl_item['args']);
-                    array_push($output, $code);
+                    if ($code !== '') {
+                        array_push($output, $code);
+                    }
                     break;
                 case  Parser::CODE_TAG_END:
                     $code = $this->compilePlugin($tpl_item['name'], null, true);
-                    array_push($output, $code);
+                    if ($code !== '') {
+                        array_push($output, $code);
+                    }
                     break;
                 default:
                     break;
@@ -139,7 +150,11 @@ class Compiler
             }
             if (Sdopx::$debug && isset($cfg_item['info'])) {
                 $debug = $cfg_item['info'];
-                array_push($output, '$__out->debug(' . $debug['line'] . ',' . var_export($debug['src'], true) . ');');
+                if ($debug['line'] !== $this->debugTemp['line'] || $debug['src'] != $this->debugTemp['src']) {
+                    $this->debugTemp['line'] = $debug['line'];
+                    $this->debugTemp['src'] = $debug['src'];
+                    array_push($output, '$__out->debug(' . $debug['line'] . ',' . var_export($debug['src'], true) . ');');
+                }
             }
             if ($cfg_item['raw'] === true) {
                 array_push($output, '$__out->html(' . $cfg_item['code'] . ');');
@@ -165,7 +180,9 @@ class Compiler
             if ($lit_item['map'] === Parser::CODE_TAG_END) {
                 $name = $lit_item['name'];
                 $code = $this->compilePlugin($name, null, true);
-                array_push($output, $code);
+                if ($code !== '') {
+                    array_push($output, $code);
+                }
             }
             return !$this->closed;
         }
@@ -297,7 +314,7 @@ class Compiler
                 if (method_exists($class, 'execute')) {
                     $temp = [];
                     foreach ($params as $key => $val) {
-                        $temp[] = "'{$key}'=>${$val}";
+                        $temp[] = "'{$key}'=>{$val}";
                     }
                     return "$class::execute([" . join(',', $temp) . '],$__out);';
                 }

@@ -250,15 +250,19 @@ class Template
             }
             $this->sdopx->_book[$key] = $val;
         }
-        $tpl = $this->createChildTemplate($tplname);
-        $code = $tpl->fetchTpl();
-        foreach ($params as $key => $val) {
-            if (isset($temp[$key])) {
-                $this->sdopx->_book[$key] = $temp[$key];
-            } else {
-                unset($this->sdopx->_book[$key]);
+        try {
+            $tpl = $this->createChildTemplate($tplname);
+            $code = $tpl->fetchTpl();
+            foreach ($params as $key => $val) {
+                if (isset($temp[$key])) {
+                    $this->sdopx->_book[$key] = $temp[$key];
+                } else {
+                    unset($this->sdopx->_book[$key]);
+                }
             }
+            return $code;
+        } catch (\Exception $exception) {
+            throw new \ErrorException($exception->getMessage());
         }
-        return $code;
     }
 }
