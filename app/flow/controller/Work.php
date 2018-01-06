@@ -57,6 +57,7 @@ class Work extends Controller
             DB::beginTransaction();
             $taskId = $request->param('taskId');
             $branch = 'step1';
+            //try
             $reday = Flow::reday($taskId, '测试工作流程', $branch, 1);
             //TODO
             Console::log($reday);

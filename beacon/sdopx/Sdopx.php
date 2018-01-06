@@ -292,7 +292,7 @@ class Sdopx extends \sdopx\lib\Template
         if (is_string($err)) {
             $err = new SdopxException($err);
         } elseif ($err instanceof \Exception) {
-            $err = new SdopxException($err->getMessage());
+            $err = new SdopxException($err->getMessage(),$err->getCode(),$err);
         }
         if (!Sdopx::$debug) {
             throw $err;
