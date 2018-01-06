@@ -262,7 +262,7 @@ class Template
             }
             return $code;
         } catch (\Exception $exception) {
-            throw new \ErrorException($exception->getMessage());
+            throw new \ErrorException($exception->getMessage(), $exception->getCode(), $exception);
         }
     }
 }
