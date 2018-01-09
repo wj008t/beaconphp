@@ -162,7 +162,7 @@ class Template
         $output[] = '$_cache[\'unifunc\']=function($_sdopx,$__out){';
         $output[] = 'try{';
         $output[] = $content;
-        $output[] = '} catch (\ErrorException $exception) { $__out->throw($exception);}';
+        $output[] = '} catch (\ErrorException $exception) { $__out->rethrow($exception);} catch (\Error $exception) { $__out->rethrow($exception);}';
         $output[] = '};';
         return join("\n", $output);
 
@@ -262,7 +262,7 @@ class Template
             }
             return $code;
         } catch (\Exception $exception) {
-            throw new \ErrorException($exception->getMessage(), $exception->getCode(), $exception);
+            throw new \ErrorException($exception->getMessage());
         }
     }
 }

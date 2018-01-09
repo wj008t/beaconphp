@@ -66,6 +66,17 @@ class Console
      */
     const TABLE = 'table';
 
+
+    public static function addSql($sql, $time = 0)
+    {
+        if (!DEV_DEBUG) {
+            return;
+        }
+        if (Config::get('debug.show_sql')) {
+            self::_log('sql', [$sql, $time]);
+        }
+    }
+
     /**
      * @var string
      */
@@ -81,8 +92,8 @@ class Console
      */
     protected $_json = array(
         'version' => self::VERSION,
-        'columns' => array('log', 'backtrace', 'type'),
-        'rows' => array()
+        'columns' => ['log', 'backtrace', 'type'],
+        'rows' => []
     );
 
     /**
@@ -268,24 +279,18 @@ class Console
         if (count($args) == 0 && $type != self::GROUP_END) {
             return;
         }
-
         $logger = self::getInstance();
-
         $logger->_processed = array();
-
         $logs = array();
         foreach ($args as $arg) {
             $logs[] = $logger->_convert($arg);
         }
-
         $backtrace = debug_backtrace(false);
         $level = $logger->getSetting(self::BACKTRACE_LEVEL);
-
         $backtrace_message = 'unknown';
         if (isset($backtrace[$level]['file']) && isset($backtrace[$level]['line'])) {
             $backtrace_message = $backtrace[$level]['file'] . ' : ' . $backtrace[$level]['line'];
         }
-
         $logger->_addRow($logs, $backtrace_message, $type);
     }
 
@@ -387,19 +392,56 @@ class Console
         if (in_array($backtrace, $this->_backtraces)) {
             $backtrace = null;
         }
-
         // for group, groupEnd, and groupCollapsed
         // take out the backtrace since it is not useful
         if ($type == self::GROUP || $type == self::GROUP_END || $type == self::GROUP_COLLAPSED) {
             $backtrace = null;
         }
-
         if ($backtrace !== null) {
             $this->_backtraces[] = $backtrace;
         }
-
+        if (Config::get('debug.udp')) {
+            $xrow = array($logs, $backtrace, $type);
+            if ($type == 'sql') {
+                $xlogs = [];
+                $xlogs[0] = trim($logs[0]);
+                $xlogs[1] = '  --time:' . intval($logs[1] * 1000) . 'ms';
+                $xrow = array($xlogs, $backtrace, 'log');
+            }
+            $sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+            $msg = json_encode($xrow);
+            $len = strlen($msg);
+            socket_sendto($sock, $msg, $len, 0, Config::get('debug.udp_addr', '127.0.0.1'), Config::get('debug.udp_port', 1024));
+            socket_close($sock);
+        }
+        if ($type == 'sql') {
+            $value = '%c' . $logs[0];
+            $code = ['color:#08F'];
+            $timestr = '';
+            if (preg_match('@^(.*)(---time:\s*\d*(?:\.\d*)\s*ms)$@S', $value, $math)) {
+                $value = $math[1];
+                $timestr = '%c' . $math[2];
+            }
+            $value = preg_replace_callback("@('[^'\\\\]*(?:\\\\.[^'\\\\]*)*'|\d+)@", function ($mach) use (&$code) {
+                if (is_numeric($mach[1])) {
+                    $code[] = 'color:#F60';
+                    $code[] = 'color:#08F';
+                } else {
+                    $code[] = 'color:#A00';
+                    $code[] = 'color:#08F';
+                }
+                return '%c' . $mach[1] . '%c';
+            }, $value);
+            if (!empty($timestr)) {
+                $value .= $timestr;
+                $code[] = 'color:#999';
+            }
+            array_unshift($code, $value);
+            $code[] = '  --time:' . intval($logs[1] * 1000) . 'ms';
+            $logs = $code;
+            $type = 'log';
+        }
         $row = array($logs, $backtrace, $type);
-
         $this->_json['rows'][] = $row;
         $this->_writeHeader($this->_json);
     }

@@ -43,7 +43,7 @@ class Outer
         $this->src = $src;
     }
 
-    public function throw($err)
+    public function rethrow($err)
     {
         $this->_sdopx->rethrow($err, $this->line, $this->src);
     }

@@ -83,13 +83,13 @@ class View
             $this->engine->addPluginDir($plugins_dir);
         }
         foreach ([
-                     'sdopx.compile_force',
-                     'sdopx.compile_check',
-                     'sdopx.runtime_dir',
-                     'sdopx.left_delimiter',
-                     'sdopx.right_delimiter'
+                     'compile_force',
+                     'compile_check',
+                     'runtime_dir',
+                     'left_delimiter',
+                     'right_delimiter'
                  ] as $key) {
-            $val = Config::get($key);
+            $val = Config::get('sdopx.' . $key);
             if (!empty($val)) {
                 $this->engine->setting($key, $val);
             }

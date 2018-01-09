@@ -90,7 +90,7 @@ class Compiler
             return false;
         }
         if (isset($html_item['code'][0])) {
-            $html_item['code'] = rtrim($html_item['code']);
+            $html_item['code'] = $html_item['code'];
             if (isset($html_item['code'][0])) {
                 $code = '$__out->html(' . var_export($html_item['code'], true) . ');';
                 array_push($output, $code);

@@ -122,8 +122,18 @@ namespace beacon {
 
         public function exec(string $sql)
         {
-            $sql = str_replace('@pf_', $this->prefix, $sql);
-            return $this->pdo->exec($sql);
+            $time = microtime(true);
+            try {
+                $sql = str_replace('@pf_', $this->prefix, $sql);
+                $ret = $this->pdo->exec($sql);
+            } catch (\Exception $exception) {
+                throw $exception;
+            } finally {
+                if (defined('DEV_DEBUG') && DEV_DEBUG) {
+                    Console::addSql($sql, microtime(true) - $time);
+                }
+            }
+            return $ret;
         }
 
         public function lastInsertId($name = null)
@@ -150,10 +160,19 @@ namespace beacon {
                     return $key;
                 }, $sql);
             }
-            $sth = $this->pdo->prepare($sql);
-            if ($sth->execute($args) === FALSE) {
-                $str = print_r($sth->errorInfo(), true);
-                throw new Exception("执行语句错误\n{$str}");
+            $time = microtime(true);
+            try {
+                $sth = $this->pdo->prepare($sql);
+                if ($sth->execute($args) === FALSE) {
+                    $str = print_r($sth->errorInfo(), true);
+                    throw new \Exception("执行语句错误\n{$str}");
+                }
+            } catch (\Exception $exception) {
+                throw $exception;
+            } finally {
+                if (defined('DEV_DEBUG') && DEV_DEBUG) {
+                    Console::addSql(Mysql::format($sql, $args), microtime(true) - $time);
+                }
             }
             return $sth;
         }
