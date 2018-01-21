@@ -129,7 +129,7 @@ class Validate
         if (is_array($val)) {
             return count($val) != 0;
         }
-        return !empty($val);
+        return $val !== null && $val !== '';
     }
 
     /**

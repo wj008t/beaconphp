@@ -19,8 +19,8 @@ class TestForm extends Form
             'name' => [
                 'label' => '标题',
                 'default' => function () {
-                    //  return DB::getMax('@pf_advertisement', 'name');
-                    return 'test';
+                    return DB::getMax('@pf_advertisement', 'name');
+                    //return 'test';
                 },
                 'data-val' => ['r' => true],
                 'data-val-msg' => ['r' => '标题不能为空'],

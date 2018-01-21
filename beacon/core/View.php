@@ -9,6 +9,8 @@
 namespace beacon;
 
 
+use sdopx\lib\Outer;
+
 class View
 {
 
@@ -110,4 +112,27 @@ class View
         $this->engine->_book = $this->_book;
         return $this->engine->fetch($tplname);
     }
+
+    public function hackData($tplname, array $items)
+    {
+        if (!isset($items[0])) {
+            return $items;
+        }
+        $this->initialize();
+        $engine = $this->engine;
+        $engine->fetch($tplname);
+        $temp = [];
+        foreach ($items as $item) {
+            $engine->_book['rs'] = $item;
+            foreach ($item as $key => $value) {
+                $func = $engine->getHack($key);
+                if ($func != null) {
+                    $item[$key] = $func();
+                }
+            }
+            $temp[] = $item;
+        }
+        return $temp;
+    }
+
 }

@@ -75,12 +75,12 @@ namespace widget {
              * @var $form Form
              */
             if ($field->plugType == 0 || $field->plugType == 1) {
-                $form = new $class($field->getForm()->type);
+                $form = new $class($field->getForm()->getType());
                 $form->initValues($field->value);
                 $viewer = new BlendViewer($field, $form);
                 return $viewer->fetch();
             } else {
-                $form = new $class($field->getForm()->type);
+                $form = new $class($field->getForm()->getType());
                 $viewer = new BlendViewer($field, $form);
                 $out = [];
                 $out[] = '<script type="text/code" id="' . $field->boxId . ':soures">';
@@ -108,7 +108,7 @@ namespace widget {
                 return $field->value;
             }
             if ($field->plugType == 0 || $field->plugType == 1) {
-                $form = new $class($field->getForm()->type);
+                $form = new $class($field->getForm()->getType());
                 $form->autoComplete($fdata);
                 $vdata = $form->getValues();
                 $field->value = $vdata;
@@ -116,7 +116,7 @@ namespace widget {
             }
             $temp = [];
             foreach ($fdata as $fidata) {
-                $form = new $class($field->getForm()->type);
+                $form = new $class($field->getForm()->getType());
                 $form->autoComplete($fdata);
                 $vdata = $form->getValues();
                 $temp[] = $vdata;

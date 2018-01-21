@@ -118,6 +118,9 @@ class Sdopx extends \sdopx\lib\Template
     //函数
     public $funcMap = [];
 
+    //钩子函数
+    public $hackMap = [];
+
     public function __construct($context = null)
     {
         parent::__construct();
@@ -135,6 +138,14 @@ class Sdopx extends \sdopx\lib\Template
         if (in_array($key, ['compile_force', 'compile_check', 'left_delimiter', 'right_delimiter'])) {
             $this->$key = $value;
         }
+    }
+
+    public function getHack($fn)
+    {
+        if (isset($this->hackMap[$fn])) {
+            return $this->hackMap[$fn];
+        }
+        return null;
     }
 
     public function setRuntimeDir($dir_names)

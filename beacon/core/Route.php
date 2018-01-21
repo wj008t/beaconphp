@@ -526,12 +526,12 @@ class Route
                     }
                     $out = $method->invokeArgs($example, $args);
                     if ($request->getContentType() == 'application/json' || $request->getContentType() == 'text/json') {
-                        echo json_encode($out);
+                        echo json_encode($out, JSON_UNESCAPED_UNICODE);
                         exit;
                     } else {
                         if (is_array($out)) {
                             $request->setContentType('json');
-                            echo json_encode($out);
+                            echo json_encode($out, JSON_UNESCAPED_UNICODE);
                             exit;
                         } else {
                             if (!empty($out)) {

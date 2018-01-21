@@ -327,7 +327,7 @@ class Console
             $object_as_array[$key] = $this->_convert($value);
         }
 
-        $reflection = new ReflectionClass($object);
+        $reflection = new \ReflectionClass($object);
 
         // loop through the properties and add those
         foreach ($reflection->getProperties() as $property) {
@@ -361,10 +361,10 @@ class Console
     /**
      * takes a reflection property and returns a nicely formatted key of the property name
      *
-     * @param ReflectionProperty
+     * @param \ReflectionProperty
      * @return string
      */
-    protected function _getPropertyKey(ReflectionProperty $property)
+    protected function _getPropertyKey(\ReflectionProperty $property)
     {
         $static = $property->isStatic() ? ' static' : '';
         if ($property->isPublic()) {

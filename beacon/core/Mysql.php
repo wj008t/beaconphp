@@ -8,9 +8,8 @@
 
 namespace beacon {
 
-    use \PDO as PDO;
-    use \PDOException as PDOException;
-    use \Exception as Exception;
+    use PDO as PDO;
+    use PDOException as PDOException;
 
     class SqlSection
     {
@@ -39,6 +38,8 @@ namespace beacon {
          */
         private $pdo = null;
         private $transactionCounter = 0;
+
+        private $_lastSql = '';
 
         public function __construct($host, $port = 3306, $name = '', $user = '', $pass = '', $prefix = '')
         {
@@ -141,40 +142,33 @@ namespace beacon {
             return $this->pdo->lastInsertId($name);
         }
 
+        public function lastSQL()
+        {
+            return $this->_lastSql;
+        }
+
         public function execute(string $sql, $args = null)
         {
             $sql = str_replace('@pf_', $this->prefix, $sql);
             if ($args !== null && !is_array($args)) {
                 $args = [$args];
             }
-            if ($args !== null && preg_match('@\?@', $sql) && preg_match('@:(\w+)@', $sql)) {
-                $index = 0;
-                $sql = preg_replace_callback('@\?@', function ($match) use (&$args, &$index) {
-                    $key = ':beacon_temp_index_' . $index;
-                    if (!isset($args[$index])) {
-                        throw new Exception("参数不足，" . print_r($args, true));
-                    }
-                    $args[$key] = $args[$index];
-                    unset($args[$index]);
-                    $index++;
-                    return $key;
-                }, $sql);
-            }
             $time = microtime(true);
+            $this->_lastSql = Mysql::format($sql, $args);
             try {
                 $sth = $this->pdo->prepare($sql);
                 if ($sth->execute($args) === FALSE) {
                     $str = print_r($sth->errorInfo(), true);
                     throw new \Exception("执行语句错误\n{$str}");
                 }
+                return $sth;
             } catch (\Exception $exception) {
                 throw $exception;
             } finally {
                 if (defined('DEV_DEBUG') && DEV_DEBUG) {
-                    Console::addSql(Mysql::format($sql, $args), microtime(true) - $time);
+                    Console::addSql($this->_lastSql, microtime(true) - $time);
                 }
             }
-            return $sth;
         }
 
         /**
@@ -315,18 +309,28 @@ namespace beacon {
                     break;
             }
             $value = '\'' . preg_replace_callback('@[\0\b\t\n\r\x1a\"\'\\\\]@', function ($m) {
-                    $charsMap = [
-                        '\0' => '\\0',
-                        '\b' => '\\b',
-                        '\t' => '\\t',
-                        '\n' => '\\n',
-                        '\r' => '\\r',
-                        '\x1a' => '\\Z',
-                        '"' => '\\"',
-                        '\'' => '\\\'',
-                        '\\' => '\\\\'
-                    ];
-                    return $charsMap[$m[0]];
+                    switch ($m[0]) {
+                        case '\0':
+                            return '\\0';
+                        case '\b':
+                            return '\\b';
+                        case '\t':
+                            return '\\t';
+                        case '\n':
+                            return '\\n';
+                        case '\r':
+                            return '\\r';
+                        case '\x1a':
+                            return '\\Z';
+                        case '"':
+                            return '\\"';
+                        case '\'':
+                            return '\\\'';
+                        case '\\':
+                            return '\\\\';
+                        default:
+                            return '';
+                    }
                 }, $value) . '\'';
             return $value;
         }
@@ -371,18 +375,46 @@ namespace beacon {
             }
             $names = [];
             $vals = [];
+            $temp = [];
             foreach ($values as $key => $item) {
                 $names[] = '`' . $key . '`';
                 if ($item === null) {
                     $vals [] = 'NULL';
                 } else if ($item instanceof SqlSection) {
-                    $vals [] = $item->format();
+                    $vals [] = $item->sql;
+                    if (is_array($item->args)) {
+                        foreach ($item->args as $it) {
+                            $temp[] = $it;
+                        }
+                    }
                 } else {
-                    $vals [] = Mysql::escape($item);
+                    $vals [] = '?';
+                    $type = gettype($item);
+                    switch ($type) {
+                        case 'bool':
+                        case 'boolean':
+                            $temp[] = $item ? 1 : 0;
+                            break;
+                        case 'int':
+                        case 'integer':
+                        case 'double':
+                        case 'float':
+                        case 'string':
+                            $temp[] = $item;
+                            break;
+                            break;
+                        case 'array':
+                        case 'object':
+                            $temp[] = json_encode($item, JSON_UNESCAPED_UNICODE);
+                            break;
+                        default :
+                            $temp[] = strval($item);
+                            break;
+                    }
                 }
             }
             $sql = 'insert into ' . $tbname . '(' . join(',', $names) . ') values (' . join(',', $vals) . ')';
-            $Stm = $this->execute($sql);
+            $Stm = $this->execute($sql, $temp);
             $Stm->closeCursor();
         }
 
@@ -393,18 +425,46 @@ namespace beacon {
             }
             $names = [];
             $vals = [];
+            $temp = [];
             foreach ($values as $key => $item) {
                 $names[] = '`' . $key . '`';
                 if ($item === null) {
                     $vals [] = 'NULL';
                 } else if ($item instanceof SqlSection) {
-                    $vals [] = $item->format();
+                    $vals [] = $item->sql;
+                    if (is_array($item->args)) {
+                        foreach ($item->args as $it) {
+                            $temp[] = $it;
+                        }
+                    }
                 } else {
-                    $vals [] = Mysql::escape($item);
+                    $vals [] = '?';
+                    $type = gettype($item);
+                    switch ($type) {
+                        case 'bool':
+                        case 'boolean':
+                            $temp[] = $item ? 1 : 0;
+                            break;
+                        case 'int':
+                        case 'integer':
+                        case 'double':
+                        case 'float':
+                        case 'string':
+                            $temp[] = $item;
+                            break;
+                            break;
+                        case 'array':
+                        case 'object':
+                            $temp[] = json_encode($item, JSON_UNESCAPED_UNICODE);
+                            break;
+                        default :
+                            $temp[] = strval($item);
+                            break;
+                    }
                 }
             }
             $sql = 'replace into ' . $tbname . '(' . join(',', $names) . ') values (' . join(',', $vals) . ')';
-            $Stm = $this->execute($sql);
+            $Stm = $this->execute($sql, $temp);
             $Stm->closeCursor();
         }
 
@@ -419,20 +479,55 @@ namespace beacon {
                 $where = 'id=?';
             }
             $maps = [];
+            $temp = [];
             foreach ($values as $key => $item) {
                 if ($item === null) {
                     $maps [] = '`' . $key . '`=NULL';
                 } else if ($item instanceof SqlSection) {
-                    $maps [] = '`' . $key . '`=' . $item->format();
+                    $maps [] = '`' . $key . '`=' . $item->sql;
+                    if (is_array($item->args)) {
+                        foreach ($item->args as $it) {
+                            $temp[] = $it;
+                        }
+                    }
                 } else {
-                    $maps [] = '`' . $key . '`=' . Mysql::escape($item);
+                    $maps [] = '`' . $key . '`=?';
+                    $type = gettype($item);
+                    switch ($type) {
+                        case 'bool':
+                        case 'boolean':
+                            $temp[] = $item ? 1 : 0;
+                            break;
+                        case 'int':
+                        case 'integer':
+                        case 'double':
+                        case 'float':
+                        case 'string':
+                            $temp[] = $item;
+                            break;
+                            break;
+                        case 'array':
+                        case 'object':
+                            $temp[] = json_encode($item, JSON_UNESCAPED_UNICODE);
+                            break;
+                        default :
+                            $temp[] = strval($item);
+                            break;
+                    }
                 }
             }
             $sql = 'update ' . $tbname . ' set ' . join(',', $maps);
             if (!empty($where)) {
                 $sql .= ' where ' . $where;
             }
-            $Stm = $this->execute($sql, $args);
+            if (is_array($args)) {
+                foreach ($args as $it) {
+                    $temp[] = $it;
+                }
+            } else {
+                $temp[] = $args;
+            }
+            $Stm = $this->execute($sql, $temp);
             $Stm->closeCursor();
         }
 

@@ -71,7 +71,7 @@ abstract class Controller
         }
 
         if ($this->getContentType() == 'application/json' || $this->getContentType() == 'text/json') {
-            echo json_encode($out);
+            echo json_encode($out, JSON_UNESCAPED_UNICODE);
             exit;
         } else {
             if (empty($jump)) {
@@ -97,7 +97,7 @@ abstract class Controller
             $out['jump'] = $jump;
         }
         if ($this->getContentType() == 'application/json' || $this->getContentType() == 'text/json') {
-            echo json_encode($out);
+            echo json_encode($out, JSON_UNESCAPED_UNICODE);
             exit;
         } else {
             if (empty($jump)) {

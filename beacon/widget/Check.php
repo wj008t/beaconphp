@@ -9,6 +9,7 @@
 namespace widget;
 
 
+use beacon\Console;
 use beacon\Field;
 
 class Check extends Hidden

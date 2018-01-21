@@ -116,11 +116,11 @@ class Request
                         return $def;
                     }
                     if (is_string($def)) {
-                        return $def == '1' || $def == 'on' || $def == 'yes' || $def == 'true';
+                        return $def === '1' || $def === 'on' || $def === 'yes' || $def === 'true';
                     }
                     return false;
                 }
-                return $data[$name] == '1' || $data[$name] == 'on' || $data[$name] == 'yes' || $data[$name] == 'true';
+                return $data[$name] === '1' || $data[$name] === 'on' || $data[$name] === 'yes' || $data[$name] === 'true';
             case 'f':
                 if (!isset($data[$name]) || !is_numeric($data[$name])) {
                     if (is_double($def) || is_float($def)) {

@@ -22,7 +22,7 @@ class Form
     //基本属性
     public $title = '';
     public $caption = '';
-    public $type = '';
+    private $type = '';
     //视图属性
     public $viewUseTab = false;
     public $viewTabs = [];
@@ -65,7 +65,7 @@ class Form
 
     public function __construct($type = '')
     {
-        $this->type = $type;
+        $this->type = empty($type) ? 'add' : $type;
     }
 
     public function initialize()
@@ -93,6 +93,11 @@ class Form
     public function isAdd()
     {
         return $this->type === 'add';
+    }
+
+    public function getType()
+    {
+        return $this->type;
     }
 
     public function isEdit()
@@ -222,6 +227,15 @@ class Form
         }
     }
 
+    public function fetchHideBox()
+    {
+        $box = [];
+        foreach ($this->hideBox as $key => $val) {
+            $box[] = '<input type="hidden" name="id" value="' . htmlspecialchars($val, ENT_QUOTES) . '">';
+        }
+        return join('', $box);
+    }
+
     public function getCurrentFields()
     {
         $this->initialize();
@@ -262,7 +276,7 @@ class Form
                     continue;
                 }
             }
-            if ($field->close || ($field->offEdit && $this->type = 'edit')) {
+            if ($field->close || ($field->offEdit && $this->type == 'edit')) {
                 continue;
             }
             $box = self::getBoxInstance($field->type);
@@ -313,7 +327,7 @@ class Form
         }
         $fields = $this->getCurrentFields();
         foreach ($fields as $name => $field) {
-            if ($field->close || ($field->offEdit && $this->type = 'edit')) {
+            if ($field->close || ($field->offEdit && $this->type == 'edit')) {
                 continue;
             }
             if ($field->viewClose) {
@@ -342,29 +356,29 @@ class Form
                 switch ($field->varType) {
                     case 'bool':
                     case 'boolean':
-                        $field->value = $request->req($data, $boxName . ':b', $field->default);
+                        $field->value = $request->req($data, $boxName . ':b', false);
                         break;
                     case 'int':
                     case 'integer':
-                        $val = $request->req($data, $boxName . ':s', $field->default);
+                        $val = $request->req($data, $boxName . ':s', 0);
                         if (preg_match('@[+-]?\d*\.\d+@', $field->default)) {
-                            $field->value = $request->req($data, $boxName . ':f', $field->default);
+                            $field->value = $request->req($data, $boxName . ':f', 0);
                         } else {
-                            $field->value = $request->req($data, $boxName . ':i', $field->default);
+                            $field->value = $request->req($data, $boxName . ':i', 0);
                         }
                         break;
                     case 'double':
                     case 'float':
-                        $field->value = $request->req($data, $boxName . ':f', $field->default);
+                        $field->value = $request->req($data, $boxName . ':f', 0);
                         break;
                     case 'string':
-                        $field->value = $request->req($data, $boxName . ':s', $field->default);
+                        $field->value = $request->req($data, $boxName . ':s', '');
                         break;
                     case 'array':
-                        $field->value = $request->req($data, $boxName . ':a', $field->default);
+                        $field->value = $request->req($data, $boxName . ':a', []);
                         break;
                     default :
-                        $field->value = $request->req($data, $boxName, $field->default);
+                        $field->value = $request->req($data, $boxName, '');
                         break;
                 }
             }
@@ -392,7 +406,7 @@ class Form
                 $result = false;
                 continue;
             }
-            if ($field->close || ($field->offEdit && $this->type = 'edit')) {
+            if ($field->close || ($field->offEdit && $this->type == 'edit')) {
                 continue;
             }
             $ret = $this->getValidateInstance()->checkField($field);

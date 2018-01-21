@@ -54,11 +54,11 @@ class Linkage implements BoxInterface
                     break;
                 case 'int':
                 case 'integer':
-                    $value = intval($value);
+                    $value = ($value === null || $value === '') ? 0 : intval($value);
                     break;
                 case 'double':
                 case 'float':
-                    $value = floatval($value);
+                    $value = ($value === null || $value === '') ? 0 : floatval($value);
                     break;
                 default :
                     break;
@@ -71,11 +71,9 @@ class Linkage implements BoxInterface
     {
         $request = Request::instance();
         if ($field->names !== null && is_array($field->names)) {
-            $default = isset($field->default) ? $field->default : [];
             $values = [];
             foreach ($field->names as $idx => $name) {
-                $def = isset($default[$idx]) ? $default[$idx] : null;
-                $values[] = $request->req($data, $name . ':s', $def);
+                $values[] = $request->req($data, $name . ':s', '');
             }
             return $field->value = $this->convertType($values, $field->varType);
         }
@@ -90,7 +88,7 @@ class Linkage implements BoxInterface
                 return $field->value = $this->convertType($values, $field->varType);
             }
         }
-        return $field->value = $this->convertType($field->default, $field->varType);
+        return $field->value = null;
 
     }
 

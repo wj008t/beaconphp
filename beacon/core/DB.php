@@ -52,6 +52,11 @@ class DB
         return self::engine()->exec($sql);
     }
 
+    public static function lastSQL()
+    {
+        return self::engine()->lastSQL();
+    }
+
     public static function lastInsertId($name = null)
     {
         return self::engine()->lastInsertId($name);

@@ -9,6 +9,7 @@
 
 namespace sdopx\lib;
 
+use beacon\Console;
 use sdopx\Sdopx;
 
 

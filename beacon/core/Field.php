@@ -197,12 +197,12 @@ class Field
                 $data['value'] = $this->value;
             }
         }
-        if ($this->form != null && $this->form->type = 'edit') {
+        if ($this->form != null && $this->form->getType() == 'edit') {
             if ($this->offEdit) {
                 $data['disabled'] = 'disabled';
             }
         }
-        if ($this->form != null && $this->form->type = 'add') {
+        if ($this->form != null && $this->form->getType() == 'add') {
             if (!isset($data['value']) && $this->default !== null && $this->default !== '') {
                 $data['value'] = $this->default;
             }
